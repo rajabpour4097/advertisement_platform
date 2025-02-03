@@ -1,0 +1,259 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html class="no-js" lang="fa" dir="rtl">
+<head>
+  <!-- Meta Tags -->
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="">
+  <!-- Page Title -->
+  <title>{% block title %}{% endblock %}</title>
+  <!-- Favicon Icon -->
+  <link rel="icon" href="assets/img/favicon.png" />
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/bootstrap.min.css' %}"/>
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/fontawesome.css' %}"/>
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/flaticon.css' %}"/>
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/slick.css' %}"/>
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/lightgallery.min.css' %}"/>
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/animate.css' %}"/>
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/style.css' %}"/>
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/responsive.css' %}"/>
+  <link rel="stylesheet" href="{% static 'advplatform/assets/css/slick-theme.css' %}"/>
+
+
+</head>
+
+<body class="st-green">
+  <!-- Start Header Section -->
+  <header class="st-site-header st-style1 st-sticky-header">
+    <div class="st-top-header">
+      <div class="container">
+        <div class="st-top-header-in">      
+        </div>
+      </div>
+    </div>
+    <div class="st-main-header">
+      <div class="container">
+        <div class="st-main-header-in">
+          <div class="st-main-header-left">
+            <a class='st-site-branding st-white-logo' href='#'><img src="{% static 'advplatform/assets/img/logo.png' %}" alt="Vorosha"></a>
+            <a class='st-site-branding st-dark-logo' href='#'><img src="{% static 'advplatform/assets/img/logo-dark.png' %}" alt="Vorosha"></a>
+          </div>
+          <div class="st-main-header-right">
+            <div class="st-nav">
+              <ul class="st-nav-list st-onepage-nav">
+                <li ><a href="{% url 'home' %}" >خانه</a></li>          
+                
+                <li><a href="#services" class="st-smooth-move">خدمات</a>
+                  <ul>
+                    <li class="menu-item-has-children"><a href='blog.html'>وبلاگ</a></li>
+                    <li class="menu-item-has-children"><a href='blog-details.html'>جزئیات مطالب وبلاگ</a></li>
+                  </ul>
+                </li>
+                <li><a href="{% url 'portfolios' %}" class="st-smooth-move">نمونه کارها</a></li>
+                <li><a href="{% url 'mentors' %}" class="st-smooth-move">تیم مشاوران</a></li>
+                <li><a href="{% if user.is_authenticated %} {% url 'admin:index' %}{% else %}{% url 'login' %}{% endif %}" class="st-smooth-move">حساب کاربری</a></li>
+                <li class="menu-item-has-children"><a href="#blog" class="st-smooth-move">بلاگ</a>
+                  <ul>
+                    <li class="menu-item-has-children"><a href='blog.html'>وبلاگ</a></li>
+                    <li class="menu-item-has-children"><a href='blog-details.html'>جزئیات مطالب وبلاگ</a></li>
+                  </ul>
+                </li>
+                <li><a href="{% url 'aboutus' %}" class="st-smooth-move">درباره ما</a></li>
+                <li><a href="{% url 'contactus' %}" class="st-smooth-move">ارتباط با ما</a></li>
+                {% if user.is_authenticated %}<li><a href="{% url 'logout' %}" class="btn-outline-danger">خروج </a></li>{% endif %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <!-- End Header Section -->
+
+  <div class="st-content">
+
+    <hr>
+    <br><br><br><br>
+{% block hh22 %} {% endblock %}
+
+    <hr>
+    <!-- Start Logo Carousel -->
+    <div>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="st-slider st-style2 st-pricing-wrap">
+          <div class="slick-container" data-autoplay="0" data-loop="1" data-speed="600" data-center="0"  data-slides-per-view="responsive" data-xs-slides="1" data-sm-slides="2" data-md-slides="3" data-lg-slides="4" data-add-slides="5">
+            <div class="slick-wrapper">
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client1.png' %}" alt="client1">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client2.png' %}" alt="client2">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client3.png' %}" alt="client3">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client4.png' %}" alt="client4">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client5.png' %}" alt="client5">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client1.png' %}" alt="client1">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client2.png' %}" alt="client2">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client3.png' %}" alt="client3">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client4.png' %}" alt="client4">
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-logo-carousel st-style1">
+                  <img src="{% static 'advplatform/assets/img/client5.png' %}" alt="client5">
+                </div>
+              </div><!-- .slick-slide-in -->
+            </div>
+          </div><!-- .slick-container -->
+          <div class="pagination st-style1 st-flex st-hidden"></div> <!-- If dont need Pagination then add class .st-hidden -->
+          <div class="swipe-arrow st-style1"> <!-- If dont need navigation then add class .st-hidden -->
+            <div class="slick-arrow-left"><i class="fa fa-chevron-left"></i></div>
+            <div class="slick-arrow-right"><i class="fa fa-chevron-right"></i></div>
+          </div>
+        </div><!-- .st-slider -->
+      </div>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+    </div>
+    <!-- End Logo Carousel -->
+  </div>
+
+  <!-- Start Footer -->
+  <footer class="st-site-footer st-sticky-footer">
+    <div class="st-main-footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-3">
+            <div class="st-footer-widget">
+              <div class="st-text-field">
+                <img src="{% static 'advplatform/assets/img/logo.png' %}" alt="Vorosha" class="st-white-logo">
+                <img src="{% static 'advplatform/assets/img/logo-dark.png' %}" alt="Vorosha" class="st-dark-logo">
+                <div class="st-height-b25 st-height-lg-b25"></div>
+                <div class="st-footer-text">لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است.</div>
+                <div class="st-height-b25 st-height-lg-b25"></div>
+                <ul class="st-social-btn st-style1 st-mp0">
+                  <li><a href="#"><i class="fab fa-facebook-square"></i></a></li>
+                  <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+                  <li><a href="#"><i class="fab fa-pinterest-square"></i></a></li>
+                  <li><a href="#"><i class="fab fa-twitter-square"></i></a></li>
+                  <li><a href="#"><i class="fab fa-dribbble-square"></i></a></li>
+                </ul>
+              </div>
+            </div>
+          </div><!-- .col -->
+          <div class="col-lg-3">
+            <div class="st-footer-widget">
+              <h2 class="st-footer-widget-title">لینک های مفید</h2>
+              <ul class="st-footer-widget-nav st-mp0">
+                <li><a href="#"><i class="fas fa-chevron-left"></i>سوالات متداول</a></li>
+                <li><a href="#"><i class="fas fa-chevron-left"></i>بلاگ</a></li>
+                <li><a href="#"><i class="fas fa-chevron-left"></i>ساعات فعالیت</a></li>
+                <li><a href="#"><i class="fas fa-chevron-left"></i>شرایط استفاده</a></li>
+              </ul>
+            </div>
+          </div><!-- .col -->
+          <div class="col-lg-3">
+            <div class="st-footer-widget">
+              <h2 class="st-footer-widget-title">درباره شرکت</h2>
+              <ul class="st-footer-widget-nav st-mp0">
+                <li><a href="#"><i class="fas fa-chevron-left"></i>درباره ما</a></li>
+                <li><a href="#"><i class="fas fa-chevron-left"></i>خدمات ما</a></li>
+                <li><a href="#"><i class="fas fa-chevron-left"></i>پشتیبانی</a></li>
+                <li><a href="#"><i class="fas fa-chevron-left"></i>شزایط و ظوابط</a></li>
+              </ul>
+            </div>
+          </div><!-- .col -->
+          <div class="col-lg-3">
+            <div class="st-footer-widget">
+              <h2 class="st-footer-widget-title">آخرین مطالب</h2>
+              <ul class="st-post-widget-list st-mp0">
+                <li>
+                  <div class="st-post st-style1">
+                    <a href="#" class="st-post-thumb st-zoom"><img src="{% static 'advplatform/assets/img/post1.jpg' %}" alt="post1" class="st-zoom-in"></a>
+                    <div class="st-post-info">
+                      <ul class="st-categories st-style1 st-mp0">
+                        <li><a href="#">روزمره</a></li>
+                      </ul>
+                      <h2 class="st-post-title"><a href='/blog-details'>کسب و کارهای جدید</a></h2>
+                      <div class="st-post-date">1 ساعت پیش</div>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="st-post st-style1">
+                    <a href="#" class="st-post-thumb st-zoom"><img src="{% static 'advplatform/assets/img/post2.jpg' %}" alt="post2" class="st-zoom-in"></a>
+                    <div class="st-post-info">
+                      <ul class="st-categories st-style1 st-mp0">
+                        <li><a href="#">تکنولوژی</a></li>
+                      </ul>
+                      <h2 class="st-post-title"><a href='/blog-details'>تشخیص بیماری با ai</a></h2>
+                      <div class="st-post-date">3 ساعت پیش</div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div><!-- .col -->
+        </div>
+      </div>
+    </div>
+    <div class="st-copyright-wrap">
+      <div class="container">
+        <div class="st-copyright-in">
+          <div class="st-left-copyright">
+            <div class="st-copyright-text">کپی رایت 1402، تمام حقوق برای وروشا محفوظ است.</div>
+          </div>
+          <div class="st-right-copyright">
+            <div id="st-backtotop"><i class="fas fa-angle-up"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- End Footer -->
+
+  <!-- Scripts -->
+  <script src="{% static 'advplatform/assets/js/vendor/modernizr-3.5.0.min.js' %}"></script>
+  <script src="{% static 'advplatform/assets/js/vendor/jquery-1.12.4.min.js' %}"></script>
+  <script src="{% static 'advplatform/assets/js/isotope.pkg.min.js' %}"></script>
+  <script src="{% static 'advplatform/assets/js/jquery.slick.min.js' %}"></script>
+  <script src="{% static 'advplatform/assets/js/mailchimp.min.js' %}"></script>
+  <script src="{% static 'advplatform/assets/js/counter.min.js' %}"></script>
+  <script src="{% static 'advplatform/assets/js/lightgallery.min.js' %}"></script>
+  <script src="{% static 'advplatform/assets/js/wow.min.js' %}"></script>
+  <script src="{% static 'advplatform/assets/js/main.js' %}"></script>
+</html>

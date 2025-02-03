@@ -1,0 +1,85 @@
+/*--------------------------------------------------------------
+20. Pricing Table
+----------------------------------------------------------------*/
+.st-pricing-table.st-style1 {
+	background-color: $main-color;
+	box-shadow: 0px 5px 10px 0px rgba(106, 106, 106, 0.15);
+	text-align: center;
+	padding: 0 20px 40px 20px;
+	border-radius: 4px;
+	transition: all 0.4s ease;
+
+	.st-pricing-head {
+		margin-bottom: 36px;
+	}
+
+	.st-pricing-head-in {
+		display: inline-block;
+		background-color: $base-color5;
+		padding: 30px 40px 35px;
+		border-radius: 0 0 50% 50%;
+		transition: all 0.4s ease;
+	}
+
+	.st-price {
+		font-size: 40px;
+		font-weight: 500;
+		margin-bottom: -12px;
+		color: $green;
+		transition: all 0.4s ease;
+	}
+
+	.st-price-per {
+		font-size: 16px;
+		color: $base-color3;
+		font-weight: 400;
+		transition: all 0.4s ease;
+		margin-top: 10px;
+	}
+
+	.st-pricing-feature-title {
+		font-size: 20px;
+		margin-bottom: 20px;
+	}
+
+	.st-pricing-feature-list {
+		margin-bottom: 24px;
+
+		li {
+			margin-bottom: 12px;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+	}
+}
+.st-pricing-wrap:hover {
+	.st-pricing-table:hover {
+		-webkit-transform: scale(1);
+		-ms-transform: scale(1);
+		transform: scale(1);
+		opacity: 1;
+		.st-btn {
+			background-color: $green;
+			color: #fff;
+		}
+		.st-pricing-head-in {
+			background-color: $green;
+		}
+
+		.st-price {
+			color: #fff;
+		}
+
+		.st-price-per {
+			color: rgba(255, 255, 255, 0.8);
+		}
+	}
+}
+.st-pricing-table.st-style1.st-active {
+		-webkit-transform: scale(0.92);
+		-ms-transform: scale(0.92);
+		transform: scale(0.92);
+		opacity: 0.5;
+}

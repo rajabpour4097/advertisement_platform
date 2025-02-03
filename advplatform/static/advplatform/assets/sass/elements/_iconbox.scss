@@ -1,0 +1,47 @@
+/*--------------------------------------------------------------
+10. Typography
+----------------------------------------------------------------*/
+.st-iconbox.st-style1 {
+	text-align: center;
+	box-shadow: 0px 5px 10px 0px rgba(68, 68, 68, 0.1);
+	padding: 50px 30px 45px;
+	border-radius: 4px;
+	transition: all 0.4s ease;
+
+	.st-iconbox-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100px;
+		width: 100px;
+		border-radius: 50%;
+		margin: auto;
+		color: $green;
+		border: 1px solid $green;
+		font-size: 50px;
+		margin-bottom: 25px;
+		transition: all 0.4s ease;
+	}
+	.st-iconbox-title {
+		font-size: 20px;
+		margin-bottom: 10px;
+	}
+	&:hover {
+		transform: translateY(-8px);
+		.st-iconbox-icon {
+			color: #fff;
+			background-color: $green;
+		}
+	}
+	&.st-type1 {
+		margin-top: 50px;
+		padding-top: 0;
+		.st-iconbox-icon {
+		    background-color: $green;
+		    color: #fff;
+		    position: relative;
+		    top: -50px;
+		    margin-bottom: -25px;
+		}
+	}
+}

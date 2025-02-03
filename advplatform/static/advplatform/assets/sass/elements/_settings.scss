@@ -1,0 +1,249 @@
+/*--------------------------------------------------------------
+30. Settings
+----------------------------------------------------------------*/
+.st-settings-cont {
+  padding: 40px 25px;
+  overflow-x: auto;
+  height: 100%;
+}
+
+.st-settings-header {
+  margin-bottom: 25px;
+}
+
+.st-setting-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #b5b5b5 !important;
+  font-family: 'Vazirmatn FD';
+  margin-bottom: 12px;
+}
+
+.st-settings-header {
+  margin-bottom: 30px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid $base-color4;
+
+  h2 {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: $base-color1;
+  }
+
+  p {
+    margin: 0;
+    color: $base-color2;
+  }
+}
+
+.st-settings-wrap {
+  position: fixed;
+  background-color: #fff;
+  width: 300px;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  z-index: 300;
+  border-right: 1px solid $base-color4;
+  transition: all 0.4s ease;
+  &.active {
+    left: -300px
+  }
+}
+
+.st-color-mode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 30px;
+  border-bottom: 1px solid $base-color4;
+  margin-bottom: 28px;
+
+  >div {
+    border: 1px solid $base-color4;
+    padding: 2px 10px;
+    width: 100px;
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+    margin-left: 10px;
+    color: $base-color2;
+
+    &:last-child {
+      margin-left: 0;
+    }
+
+    &.st-active {
+      border-color: $green;
+      color: $green;
+    }
+  }
+
+  i {
+    font-size: 12px;
+    margin-left: 4px;
+  }
+}
+
+.st-accent-colores {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -5px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid $base-color4;
+  margin-bottom: 28px;
+
+  .st-accent-color {
+    height: 25px;
+    width: calc(25% - 5px);
+    background-color: #ccc;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+
+    i {
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    &.active {
+      i {
+        opacity: 1;
+      }
+    }
+
+  }
+}
+
+.st-accent-color {
+  &.st-green {
+    background-color: #82b541;
+  }
+
+  &.st-blue {
+    background-color: #0a84ff;
+  }
+
+  &.st-indigo {
+    background-color: #5e5ce6;
+  }
+
+  &.st-purple {
+    background-color: #bf5af2;
+  }
+
+  &.st-orange {
+    background-color: #ff9f0a;
+  }
+
+  &.st-red {
+    background-color: #ff453a;
+  }
+
+  &.st-teal {
+    background-color: #64d2ff;
+  }
+
+  &.st-yellow {
+    background-color: #ffd60a;
+  }
+}
+
+.demoes {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -5px;
+  margin-right: -5px;
+  margin-bottom: -10px;
+
+  .demo {
+    padding-left: 5px;
+    padding-right: 5px;
+    width: 100%;
+    margin-bottom: 10px;
+    margin-bottom: 25px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    a {
+      display: block;
+      height: 130px;
+      width: 100%;
+      background-color: #ccc;
+      box-shadow: 0px 3px 5px 0px rgba(68, 68, 68, 0.1);
+      position: relative;
+      border-radius: 5px;
+      overflow: hidden;
+      &:before {
+        content: '';
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        left: 0;
+        top: 0;
+        background-color: #000;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+      &:hover {
+        &:before {
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+}
+
+.st-settings-switch {
+  position: absolute;
+  height: 50px;
+  width: 50px;
+  border: 1px solid #eaeaea;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  top: 220px;
+  right: -50px;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+  color: $base-color2;
+  i {
+    animation: rotating 4s linear infinite;
+  }
+}
+
+@keyframes rotating {
+  from {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg); }
+  to {
+      -ms-transform: rotate(360deg);
+      -moz-transform: rotate(360deg);
+      -webkit-transform: rotate(360deg);
+      -o-transform: rotate(360deg);
+      transform: rotate(360deg); 
+  } 
+}
+
+@media screen and (max-width: 575px) {
+.st-settings-wrap {
+    left: -300px;
+}
+.st-settings-wrap.active {
+    left: 0px;
+}
+}

@@ -1,0 +1,23 @@
+/*--------------------------------------------------------------
+22. Logo Carousel
+----------------------------------------------------------------*/
+.st-logo-carousel.st-style1 {
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid $base-color4;
+    border-radius: 4px;
+    transition: all 0.4s ease;
+    &:hover {
+    	transform: translateY(-2px);
+    	box-shadow: 0px 5px 10px 0px rgba(106, 106, 106, 0.15);
+    }
+    &.st-type1 {
+        border: none !important;
+        &:hover {
+            box-shadow: none !important;
+        }
+    }
+}

@@ -1,0 +1,20 @@
+.tw-cta.tw-style1 .tw-cta-title {
+  font-size: 36px;
+  margin-bottom: 16px; }
+.tw-cta.tw-style1 .tw-cta-subtitle {
+  font-size: 16px;
+  margin-bottom: 33px;
+  line-height: 1.6em; }
+
+@media screen and (max-width: 991px) {
+  .tw-cta.tw-style1 .tw-cta-title {
+    font-size: 28px; }
+
+  .tw-cta.tw-style1 .tw-cta-subtitle {
+    font-size: 14px;
+    margin-bottom: 23px; } }
+@media screen and (max-width: 575px) {
+  .tw-cta.tw-style1 .tw-cta-subtitle br {
+    display: none; } }
+
+/*# sourceMappingURL=cta.css.map */

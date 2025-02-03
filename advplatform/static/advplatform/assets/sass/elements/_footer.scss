@@ -1,0 +1,133 @@
+/*--------------------------------------------------------------
+28. Footer
+----------------------------------------------------------------*/
+.st-main-footer {
+    padding-top: 100px;
+    padding-bottom: 60px;
+    background-color: $base-color5;
+}
+
+.st-social-btn.st-style1 {
+    display: flex;
+    flex-wrap: wrap;
+
+    li {
+        font-size: 20px;
+        color: $base-color1;
+        margin-left: 15px;
+
+        a {
+            display: flex;
+
+            &:hover {
+                color: $green;
+            }
+        }
+    }
+}
+
+.st-footer-widget {
+    margin-bottom: 40px;
+}
+
+.st-footer-widget-title {
+    font-size: 20px;
+    position: relative;
+    padding-bottom: 17px;
+    margin: 0;
+    margin-bottom: 30px;
+    margin-top: -4px;
+
+    &:before {
+        content: '';
+        position: absolute;
+        height: 1px;
+        width: 100%;
+        max-width: 170px;
+        background-color: $base-color4;
+        bottom: 0;
+        right: 0;
+    }
+}
+
+
+.st-footer-widget-nav {
+    margin-top: -5px;
+
+    li {
+        position: relative;
+        margin-bottom: 15px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    a {
+        display: inline-block;
+        padding-right: 15px;
+        position: relative;
+
+        &:hover {
+            color: $green;
+            margin-right: 4px;
+        }
+    }
+
+    i {
+        position: absolute;
+        right: 0;
+        top: 6px;
+        font-size: 12px;
+
+    }
+}
+
+.st-footer-text {
+    margin-top: -1px;
+}
+
+.st-copyright-wrap {
+    background-color: $base-color1;
+}
+
+.st-copyright-in {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    align-items: center;
+}
+
+.st-copyright-text {
+    color: rgba($main-color, 0.8);
+    font-size: 14px;
+    line-height: 1.6em;
+}
+
+#st-backtotop {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba($main-color, 0.1);
+    color: rgba($main-color, 0.8);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: rgba($main-color, 0.2);
+    }
+}
+
+@media screen and (max-width: 991px) {
+    .st-sticky-footer {
+        position: initial;
+    }
+    .st-main-footer {
+    padding-top: 60px;
+    padding-bottom: 20px;
+}
+}

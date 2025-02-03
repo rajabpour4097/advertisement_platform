@@ -1,0 +1,97 @@
+/*--------------------------------------------------------------
+24. Newsletter
+----------------------------------------------------------------*/
+.st-news-letter-section {
+    background-attachment: fixed;
+}
+
+.st-news-letter-form h5 {
+    display: none !important;
+}
+
+.st-news-letter-title,
+.st-contact-number-title {
+    font-size: 20px;
+    margin-bottom: 26px;
+}
+
+.st-news-letter-form {
+    display: flex;
+    flex-wrap: wrap;
+
+    #subscriber-email {
+        border: 1px solid $base-color4;
+        border-radius: 4px;
+        padding: 0 20px;
+        height: 45px;
+        margin-left: 15px;
+        outline: none;
+        transition: all 0.3s ease;
+        flex: 1;
+        background-color: $main-color;
+
+        &:focus {
+            border-color: $green;
+        }
+    }
+}
+
+.subscription-label {
+    flex: none;
+    width: 100%;
+    margin: 0;
+}
+
+.error {
+    color: $red;
+}
+
+.valid {
+    color: $green;
+}
+
+.st-contact-number {
+    padding-right: 55px;
+    position: relative;
+
+    i {
+        position: absolute;
+        right: 0;
+        font-size: 46px;
+        top: 3px;
+        color: $green;
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+    }
+
+    h3 {
+        font-size: 18px;
+        color: $base-color2;
+        margin-top: -3px;
+        margin-bottom: 8px;
+    }
+
+    .st-mobile-number {
+        display: block;
+        font-size: 24px;
+        font-weight: 400;
+        color: $green;
+        direction: ltr;
+    }
+}
+
+@media screen and (max-width: 575px) {
+    .st-news-letter-form {
+        display: block;
+    }
+
+    .st-news-letter-form #subscriber-email {
+        margin-left: 0;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .st-news-letter .st-btn {
+        width: 100%;
+    }
+}

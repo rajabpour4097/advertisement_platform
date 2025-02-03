@@ -1,0 +1,796 @@
+{% extends "base.html" %}
+{% load static %}
+{% load advplatform_tags %}
+{% block title%}
+صفحه اصلی
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+
+{% block hh22 %}
+ <!-- Start Hero Seciton -->
+<div class="st-height-b40 st-height-lg-b80"></div>
+  <div class="st-hero-wrap st-gray-bg">
+    <div class="st-hero st-style1">
+      <div class="container">
+        <div class="st-hero-text">
+          <h1 class="st-hero-title">
+            تبلیغات<br>
+            رشد برند شما را سرعت <br>
+            می بخشند
+          </h1>
+          <div class="st-hero-subtitle">با برگزاری مسابقات جذاب و خلاقانه، برند شما را در معرض دید مخاطبان هدف قرار می‌دهیم.<br>ما با استفاده از ابزارهای نوین و ایده‌های خلاقانه، تبلیغات شما را از یکنواختی خارج کرده و<br>به سرعت به رشد برندتان کمک می‌کنیم.</div>
+          <div class="st-hero-btn">
+            <a href="#" class="st-btn st-style1 st-color1">بیشتر بخوانید</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="st-slider st-style1 st-hero-slider1" id="home">
+      <div class="slick-container" data-autoplay="1" data-loop="1" data-speed="800" data-autoplay-timeout="1000" data-center="0" data-slides-per-view="1" data-fade-slide="1">
+        <div class="slick-wrapper">
+          <div class="slick-slide-in">
+            <div class="st-hero st-style1 st-gray-bg">
+              <div class="st-hero-img">
+                <img src="{% static 'advplatform/assets/img/hero-img.png' %}" alt="Hero img">
+              </div>
+            </div>
+          </div>
+          <div class="slick-slide-in">
+            <div class="st-hero st-style1 st-gray-bg">
+              <div class="st-hero-img">
+                <img src="{% static 'advplatform/assets/img/hero-img1.png' %}" alt="Hero img">
+              </div>
+            </div>
+          </div>
+          <div class="slick-slide-in">
+            <div class="st-hero st-style1 st-gray-bg">
+              <div class="st-hero-img">
+                <img src="{% static 'advplatform/assets/img/hero-img2.png' %}" alt="Hero img">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- .slick-container -->
+      <div class="pagination st-style1 container"></div> <!-- If dont need Pagination then add class .st-hidden -->
+      <div class="swipe-arrow st-style1 st-hidden"> <!-- If dont need navigation then add class .st-hidden -->
+        <div class="slick-arrow-left"><i class="fa fa-angle-left"></i></div>
+        <div class="slick-arrow-right"><i class="fa fa-angle-right"></i></div>
+      </div>
+    </div><!-- .st-slider -->
+  </div>
+  <!-- End Hero Seciton -->
+
+  <!-- Start Feature Seciton -->
+  <section>
+    <div class="st-height-b120 st-height-lg-b80"></div>
+    <div class="container">
+      <div class="st-section-heading st-style1">
+        <h2 class="st-section-heading-title">ویژگی ما</h2>
+        <div class="st-section-heading-seperator left wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s"></div>
+        <div class="st-section-heading-subtitle">استفاده از فناوری‌های نوین برای افزایش اثربخشی تبلیغات.</div>
+      </div>
+      <div class="st-height-b40 st-height-lg-b40"></div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="st-iconbox st-style1">
+            <div class="st-iconbox-icon"><i class="flaticon-focus"></i></div>
+            <h2 class="st-iconbox-title">مسابقات سفارشی‌سازی شده</h2>
+            <div class="st-iconbox-text">طراحی مسابقات متناسب با اهداف و نیازهای خاص هر کسب‌وکار.</div>
+          </div>
+          <div class="st-height-b30 st-height-lg-b30"></div>
+        </div><!-- .col -->
+        <div class="col-lg-4">
+          <div class="st-iconbox st-style1">
+            <div class="st-iconbox-icon"><i class="flaticon-career"></i></div>
+            <h2 class="st-iconbox-title">جامعه‌ی فعال و هدفمند</h2>
+            <div class="st-iconbox-text">دسترسی به مخاطبان علاقه‌مند و مرتبط با حوزه فعالیت شما.</div>
+          </div>
+          <div class="st-height-b30 st-height-lg-b30"></div>
+        </div><!-- .col -->
+        <div class="col-lg-4">
+          <div class="st-iconbox st-style1">
+            <div class="st-iconbox-icon"><i class="flaticon-career-1"></i></div>
+            <h2 class="st-iconbox-title">پشتیبانی حرفه‌ای</h2>
+            <div class="st-iconbox-text">همراهی تیم متخصص در تمام مراحل برگزاری مسابقات و تبلیغات.</div>
+          </div>
+          <div class="st-height-b30 st-height-lg-b30"></div>
+        </div><!-- .col -->
+      </div>
+    </div>
+    <div class="st-height-b90 st-height-lg-b50"></div>
+  </section>
+  <!-- End Feature Seciton -->
+  <hr>
+  <!-- Start Current Campaign -->
+  <section id="services">
+    <div class="portfoliocontainer">
+      <div class="st-section-heading st-style1">
+        <h2 class="st-section-heading-title">کمپین‌های در حال برگزاری</h2>
+        <div class="st-section-heading-seperator left wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s" style="visibility: visible; animation-duration: 1s; animation-delay: 0.2s; animation-name: fadeInLeft;"></div>
+        <div class="st-section-heading-subtitle">لیستی از کمپین‌های در حال برگزاری</div>
+      </div><br><br>
+      <div class="portfoliorow">
+        {% for campaign in campaigns %}
+        <div class="portfoliocol">
+          <div class="portfolioimg-box">
+            <img src="{{ campaign.campaignsimages.first.image.url }}" alt="Snow">
+          </div>
+          <div class="portfoliodetail-box">
+            <h5>{{ campaign.describe }}</h5>
+            <div class="portfolioprice_box">
+              <h6 class="portfolioprice_heading">قیمت پیشنهادی: {{ campaign.purposed_price|format_price }}</h6>
+              <h5><div class="countdown" data-deadline="{{ campaign.get_countdown_datetime }}"></div></h5>
+              <p>کارفرما: {{ campaign.customer }}</p>
+            </div>
+          </div>
+            {% if campaign.list_of_participants %}
+                {% for participant in campaign.list_of_participants.all %}
+                <p>{{ participant.firstname }} - {{ participant.lastname }}</p>
+            {% endfor %}
+            <p>تعداد شرکت‌کنندگان: {{ campaign.list_of_participants.count }}</p>
+            {% endif %}
+        </div>
+        
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <!-- End Current Campaign -->
+  <hr>
+  <!-- Start Service Section -->
+  <section id="services">
+    <div class="st-height-b120 st-height-lg-b80"></div>
+    <div class="container">
+      <div class="st-section-heading st-style1">
+        <h2 class="st-section-heading-title">خدمات کسب و کار</h2>
+        <div class="st-section-heading-seperator left wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s"></div>
+        <div class="st-section-heading-subtitle">ما با ترکیبی از خلاقیت، فناوری و تجربه، تبلیغات شما را از یک فعالیت معمولی به فرصتی برای دیده شدن، تعامل و رشد تبدیل می‌کنیم.</div>
+      </div>
+      <div class="st-height-b40 st-height-lg-b40"></div>
+    </div>
+    <div class="container">
+      <div class="st-slider st-style2">
+        <div class="slick-container" data-autoplay="0" data-loop="1" data-speed="600" data-center="0"  data-slides-per-view="responsive" data-xs-slides="1" data-sm-slides="2" data-md-slides="3" data-lg-slides="3" data-add-slides="3">
+          <div class="slick-wrapper">
+            <div class="slick-slide-in">
+              <div class="st-imagebox st-style1 st-zoom">
+                <a href="#" class="st-imagebox-img"><img src="{% static 'advplatform/assets/img/service1.jpg' %}" class="st-zoom-in" alt="service1"></a>
+                <div class="st-imagebox-info">
+                  <h2 class="st-imagebox-title"><a href="#">مشاور مشتری</a></h2>
+                  <div class="st-imagebox-sub-title">جلسه زمانی است که دو یا چند نفر گرد هم می آیند تا در مورد یک یا چند موضوع اغلب در یک جلسه رسمی یا تجاری صحبت کنند</div>
+                </div>
+              </div>
+            </div>
+            <div class="slick-slide-in">
+              <div class="st-imagebox st-style1 st-zoom">
+                <a href="#" class="st-imagebox-img"><img src="{% static 'advplatform/assets/img/service2.jpg' %}" class="st-zoom-in" alt="service2"></a>
+                <div class="st-imagebox-info">
+                  <h2 class="st-imagebox-title"><a href="#">تحلیل کسب و کار</a></h2>
+                  <div class="st-imagebox-sub-title">تحلیل کسب و کار یک رشته تحقیقاتی برای شناسایی نیازهای کسب و کار و تعیین راه حل برای مشکلات کسب و کار است.</div>
+                </div>
+              </div>
+            </div>
+            <div class="slick-slide-in">
+              <div class="st-imagebox st-style1 st-zoom">
+                <a href="#" class="st-imagebox-img"><img src="{% static 'advplatform/assets/img/service3.jpg' %}" class="st-zoom-in" alt="service3"></a>
+                <div class="st-imagebox-info">
+                  <h2 class="st-imagebox-title"><a href="#">مشاور مشتری</a></h2>
+                  <div class="st-imagebox-sub-title">نفوذ در بازار کلید رشد کسب و کار است. فرآیندهای توسعه کسب و کار برای توسعه و پیاده سازی رشد.</div>
+                </div>
+              </div>
+            </div>
+            <div class="slick-slide-in">
+              <div class="st-imagebox st-style1 st-zoom">
+                <a href="#" class="st-imagebox-img"><img src="{% static 'advplatform/assets/img/service1.jpg' %}" class="st-zoom-in" alt="service1"></a>
+                <div class="st-imagebox-info">
+                  <h2 class="st-imagebox-title"><a href="#">مشاور مشتری</a></h2>
+                  <div class="st-imagebox-sub-title">جلسه زمانی است که دو یا چند نفر گرد هم می آیند تا در مورد یک یا چند موضوع اغلب در یک جلسه رسمی یا تجاری صحبت کنند</div>
+                </div>
+              </div>
+            </div>
+            <div class="slick-slide-in">
+              <div class="st-imagebox st-style1 st-zoom">
+                <a href="#" class="st-imagebox-img"><img src="{% static 'advplatform/assets/img/service2.jpg' %}" class="st-zoom-in" alt="service2"></a>
+                <div class="st-imagebox-info">
+                  <h2 class="st-imagebox-title"><a href="#">تحلیل کسب و کار</a></h2>
+                  <div class="st-imagebox-sub-title">تحلیل کسب و کار یک رشته تحقیقاتی برای شناسایی نیازهای کسب و کار و تعیین راه حل برای مشکلات کسب و کار است.</div>
+                </div>
+              </div>
+            </div>
+            <div class="slick-slide-in">
+              <div class="st-imagebox st-style1 st-zoom">
+                <a href="#" class="st-imagebox-img"><img src="{% static 'advplatform/assets/img/service3.jpg' %}" class="st-zoom-in" alt="service3"></a>
+                <div class="st-imagebox-info">
+                  <h2 class="st-imagebox-title"><a href="#">مشاور مشتری</a></h2>
+                  <div class="st-imagebox-sub-title">نفوذ در بازار کلید رشد کسب و کار است. فرآیندهای توسعه کسب و کار برای توسعه و پیاده سازی رشد.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- .slick-container -->
+        <div class="pagination st-style1 st-flex st-hidden"></div> <!-- If dont need Pagination then add class .st-hidden -->
+        <div class="swipe-arrow st-style1"> <!-- If dont need navigation then add class .st-hidden -->
+          <div class="slick-arrow-left"><i class="fa fa-chevron-left"></i></div>
+          <div class="slick-arrow-right"><i class="fa fa-chevron-right"></i></div>
+        </div>
+      </div><!-- .st-slider -->
+    </div><!-- .container -->
+    <div class="st-height-b120 st-height-lg-b80"></div>
+  </section>
+  <!-- End Service Section -->
+
+    <!-- Start FunFact Aection -->
+    <section class="st-dynamic-bg st-bg" data-src="{% static 'advplatform/assets/img/funfact-bg.png' %}">
+      <div class="st-height-b120 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-3">
+            <div class="st-funfact st-style1">
+              <div class="st-funfact-icon wow bounce" data-wow-duration="1s" data-wow-delay="0.7s"><i class="flaticon-rate"></i></div>
+              <h2 class="st-funfact-number st-counter">999</h2>
+              <div class="st-funfact-title">مشتریان راضی</div>
+            </div>
+            <div class="st-height-b30 st-height-lg-b30"></div>
+          </div><!-- .col -->
+          <div class="col-lg-3">
+            <div class="st-funfact st-style1">
+              <div class="st-funfact-icon wow bounce" data-wow-duration="1s" data-wow-delay="0.9s"><i class="flaticon-code"></i></div>
+              <h2 class="st-funfact-number st-counter">185</h2>
+              <div class="st-funfact-title">مسابقات برگزار شده</div>
+            </div>
+            <div class="st-height-b30 st-height-lg-b30"></div>
+          </div><!-- .col -->
+          <div class="col-lg-3">
+            <div class="st-funfact st-style1">
+              <div class="st-funfact-icon wow bounce" data-wow-duration="1s" data-wow-delay="0.8s"><i class="flaticon-laptop"></i></div>
+              <h2 class="st-funfact-number st-counter">100</h2>
+              <div class="st-funfact-title">مشاورین متخصص</div>
+            </div>
+            <div class="st-height-b30 st-height-lg-b30"></div>
+          </div><!-- .col -->
+          <div class="col-lg-3">
+            <div class="st-funfact st-style1">
+              <div class="st-funfact-icon wow bounce" data-wow-duration="1s" data-wow-delay="1s"><i class="flaticon-win"></i></div>
+              <h2 class="st-funfact-number st-counter">20</h2>
+              <div class="st-funfact-title">سالهای تجربه</div>
+            </div>
+            <div class="st-height-b30 st-height-lg-b30"></div>
+          </div><!-- .col -->
+        </div>
+      </div>
+      <div class="st-height-b90 st-height-lg-b50"></div>
+    </section>
+    <!-- End FunFact Aection -->
+
+    <!-- Start Project Section -->
+    <section id="portfolio" class="st-parallax-shape-wpra">
+      <div class="st-parallax-shape st-style1"></div>
+      <div class="st-parallax-shape st-style2"></div>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="st-section-heading st-style1">
+          <h2 class="st-section-heading-title">آخرین کمپین‌های برگزار شده</h2>
+          <div class="st-section-heading-seperator left wow fadeInRight" data-wow-duration="1s" data-wow-delay="0.2s"></div>
+          <div class="st-section-heading-subtitle">از تبلیغات خلاقانه تا کمپین‌های تعاملی: آخرین پروژه‌های موفق ما در صنایع مختلف</div>
+        </div>
+        <div class="st-height-b40 st-height-lg-b40"></div>
+      </div>
+      <div class="container">
+        <div class="st-portfolio-wrapper">
+          <div class="st-isotop-filter st-style1 text-center">
+            <ul class="st-mp0">
+              <li class="active"><a href="#" data-filter="*">همه</a></li>
+              <li><a href="#" data-filter=".branding">برندسازی</a></li>
+              <li><a href="#" data-filter=".website">وب سایت</a></li>
+              <li><a href="#" data-filter=".photography">عکلاسی</a></li>
+              <li><a href="#" data-filter=".creative">خلاقیت</a></li>
+            </ul>
+          </div>
+          <div class="st-isotop st-style1 st-port-col-3 st-has-gutter st-lightgallery">
+            <div class="st-grid-sizer"></div>
+            <div class="st-isotop-item branding photography creative">
+              <a href="assets/img/project1.jpg" class="st-project st-zoom st-lightbox-item">
+                <div class="st-project-img st-zoom-in"><img src="{% static 'advplatform/assets/img/project1.jpg' %}" alt="پروژه"></div>
+                <div class="st-plus"><span></span></div>
+              </a>
+            </div><!-- .st-isotop-item -->
+
+            <div class="st-isotop-item website photography">
+              <a href="assets/img/project2.jpg" class="st-project st-zoom st-lightbox-item">
+                <div class="st-project-img st-zoom-in"><img src="{% static 'advplatform/assets/img/project2.jpg' %}" alt="پروژه"></div>
+                <div class="st-plus"><span></span></div>
+              </a>
+            </div><!-- .st-isotop-item -->
+
+            <div class="st-isotop-item website creative">
+              <a href="assets/img/project3.jpg" class="st-project st-zoom st-lightbox-item">
+                <div class="st-project-img st-zoom-in"><img src="{% static 'advplatform/assets/img/project3.jpg' %}" alt="پروژه"></div>
+                <div class="st-plus"><span></span></div>
+              </a>
+            </div><!-- .st-isotop-item -->
+
+            <div class="st-isotop-item website creative">
+              <a href="assets/img/project4.jpg" class="st-project st-zoom st-lightbox-item">
+                <div class="st-project-img st-zoom-in"><img src="{% static 'advplatform/assets/img/project4.jpg' %}" alt="پروژه"></div>
+                <div class="st-plus"><span></span></div>
+              </a>
+            </div><!-- .st-isotop-item -->
+
+            <div class="st-isotop-item branding photography">
+              <a href="assets/img/project5.jpg" class="st-project st-zoom st-lightbox-item">
+                <div class="st-project-img st-zoom-in"><img src="{% static 'advplatform/assets/img/project5.jpg' %}" alt="پروژه"></div>
+                <div class="st-plus"><span></span></div>
+              </a>
+            </div><!-- .st-isotop-item -->
+
+            <div class="st-isotop-item branding">
+              <a href="assets/img/project6.jpg" class="st-project st-zoom st-lightbox-item">
+                <div class="st-project-img st-zoom-in"><img src="{% static 'advplatform/assets/img/project6.jpg' %}" alt="پروژه"></div>
+                <div class="st-plus"><span></span></div>
+              </a>
+            </div><!-- .st-isotop-item -->
+          </div><!-- .isotop -->
+        </div>
+      </div>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+    </section>
+    <!-- End Project Section -->
+    <hr>
+    <!-- Start Skill Section -->
+    <section>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6 wow fadeInLeft" data-wow-duration="0.8s" data-wow-delay="0.2s">
+            <div class="st-slider st-style1">
+              <div class="slick-container" data-autoplay="0" data-loop="1" data-speed="800" data-autoplay-timeout="1000" data-center="0" data-slides-per-view="1">
+                <div class="slick-wrapper">
+                  <div class="slick-slide-in">
+                    <div class="st-gallery-img st-style1 st-dynamic-bg" data-src="{% static 'advplatform/assets/img/skill-img.jpg' %}"></div>
+                  </div>
+                  <div class="slick-slide-in">
+                    <div class="st-gallery-img st-style1 st-dynamic-bg" data-src="{% static 'advplatform/assets/img/skill-img.jpg' %}"></div>
+                  </div>
+                  <div class="slick-slide-in">
+                    <div class="st-gallery-img st-style1 st-dynamic-bg" data-src="{% static 'advplatform/assets/img/skill-img.jpg' %}"></div>
+                  </div>
+                </div>
+              </div><!-- .slick-container -->
+              <div class="pagination st-style2"></div> <!-- If dont need Pagination then add class .st-hidden -->
+              <div class="swipe-arrow st-style1 st-hidden"> <!-- If dont need navigation then add class .st-hidden -->
+                <div class="slick-arrow-left"><i class="fa fa-angle-left"></i></div>
+                <div class="slick-arrow-right"><i class="fa fa-angle-right"></i></div>
+              </div>
+            </div><!-- .st-slider -->
+            <div class="st-height-b0 st-height-lg-b30"></div>
+          </div><!-- .col -->
+          <div class="col-lg-6">
+            <div class="st-vertical-middle">
+              <div class="st-vertical-middle-in">
+                <div class="st-skill-wrap">
+                  <div class="st-skill-heading">
+                    <h2 class="st-skill-title">مهارت ها و تخصص</h2>
+                    <div class="st-skill-subtitle">مهارت توانایی انجام یک کار با نتایج مشخص اغلب در مدت زمان معین است. مهارت معمولاً به محرک‌ها و موقعیت‌های محیطی خاصی برای ارزیابی نیاز دارد. حافظه ماهر کارشناسان را قادر می سازد تا به سرعت رمزگذاری کنند.</div>
+                    <div class="st-height-b20 st-height-lg-b20"></div>
+                  </div><!-- .st-skill-heading -->
+                  <div class="st-progressbar-wrap">
+                    <div class="st-single-progressbar">
+                      <div class="st-progressbar-heading">
+                        <h3 class="st-progressbar-title"> طراحی کمپین‌های تبلیغاتی جذاب</h3>
+                        <div class="st-progressbar-percentage">90%</div>
+                      </div>
+                      <div class="st-progressbar" data-progress="90">
+                        <div class="st-progressbar-in"></div>
+                      </div>
+                    </div><!-- .st-single-progressbar -->
+                    <div class="st-height-b20 st-height-lg-b20"></div>
+                    <div class="st-single-progressbar">
+                      <div class="st-progressbar-heading">
+                        <h3 class="st-progressbar-title">ساخت محتوای خلاقانه</h3>
+                        <div class="st-progressbar-percentage">95%</div>
+                      </div>
+                      <div class="st-progressbar" data-progress="95">
+                        <div class="st-progressbar-in"></div>
+                      </div>
+                    </div><!-- .st-single-progressbar -->
+                    <div class="st-height-b20 st-height-lg-b20"></div>
+                    <div class="st-single-progressbar">
+                      <div class="st-progressbar-heading">
+                        <h3 class="st-progressbar-title">سفارشی‌سازی مسابقات</h3>
+                        <div class="st-progressbar-percentage">85%</div>
+                      </div>
+                      <div class="st-progressbar" data-progress="85">
+                        <div class="st-progressbar-in"></div>
+                      </div>
+                    </div><!-- .st-single-progressbar -->
+                    <div class="st-height-b20 st-height-lg-b20"></div>
+                    <div class="st-single-progressbar">
+                      <div class="st-progressbar-heading">
+                        <h3 class="st-progressbar-title">استفاده از فناوری‌های نوین</h3>
+                        <div class="st-progressbar-percentage">80%</div>
+                      </div>
+                      <div class="st-progressbar" data-progress="80">
+                        <div class="st-progressbar-in"></div>
+                      </div>
+                    </div><!-- .st-single-progressbar -->
+                    <div class="st-height-b20 st-height-lg-b20"></div>
+                    <div class="st-single-progressbar">
+                      <div class="st-progressbar-heading">
+                        <h3 class="st-progressbar-title">مشاوره استراتژیک برندینگ</h3>
+                        <div class="st-progressbar-percentage">95%</div>
+                      </div>
+                      <div class="st-progressbar" data-progress="95">
+                        <div class="st-progressbar-in"></div>
+                      </div>
+                    </div><!-- .st-single-progressbar -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div><!-- .col -->
+        </div>
+      </div>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+    </section>
+    <!-- End Skill Section -->
+    <hr>
+    <!-- Start team Section -->
+    <section id="team">
+      <div class="st-height-b120 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="st-section-heading st-style1">
+          <h2 class="st-section-heading-title">تیم مشاوران متخصص</h2>
+          <div class="st-section-heading-seperator left wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s"></div>
+          <div class="st-section-heading-subtitle">مشاوران متخصص در بازاریابی، برندینگ و فناوری؛ تحول تبلیغات رقابتی شما</div>
+        </div>
+        <div class="st-height-b40 st-height-lg-b40"></div>
+      </div>
+      <div class="container">
+        <div class="st-slider st-style2">
+          <div class="slick-container" data-autoplay="0" data-loop="1" data-speed="600" data-center="0"  data-slides-per-view="responsive" data-xs-slides="1" data-sm-slides="2" data-md-slides="3" data-lg-slides="4" data-add-slides="4">
+            <div class="slick-wrapper">
+             
+             
+           {% for mentor in mentors %}
+              <div class="slick-slide-in">
+                <div class="st-member st-style1 st-zoom">
+                  <div class="st-member-img">
+                    <img src="{{ mentor.mentorimages.first.image.url }}" alt="member4" class="st-zoom-in">
+                  </div>
+                  <div class="st-member-meta">
+                    <div class="st-member-meta-in">
+                      <h3 class="st-member-name">{{mentor.firstname}} {{mentor.lastname}}</h3>
+                      <div class="st-member-designation">{{ mentor.speciality_field}}</div>
+                    </div>
+                    <ul class="st-member-social st-mp0">
+                      <li><a href="#"><i class="fab fa-facebook-square"></i></a></li>
+                      <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+                      <li><a href="#"><i class="fab fa-pinterest-square"></i></a></li>
+                      <li><a href="#"><i class="fab fa-twitter-square"></i></a></li>
+                      <li><a href="#"><i class="fab fa-dribbble-square"></i></a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div><!-- .slick-slide-in -->
+           {% endfor %}
+            </div>
+          </div><!-- .slick-container -->
+          <div class="pagination st-style1 st-flex st-hidden"></div> <!-- If dont need Pagination then add class .st-hidden -->
+          <div class="swipe-arrow st-style1"> <!-- If dont need navigation then add class .st-hidden -->
+            <div class="slick-arrow-left"><i class="fa fa-chevron-left"></i></div>
+            <div class="slick-arrow-right"><i class="fa fa-chevron-right"></i></div>
+          </div>
+        </div><!-- .st-slider -->
+      </div><!-- .container -->
+      <div class="st-height-b120 st-height-lg-b80"></div>
+    </section>
+    <!-- End team Section -->
+
+    <!-- Start CallToAction -->
+    <section class="st-cta-section st-dynamic-bg st-bg st-gray-bg" data-src="{% static 'advplatform/assets/img/cta-bg2.png' %}">
+      <div class="st-height-b120 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="st-cta st-style1 text-center">
+          <h2 class="st-cta-title">اکنون کمپین‌ تبلیغاتی خود را بسازید!</h2>
+          <div class="st-cta-subtitle">همین امروز با ما تماس بگیرید؛ طراحی مسابقات تبلیغاتی جذاب، افزایش تعامل مخاطبان و رشد برندتان را به ما بسپارید! 🏆</div>
+          <div class="st-cta-btn"><a href="#" class="st-btn st-style1 st-color1">شروع کنید</a></div>
+        </div>
+      </div>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+    </section>
+    <!-- End CallToAction -->
+    <hr>
+    <!-- Start Blog Section -->
+    <section class="st-gray-bg" id="blog">
+      <div class="st-height-b120 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="st-section-heading st-style1">
+          <h2 class="st-section-heading-title">آخرین اخبار</h2>
+          <div class="st-section-heading-seperator left wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s"></div>
+          <div class="st-section-heading-subtitle">لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.</div>
+        </div>
+        <div class="st-height-b40 st-height-lg-b40"></div>
+      </div>
+      <div class="container">
+        <div class="st-slider st-style2 st-pricing-wrap">
+          <div class="slick-container" data-autoplay="0" data-loop="1" data-speed="600" data-center="0"  data-slides-per-view="responsive" data-xs-slides="1" data-sm-slides="2" data-md-slides="3" data-lg-slides="3" data-add-slides="3">
+            <div class="slick-wrapper">
+              <div class="slick-slide-in">
+                <div class="st-post st-style2 st-zoom">
+                  <a class='st-post-thumb' href='/blog-details'>
+                    <img class="st-zoom-in" src="{% static 'advplatform/assets/img/blog1.jpg' %}" alt="blog1">
+                  </a>
+                  <div class="st-post-info">
+                    <a href="#" class="st-post-avatar">
+                      <img src="{% static 'advplatform/assets/img/avatar4.png' %}" alt="avatar4">
+                      <span class="st-post-avatar-text">ادمین</span>
+                    </a>
+                    <h2 class="st-post-title"><a href='/blog-details'>طرح کسب و کار یک سند مکتوب رسمی اهداف تجاری است</a></h2>
+                    <div class="st-post-text">طرح کسب و کار یک سند مکتوب رسمی حاوی اهداف تجاری است. روش هایی که چگونه می توان به این اهداف دست یافت ...</div>
+                  </div>
+                  <div class="st-post-footer">
+                    <div class="st-post-date">25 آبان،1402</div>
+                    <a class='st-post-btn' href='/blog-details'>ادامه مطلب</a>
+                  </div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-post st-style2 st-zoom">
+                  <a class='st-post-thumb' href='/blog-details'>
+                    <img class="st-zoom-in" src="{% static 'advplatform/assets/img/blog2.jpg' %}" alt="blog1">
+                  </a>
+                  <div class="st-post-info">
+                    <a href="#" class="st-post-avatar">
+                      <img src="{% static 'advplatform/assets/img/avatar5.png' %}" alt="avatar4">
+                      <span class="st-post-avatar-text">ادمین</span>
+                    </a>
+                    <h2 class="st-post-title"><a href='/blog-details'>کسب و کار فعالیتی است که برای امرار معاش خود انجام می دهد</a></h2>
+                    <div class="st-post-text">کسب و کار ممکن است به بسیاری از فعالیت های متفاوت، مانند خرید یا فروش در تجارت، ارائه دهد. نظارت بر فعالیت های تجاری ...</div>
+                  </div>
+                  <div class="st-post-footer">
+                    <div class="st-post-date">28 آبان،1402</div>
+                    <a class='st-post-btn' href='/blog-details'>ادامه مطلب</a>
+                  </div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-post st-style2 st-zoom">
+                  <a class='st-post-thumb' href='/blog-details'>
+                    <img class="st-zoom-in" src="{% static 'advplatform/assets/img/blog3.jpg' %}" alt="blog1">
+                  </a>
+                  <div class="st-post-info">
+                    <a href="#" class="st-post-avatar">
+                      <img src="{% static 'advplatform/assets/img/avatar6.png' %}" alt="avatar4">
+                      <span class="st-post-avatar-text">ادمین</span>
+                    </a>
+                    <h2 class="st-post-title"><a href='/blog-details'>آمار کسب و کار علم تصمیم گیری خوب است</a></h2>
+                    <div class="st-post-text">آمار کسب و کار علم تصمیم گیری خوب است در مواجهه با ابهام و در بسیاری از سیستم ها استفاده می شود>آمار کسب و کار علم تصمیم گیری خوب است در مواجهه با ابهام و در بسیاری از سیستم ها استفاده می شود ...</div>
+                  </div>
+                  <div class="st-post-footer">
+                    <div class="st-post-date">25 آبان،1402</div>
+                    <a class='st-post-btn' href='/blog-details'>ادامه مطلب</a>
+                  </div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-post st-style2 st-zoom">
+                  <a class='st-post-thumb' href='/blog-details'>
+                    <img class="st-zoom-in" src="{% static 'advplatform/assets/img/blog1.jpg' %}" alt="blog1">
+                  </a>
+                  <div class="st-post-info">
+                    <a href="#" class="st-post-avatar">
+                      <img src="{% static 'advplatform/assets/img/avatar4.png' %}" alt="avatar4">
+                      <span class="st-post-avatar-text">ادمین</span>
+                    </a>
+                    <h2 class="st-post-title"><a href='/blog-details'>طرح کسب و کار یک سند مکتوب رسمی اهداف تجاری است</a></h2>
+                    <div class="st-post-text">طرح کسب و کار یک سند مکتوب رسمی حاوی اهداف تجاری است. روش هایی که چگونه می توان به این اهداف دست یافت ...</div>
+                  </div>
+                  <div class="st-post-footer">
+                    <div class="st-post-date">25 آبان،1402</div>
+                    <a class='st-post-btn' href='/blog-details'>ادامه مطلب</a>
+                  </div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-post st-style2 st-zoom">
+                  <a class='st-post-thumb' href='/blog-details'>
+                    <img class="st-zoom-in" src="{% static 'advplatform/assets/img/blog2.jpg' %}" alt="blog1">
+                  </a>
+                  <div class="st-post-info">
+                    <a href="#" class="st-post-avatar">
+                      <img src="{% static 'advplatform/assets/img/avatar5.png' %}" alt="avatar4">
+                      <span class="st-post-avatar-text">ادمین</span>
+                    </a>
+                    <h2 class="st-post-title"><a href='/blog-details'>کسب و کار فعالیتی است که برای امرار معاش خود انجام می دهد</a></h2>
+                    <div class="st-post-text">کسب و کار ممکن است به بسیاری از فعالیت های متفاوت، مانند خرید یا فروش در تجارت، ارائه دهد. نظارت بر فعالیت های تجاری ...</div>
+                  </div>
+                  <div class="st-post-footer">
+                    <div class="st-post-date">28 آبان،1402</div>
+                    <a class='st-post-btn' href='/blog-details'>ادامه مطلب</a>
+                  </div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-post st-style2 st-zoom">
+                  <a class='st-post-thumb' href='/blog-details'>
+                    <img class="st-zoom-in" src="{% static 'advplatform/assets/img/blog3.jpg' %}" alt="blog1">
+                  </a>
+                  <div class="st-post-info">
+                    <a href="#" class="st-post-avatar">
+                      <img src="{% static 'advplatform/assets/img/avatar6.png' %}" alt="avatar4">
+                      <span class="st-post-avatar-text">ادمین</span>
+                    </a>
+                    <h2 class="st-post-title"><a href='/blog-details'>آمار کسب و کار علم تصمیم گیری خوب است</a></h2>
+                    <div class="st-post-text">آمار کسب و کار علم تصمیم گیری خوب است در مواجهه با ابهام و در بسیاری از سیستم ها استفاده می شود ...</div>
+                  </div>
+                  <div class="st-post-footer">
+                    <div class="st-post-date">25 آبان،1402</div>
+                    <a href="#" class="st-post-btn">ادامه مطلب</a>
+                  </div>
+                </div>
+              </div><!-- .slick-slide-in -->
+            </div>
+          </div><!-- .slick-container -->
+          <div class="pagination st-style1 st-flex st-hidden"></div> <!-- If dont need Pagination then add class .st-hidden -->
+          <div class="swipe-arrow st-style1"> <!-- If dont need navigation then add class .st-hidden -->
+            <div class="slick-arrow-left"><i class="fa fa-chevron-left"></i></div>
+            <div class="slick-arrow-right"><i class="fa fa-chevron-right"></i></div>
+          </div>
+        </div><!-- .st-slider -->
+      </div>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+    </section>
+    <!-- End Blog Section -->
+
+    <!-- Start Testimonial Seciton -->
+    <section>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="st-section-heading st-style1">
+          <h2 class="st-section-heading-title">نظرات</h2>
+          <div class="st-section-heading-seperator left wow fadeInRight" data-wow-duration="1s" data-wow-delay="0.2s"></div>
+          <div class="st-section-heading-subtitle">لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است.</div>
+        </div>
+        <div class="st-height-b40 st-height-lg-b40"></div>
+      </div>
+      <div class="container">
+        <div class="st-slider st-style2 st-pricing-wrap">
+          <div class="slick-container" data-autoplay="0" data-loop="1" data-speed="600" data-center="0"  data-slides-per-view="responsive" data-xs-slides="1" data-sm-slides="2" data-md-slides="3" data-lg-slides="3" data-add-slides="3">
+            <div class="slick-wrapper">
+              <div class="slick-slide-in">
+                <div class="st-testimonial st-style1 wow fadeInLeft" data-wow-duration="0.8s" data-wow-delay="0.2s">
+                  <div class="st-testimonial-text">“من بسیار خوشحالم که یک وب سایت از شما ایجاد کردم. هر چیزی که برای وب سایتم می خواستم، خیلی سریع همه چیز را از آن دریافت کردم. وقتی در آینده یک وب سایت ساختم، از شما می سازم. ”</div>
+                  <div class="st-testimonial-info">
+                    <div class="st-testimonial-img"><img src="{% static 'advplatform/assets/img/avatar1.png' %}" alt="avatar1"></div>
+                    <div class="st-testimonial-meta">
+                      <h4 class="st-testimonial-name">اسدالله اعظم</h4>
+                      <div class="st-testimonial-designation">نویسنده</div>
+                    </div>
+                  </div>
+                  <div class="st-quote"><i class="fas fa-quote-right"></i></div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-testimonial st-style1">
+                  <div class="st-testimonial-text">“من بسیار خوشحالم که یک وب سایت از شما ایجاد کردم. هر چیزی که برای وب سایتم می خواستم، خیلی سریع همه چیز را از آن دریافت کردم. وقتی در آینده یک وب سایت ساختم، از شما می سازم. ”</div>
+                  <div class="st-testimonial-info">
+                    <div class="st-testimonial-img"><img src="{% static 'advplatform/assets/img/avatar2.png' %}" alt="avatar2"></div>
+                    <div class="st-testimonial-meta">
+                      <h4 class="st-testimonial-name">لیلا مسعودی</h4>
+                      <div class="st-testimonial-designation">برنامه نویس</div>
+                    </div>
+                  </div>
+                  <div class="st-quote"><i class="fas fa-quote-right"></i></div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-testimonial st-style1 wow fadeInRight" data-wow-duration="0.8s" data-wow-delay="0.2s">
+                  <div class="st-testimonial-text">“من بسیار خوشحالم که یک وب سایت از شما ایجاد کردم. هر چیزی که برای وب سایتم می خواستم، خیلی سریع همه چیز را از آن دریافت کردم. وقتی در آینده یک وب سایت ساختم، از شما می سازم. ”</div>
+                  <div class="st-testimonial-info">
+                    <div class="st-testimonial-img"><img src="{% static 'advplatform/assets/img/avatar3.png' %}" alt="avatar3"></div>
+                    <div class="st-testimonial-meta">
+                      <h4 class="st-testimonial-name">مایکل هاشمیان</h4>
+                      <div class="st-testimonial-designation">دانشمند</div>
+                    </div>
+                  </div>
+                  <div class="st-quote"><i class="fas fa-quote-right"></i></div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-testimonial st-style1">
+                  <div class="st-testimonial-text">“من بسیار خوشحالم که یک وب سایت از شما ایجاد کردم. هر چیزی که برای وب سایتم می خواستم، خیلی سریع همه چیز را از آن دریافت کردم. وقتی در آینده یک وب سایت ساختم، از شما می سازم. ”</div>
+                  <div class="st-testimonial-info">
+                    <div class="st-testimonial-img"><img src="{% static 'advplatform/assets/img/avatar1.png' %}" alt="avatar1"></div>
+                    <div class="st-testimonial-meta">
+                      <h4 class="st-testimonial-name">اسدالله اعظم</h4>
+                      <div class="st-testimonial-designation">نویسنده</div>
+                    </div>
+                  </div>
+                  <div class="st-quote"><i class="fas fa-quote-right"></i></div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-testimonial st-style1">
+                  <div class="st-testimonial-text">“من بسیار خوشحالم که یک وب سایت از شما ایجاد کردم. هر چیزی که برای وب سایتم می خواستم، خیلی سریع همه چیز را از آن دریافت کردم. وقتی در آینده یک وب سایت ساختم، از شما می سازم. ”</div>
+                  <div class="st-testimonial-info">
+                    <div class="st-testimonial-img"><img src="{% static 'advplatform/assets/img/avatar2.png' %}" alt="avatar2"></div>
+                    <div class="st-testimonial-meta">
+                      <h4 class="st-testimonial-name">لیلا مسعودی</h4>
+                      <div class="st-testimonial-designation">برنامه نویس</div>
+                    </div>
+                  </div>
+                  <div class="st-quote"><i class="fas fa-quote-right"></i></div>
+                </div>
+              </div><!-- .slick-slide-in -->
+              <div class="slick-slide-in">
+                <div class="st-testimonial st-style1">
+                  <div class="st-testimonial-text">“من بسیار خوشحالم که یک وب سایت از شما ایجاد کردم. هر چیزی که برای وب سایتم می خواستم، خیلی سریع همه چیز را از آن دریافت کردم. وقتی در آینده یک وب سایت ساختم، از شما می سازم. ”</div>
+                  <div class="st-testimonial-info">
+                    <div class="st-testimonial-img"><img src="{% static 'advplatform/assets/img/avatar3.png' %}" alt="avatar3"></div>
+                    <div class="st-testimonial-meta">
+                      <h4 class="st-testimonial-name">مایکل هاشمیان</h4>
+                      <div class="st-testimonial-designation">دانشمند</div>
+                    </div>
+                  </div>
+                  <div class="st-quote"><i class="fas fa-quote-right"></i></div>
+                </div>
+              </div><!-- .slick-slide-in -->
+            </div>
+          </div><!-- .slick-container -->
+          <div class="pagination st-style1 st-flex st-hidden"></div> <!-- If dont need Pagination then add class .st-hidden -->
+          <div class="swipe-arrow st-style1"> <!-- If dont need navigation then add class .st-hidden -->
+            <div class="slick-arrow-left"><i class="fa fa-chevron-left"></i></div>
+            <div class="slick-arrow-right"><i class="fa fa-chevron-right"></i></div>
+          </div>
+        </div><!-- .st-slider -->
+      </div>
+      <div class="st-height-b120 st-height-lg-b80"></div>
+    </section>
+    <!-- End Testimonial Seciton -->
+
+    <!-- Start News Letter -->
+    <section class="st-news-letter-section st-dynamic-bg st-bg st-gray-overlay" data-src="{% static 'advplatform/assets/img/news-letter-bg.jpg' %}">
+      <div class="st-height-b115 st-height-lg-b80"></div>
+      <div class="container">
+        <div class="row">
+          <div class="col-xl-8 col-lg-8">
+            <div class="st-news-letter">
+              <h2 class="st-news-letter-title">عضو خبرنامه شوید و همیشه به روز باشید.</h2>
+              <form class="mailchimp st-news-letter-form" action="https://storerepublic.us12.list-manage.com/subscribe/post?u=d227d8d335060b093084903d0&صبحp;id=9ba078ceb0">
+                <input type="email" name="subscribe" id="subscriber-email" placeholder="ایمیل خود را وارد کنید">
+                <button type="submit" id="subscribe-button" class="st-btn st-style1 st-color1 st-size-medium">عضویت</button>
+                <!-- SUBSCRIPTION SUCCESSFUL OR ERROR MESSAGES -->
+                <h5 class="subscription-success"> .</h5>
+                <h5 class="subscription-error"> .</h5>
+                <label class="subscription-label" for="subscriber-email"></label>
+              </form>
+            </div>
+            <div class="st-height-b30 st-height-lg-b30"></div>
+          </div>
+          <div class="col-xl-3 offset-xl-1 col-lg-4">
+            <div class="st-contact-number-wrap">
+              <h2 class="st-contact-number-title">موارد اضطراری</h2>
+              <div class="st-contact-number">
+                <i class="fas fa-phone-volume"></i>
+                <h3>با ما در تماس باشید!</h3>
+                <span class="st-mobile-number">2222 333 7889</span>
+              </div>
+            </div>
+            <div class="st-height-b30 st-height-lg-b30"></div>
+          </div>
+        </div>
+      </div>
+      <div class="st-height-b85 st-height-lg-b50"></div>
+    </section>
+    <!-- End News Letter -->
+  <script>
+   
+  </script>
+    {% endblock %}
+   

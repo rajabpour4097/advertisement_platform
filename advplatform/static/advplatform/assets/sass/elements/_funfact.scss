@@ -1,0 +1,25 @@
+/*--------------------------------------------------------------
+14. FunFact
+----------------------------------------------------------------*/
+.st-funfact.st-style1 {
+    text-align: center;
+
+    .st-funfact-icon {
+        font-size: 70px;
+        margin-bottom: 15px;
+        color: $green;
+    }
+
+    .st-funfact-number {
+        font-size: 60px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .st-funfact-title {
+        font-size: 20px;
+        line-height: 1.6em;
+        font-weight: 400;
+        margin-bottom: -8px;
+    }
+}

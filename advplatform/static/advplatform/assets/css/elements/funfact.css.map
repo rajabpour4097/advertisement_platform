@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,qBAAsB;EAClB,UAAU,EAAE,MAAM;EAElB,sCAAiB;IACb,SAAS,EAAE,IAAI;IACf,aAAa,EAAE,IAAI;EAGvB,wCAAmB;IACf,SAAS,EAAE,IAAI;IACf,WAAW,EAAE,GAAG;IAChB,aAAa,EAAE,IAAI;EAGvB,uCAAkB;IACd,SAAS,EAAE,IAAI;IACf,WAAW,EAAE,KAAK;IAClB,WAAW,EAAE,GAAG;IAChB,aAAa,EAAE,IAAI",
+"sources": ["../../sass/elements/funfact.scss"],
+"names": [],
+"file": "funfact.css"
+}

@@ -1,0 +1,156 @@
+/*--------------------------------------------------------------
+3. General Style
+----------------------------------------------------------------*/
+.st-mp0 {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.st-flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.st-zoom {
+    position: relative;
+    overflow: hidden;
+
+    .st-zoom-in {
+        transition: all 0.4s ease-in-out;
+    }
+
+    &:hover {
+        .st-zoom-in {
+            transform: scale(1.07)
+        }
+    }
+}
+
+.st-vertical-middle {
+    display: flex;
+    align-items: center;
+    height: 100%;
+
+    .st-vertical-middle-in {
+        width: 100%;
+    }
+}
+
+.st-bg {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+
+.st-content {
+    position: relative;
+    background-color: $main-color;
+    z-index: 10;
+    overflow-x: hidden;
+}
+
+.st-sticky-footer {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+.st-gray-bg {
+    background-color: $base-color5;
+}
+
+.st-gray-overlay {
+    position: relative;
+
+    &:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 100%;
+        background-color: rgba($base-color5, 0.86);
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+hr {
+    margin: 0;
+    width: 100%;
+    border-color: $base-color4;
+}
+
+.st-parallax-shape-wpra {
+    position: relative;
+}
+
+.st-parallax-shape.st-style1 {
+    position: absolute;
+    height: 250px;
+    width: 250px;
+    border-radius: 50%;
+    border: 30px solid $base-color5;
+    right: -60px;
+    top: 300px;
+}
+
+.st-parallax-shape.st-style2 {
+    height: 300px;
+    width: 300px;
+    position: absolute;
+    background-color: $base-color5;
+    transform: rotate(-25deg);
+    top: 675px;
+    left: -9.5%;
+}
+
+.st-hover-layer,
+.st-hover-layer1,
+.st-hover-layer2,
+.st-hover-layer3,
+.st-hover-layer4,
+.st-hover-transform-children {
+    position: relative;
+    -webkit-transition: -webkit-transform 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition: -webkit-transform 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+    -o-transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+    -webkit-transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1), -webkit-transform 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+    -webkit-transform: perspective(600px) translate3d(0, 0, 0);
+    transform: perspective(600px) translate3d(0, 0, 0);
+}
+.st-fixed-bg {
+    background-attachment: fixed;
+}
+.st-google-map iframe {
+    width: 100%;
+    height: 500px;
+    display: block;
+    border: none;
+}
+@media screen and (max-width: 1199px) {
+	.st-parallax-shape.st-style1,
+	.st-parallax-shape.st-style2 {
+		display: none;
+	}
+}
+@media screen and (max-width: 991px) {
+.st-content {
+    margin: 0 !important;
+}
+.st-vertical-middle {
+    display: block;
+}
+.st-google-map iframe {
+    height: 400px;
+}
+}

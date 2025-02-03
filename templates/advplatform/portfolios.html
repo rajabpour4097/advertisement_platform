@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title%}
+نمونه کارها
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+
+{% block hh22 %}
+<br><br><br>
+<section id="services">
+  <div class="portfoliocontainer">
+    <div class="st-section-heading st-style1">
+      <h2 class="st-section-heading-title">نمونه کارهای متخصصین</h2>
+      <div class="st-section-heading-seperator left wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s" style="visibility: visible; animation-duration: 1s; animation-delay: 0.2s; animation-name: fadeInLeft;"></div>
+      <div class="st-section-heading-subtitle">از تبلیغات خلاقانه تا کمپین‌های تعاملی: آخرین پروژه‌های موفق ما در صنایع مختلف</div>
+    </div><br><br>
+    <div class="portfoliorow">
+      {% for portfolio in portfolios %}
+      <div class="portfoliocol">
+        <div class="portfolioimg-box">
+          <img src="{{ portfolio.portfolioimages.first.image.url }}" alt="Snow">
+        </div>
+        <div class="portfoliodetail-box">
+          <h5>{{ portfolio.description }}</h5>
+          <div class="portfolioprice_box">
+            <h6 class="portfolioprice_heading">
+              <span>$</span> 100.00
+            </h6>
+            <h5>{{ portfolio.done_time }}</h5>
+            <a href="">{{ portfolio.dealer }}</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

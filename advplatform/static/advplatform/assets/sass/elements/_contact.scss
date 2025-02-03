@@ -1,0 +1,186 @@
+/*--------------------------------------------------------------
+25. Contact
+----------------------------------------------------------------*/
+.st-form-field {
+  position: relative;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.st-form-field input,
+.st-form-field textarea,
+.st-form-field select {
+  font-size: 14px;
+  display: block;
+  border: none;
+  border-bottom: 1px solid #fff;
+  margin-bottom: 0;
+  padding: 10px 0px;
+  color: #fff;
+  background-color: transparent;
+  padding-top: 0;
+  text-align: right;
+}
+
+.st-form-field input:focus,
+.st-form-field textarea:focus,
+.st-form-field select:focus {
+  outline: none;
+}
+
+.st-form-field label {
+  color: $base-color2;
+  font-size: 15px;
+  font-weight: normal;
+  position: absolute;
+  pointer-events: none;
+  right: 20px;
+  top: 10px;
+  margin: 0;
+  -o-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+  -moz-transition: all 0.4s ease;
+  -webkit-transition: all 0.4s ease;
+  background: #fff;
+  padding: 0 5px;
+}
+
+.st-form-field input:focus~label,
+.st-form-field input:valid~label,
+.st-form-field textarea:focus~label,
+.st-form-field textarea:valid~label,
+.st-form-field select:focus~label,
+.st-form-field select:valid~label {
+  top: -20px;
+  right: 0px;
+  font-size: 12px;
+  color: #fff;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+  background-color: $green;
+  line-height: 20px;
+  padding: 0 8px;
+}
+
+.st-form-field .bar {
+  position: absolute;
+  bottom: -1px;
+  right: 0;
+  height: 2px;
+  width: 0%;
+  background-color: #2caee2;
+  -webkit-transition: all 0.4s ease;
+  -o-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+}
+
+.st-form-field input:focus~.bar,
+.st-form-field textarea:focus~.bar,
+.st-form-field select:focus~.bar {
+  width: 100%;
+  -webkit-transition: all 0.4s ease;
+  -o-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+}
+
+.st-form-field textarea::-webkit-input-placeholder,
+.st-form-field select::-webkit-input-placeholder,
+.st-form-field input::-webkit-input-placeholder {
+  color: #fff;
+}
+
+.st-form-field textarea::-moz-placeholder,
+.st-form-field select::-moz-placeholder,
+.st-form-field input::-moz-placeholder {
+  color: #fff;
+}
+
+.st-form-field textarea:-ms-input-placeholder,
+.st-form-field select:-ms-input-placeholder,
+.st-form-field input:-ms-input-placeholder {
+  color: #fff;
+}
+
+.st-form-field textarea:-moz-placeholder,
+.st-form-field select:-moz-placeholder,
+.st-form-field input:-moz-placeholder {
+  color: #fff;
+}
+
+.st-contact-form .st-form-field input,
+.st-contact-form .st-form-field textarea,
+.st-contact-form .st-form-field selec {
+  border: 1px solid $base-color4;
+  -webkit-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  color: $base-color2;
+  padding: 10px 20px;
+  width: 100%;
+}
+
+.st-contact-form .st-form-field textarea {
+  height: 227px;
+}
+
+.st-contact-form .st-form-field input:focus,
+.st-contact-form .st-form-field textarea:focus,
+.st-contact-form .st-form-field select:focus,
+.st-contact-form .st-form-field input:valid,
+.st-contact-form .st-form-field textarea:valid {
+  border-color: $green;
+}
+
+.st-contact-info-title,
+.st-shidule-title {
+  font-size: 20px;
+  margin-bottom: 15px;
+  margin-top: -3px;
+}
+
+.st-contact-info-list {
+  li {
+    padding-right: 26px;
+    position: relative;
+    margin-bottom: 10px;
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    i {
+      position: absolute;
+      top: 4px;
+      font-size: 16px;
+      right: 0;
+      color: $green;
+      -webkit-transform: scaleX(-1);
+      transform: scaleX(-1);
+    }
+    a {
+      &:hover {
+        color: $green;
+      }
+    }
+  }
+}
+.st-shidule-list li {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  position: relative;
+  &:last-child {
+    margin-bottom: 0;
+  }
+  &:before {
+    content: '.......................';
+    position: absolute;
+    right: 100px;
+    top: -4px;
+    color: $base-color3;
+  }
+}
+.st-contact-info,
+.st-shidule {
+  padding-right: 10px;
+}
+/*End Special Input*/
