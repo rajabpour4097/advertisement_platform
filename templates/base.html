@@ -45,7 +45,7 @@
           <div class="st-main-header-right">
             <div class="st-nav">
               <ul class="st-nav-list st-onepage-nav">
-                <li ><a href="{% url 'home' %}" >خانه</a></li>          
+                <li ><a href="{% url 'adv:home' %}" >خانه</a></li>          
                 
                 <li><a href="#services" class="st-smooth-move">خدمات</a>
                   <ul>
@@ -53,18 +53,18 @@
                     <li class="menu-item-has-children"><a href='blog-details.html'>جزئیات مطالب وبلاگ</a></li>
                   </ul>
                 </li>
-                <li><a href="{% url 'portfolios' %}" class="st-smooth-move">نمونه کارها</a></li>
-                <li><a href="{% url 'mentors' %}" class="st-smooth-move">تیم مشاوران</a></li>
-                <li><a href="{% if user.is_authenticated %} {% url 'admin:index' %}{% else %}{% url 'login' %}{% endif %}" class="st-smooth-move">حساب کاربری</a></li>
+                <li><a href="{% url 'adv:portfolios' %}" class="st-smooth-move">نمونه کارها</a></li>
+                <li><a href="{% url 'adv:mentors' %}" class="st-smooth-move">تیم مشاوران</a></li>
+                <li><a href="{% if user.is_authenticated %} {% url 'account:home' %}{% else %}{% url 'adv:login' %}{% endif %}" class="st-smooth-move">حساب کاربری</a></li>
                 <li class="menu-item-has-children"><a href="#blog" class="st-smooth-move">بلاگ</a>
                   <ul>
                     <li class="menu-item-has-children"><a href='blog.html'>وبلاگ</a></li>
                     <li class="menu-item-has-children"><a href='blog-details.html'>جزئیات مطالب وبلاگ</a></li>
                   </ul>
                 </li>
-                <li><a href="{% url 'aboutus' %}" class="st-smooth-move">درباره ما</a></li>
-                <li><a href="{% url 'contactus' %}" class="st-smooth-move">ارتباط با ما</a></li>
-                {% if user.is_authenticated %}<li><a href="{% url 'logout' %}" class="btn-outline-danger">خروج </a></li>{% endif %}
+                <li><a href="{% url 'adv:aboutus' %}" class="st-smooth-move">درباره ما</a></li>
+                <li><a href="{% url 'adv:contactus' %}" class="st-smooth-move">ارتباط با ما</a></li>
+                {% if user.is_authenticated %}<li><a href="{% url 'adv:logout' %}" class="btn-outline-danger">خروج </a></li>{% endif %}
               </ul>
             </div>
           </div>

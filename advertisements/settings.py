@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'advplatform.apps.AdvplatformConfig',
+    'account.apps.AccountConfig',
     'widget_tweaks',
     
 ]
@@ -129,11 +130,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = '/admin'
+LOGIN_URL = 'adv:login'
+LOGIN_REDIRECT_URL = 'account:home'
 
-LOGOUT_URL = "login"
-LOGOUT_REDIRECT_URL = "login"
+LOGOUT_URL = "adv:logout"
+LOGOUT_REDIRECT_URL = "adv:login"
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 

@@ -97,6 +97,9 @@ class AbstarctUser(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+    
+    def get_fullname(self):
+        return f'{self.firstname} {self.lastname}'
 
 
 class Mentor(AbstarctUser):
@@ -160,8 +163,15 @@ class Campaign(models.Model):
     def get_countdown_datetime(self):
         return self.endtimedate.strftime('%Y-%m-%dT%H:%M:%S')
     
+    # def  participants_to_str(self):
+    #     return ", ".join([participant.get_fullname for participant in self.list_of_participants])
+    
+    # def  topics_to_str(self):
+    #     return ", ".join([topic.name for topic in self.topic])
+    
     def __str__(self):
         return (f'{self.id} {self.customer}')
+    
     
 
 class Portfolio(models.Model):

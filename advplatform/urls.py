@@ -3,6 +3,8 @@ from django.contrib.auth import views as auth_views
 from advplatform.views import CustomLoginView, about_us, contact_us, home_view, mentors_list, portfolios_list, signup_page
 
 
+app_name = 'adv'
+
 urlpatterns = [
     path('', home_view, name='home'),
     path('mentors/', mentors_list, name='mentors'),

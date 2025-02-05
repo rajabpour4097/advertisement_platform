@@ -125,7 +125,7 @@
             <h5>{{ campaign.describe }}</h5>
             <div class="portfolioprice_box">
               <h6 class="portfolioprice_heading">قیمت پیشنهادی: {{ campaign.purposed_price|format_price }}</h6>
-              <h5><div class="countdown" data-deadline="{{ campaign.get_countdown_datetime }}"></div></h5>
+              <h5>زمان اتمام: <div class="countdown" data-deadline="{{ campaign.get_countdown_datetime }}"></div></h5>
               <p>کارفرما: {{ campaign.customer }}</p>
             </div>
           </div>
