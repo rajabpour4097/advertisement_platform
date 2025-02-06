@@ -39,8 +39,10 @@ INSTALLED_APPS = [
     'advplatform.apps.AdvplatformConfig',
     'account.apps.AccountConfig',
     'widget_tweaks',
-    
+        
 ]
+
+AUTH_USER_MODEL = 'advplatform.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -65,6 +67,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'advplatform.context_processors.get_model_meta_info',
+                'advplatform.context_processors.get_admin_groups',
             ],
         },
     },
@@ -106,6 +110,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # پشتیبانی از مدل کاربر
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -139,3 +146,20 @@ LOGOUT_REDIRECT_URL = "adv:login"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#         },
+#     },
+# }

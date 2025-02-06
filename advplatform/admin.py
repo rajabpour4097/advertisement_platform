@@ -1,27 +1,21 @@
 from django.contrib import admin
 from django.contrib.admin import register
-from .models import ActivityCategory, SpecialityCategory, Topic,\
-    Mentor, Customer, Dealer, Campaign, Portfolio,\
-        CustomerImages, DealerImages, MentorImages, CampaignImages,\
-           PortfolioImages 
+from django.contrib.auth.admin import UserAdmin
+from .models import ActivityCategory, CustomUser, SpecialityCategory, Topic,\
+    Campaign, Portfolio,UsersImages, CampaignImages, PortfolioImages 
 
 
 
-class MentorImagesInline(admin.TabularInline):
-    model = MentorImages
+class UsersImageInline(admin.TabularInline):
+    model = UsersImages
 
-class CustomerImagesInline(admin.TabularInline):
-    model = CustomerImages
-
-class DealerImagesInline(admin.TabularInline):
-    model = DealerImages
 
 class CampaignImagesInline(admin.TabularInline):
     model = CampaignImages
 
 class PortfolioImagesInline(admin.TabularInline):
     model = PortfolioImages
-
+    
 
 @register(ActivityCategory)
 class ActivityCategoryAdmin(admin.ModelAdmin):
@@ -41,30 +35,50 @@ class TopicAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 
-@register(Mentor)
-class MentorAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'username', 'created_time', 'is_active']
-    search_fields = ['username']
-    list_editable = ['is_active']
-    list_filter = ['is_active']
-    inlines = [MentorImagesInline]
+class CustomUserAdmin(UserAdmin):
+    # فرم‌های ایجاد و ویرایش کاربر
+    # form = UserChangeForm
+    # add_form = UserCreationForm
+
+    # فیلدهایی که در پنل ادمین نمایش داده می‌شوند
+    list_display = ('email', 'first_name', 'last_name', 'user_type', 'is_staff')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': (
+            'first_name', 'last_name',
+            'phone_number', 'address', 
+            'birth_date', 'field_of_activity',
+            'user_type','cutomer_type','dealer_type',
+            'rank','bussines_value',
+             'speciality_field', 'customer_mentor'
+            )}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username','email', 'password1', 'password2'),
+        }),
+    )
+    search_fields = ('email', 'first_name', 'last_name')
+    ordering = ('email',)
+    filter_horizontal = ('groups', 'user_permissions',)
+    inlines = [UsersImageInline]
+
+    def save_model(self, request, obj, form, change):
+        # اگر کاربر جدید است یا رمز عبور تغییر کرده است، آن را هش می‌کنیم
+        if not change or 'password1' in form.changed_data:
+            obj.set_password(form.cleaned_data['password1'])
+        super().save_model(request, obj, form, change)
+
+# ثبت مدل CustomUser با استفاده از CustomUserAdmin
+admin.site.register(CustomUser, CustomUserAdmin)
     
-
-@register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'username', 'type', 'customer_mentor', 'created_time']
-    list_filter = ['type', 'is_active']
-    search_fields = ['username']
-    inlines = [CustomerImagesInline]
-
-
-@register(Dealer)
-class DealerAdmin(admin.ModelAdmin):
-    list_display = ['firstname', 'lastname', 'username', 'type', 'created_time']
-    list_filter = ['type', 'is_active']
-    search_fields = ['username']
-    inlines = [DealerImagesInline]
-
+    # def get_username(self, obj):
+    #     return obj.user.username
+    # get_username.short_description = 'Username'
+    
 
 @register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
@@ -81,3 +95,4 @@ class PortfolioAdmin(admin.ModelAdmin):
     list_editable = ['is_active']
     search_fields = ['topic']
     inlines = [PortfolioImagesInline]
+

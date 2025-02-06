@@ -3,7 +3,7 @@ from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from advplatform.forms import CustomAuthenticationForm
-from advplatform.models import Campaign, Mentor, Portfolio
+from advplatform.models import Campaign, Portfolio
 
 
 
@@ -14,14 +14,17 @@ class CustomLoginView(LoginView):
     
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('account:home') 
+            return redirect('account:home')
         return super().dispatch(request, *args, **kwargs)
     
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['subtitle'] = 'ورود به حساب کاربری'  # اضافه کردن subtitle به کانتکست
+        return context
 
 def home_view(request):
     context = dict()
-    context['mentors'] = Mentor.objects.filter(is_active=True)
+    # context['mentors'] = Mentor.objects.filter(is_active=True)
     context['campaigns'] = Campaign.objects.filter(is_active=True)
     return render(request, 'index.html', context=context)
 
@@ -36,7 +39,7 @@ def signup_page(request):
 
 def mentors_list(request):
     context = dict()
-    context['mentors'] = Mentor.objects.filter(is_active=True)
+    # context['mentors'] = Mentor.objects.filter(is_active=True)
     return render(request, 'advplatform/mentors.html', context=context)
 
 def portfolios_list(request):

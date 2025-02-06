@@ -35,7 +35,7 @@
         <div class="col-md-3 left_col hidden-print">
             <div class="left_col scroll-view">
                 <div class="navbar nav_title" style="border: 0;">
-                    <a href="{% url 'account:home' %}" class="site_title"><i class="fa fa-paw"></i> <span>Advertisement</span></a>
+                    <a href="{% url 'account:home' %}" class="site_title"><i class="glyphicon glyphicon-bullhorn"></i> <span>Advertisement</span></a>
                 </div>
 
                 <div class="clearfix"></div>
@@ -43,7 +43,7 @@
                 <!-- menu profile quick info -->
                 <div class="profile clearfix">
                     <div class="profile_pic">
-                        <img src="{% static 'account/build/images/img.jpg' %}" alt="..." class="img-circle profile_img">
+                        <img src="{{ user.customuserimages.first.image.url }}" alt="..." class="img-circle profile_img">
                     </div>
                     <div class="profile_info">
                         <span>خوش آمدید,</span>
@@ -87,18 +87,16 @@
                         <li class="">
                             <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown"
                                aria-expanded="false">
-                                <img src="{% static 'account/build/images/img.jpg' %}" alt="">{{ user.get_full_name }} 
+                                <img src="{{ user.customuserimages.first.image.url }}" alt="">{{ user.get_full_name }} 
                                 <span class=" fa fa-angle-down"></span>
                             </a>
                             <ul class="dropdown-menu dropdown-usermenu pull-right">
-                                <li><a href="javascript:;"> نمایه</a></li>
+                                <li><a href="javascript:;"> نمایه<span class="badge bg-red pull-right">50%</span></a></li>
                                 <li>
                                     <a href="javascript:;">
-                                        <span class="badge bg-red pull-right">50%</span>
                                         <span>تنظیمات</span>
                                     </a>
                                 </li>
-                                <li><a href="javascript:;">کمک</a></li>
                                 <li><a href="{% url 'adv:logout' %}"><i class="fa fa-sign-out pull-right"></i> خروج</a></li>
                             </ul>
                         </li>
@@ -110,56 +108,17 @@
                                 <span class="badge bg-green">3</span>
                             </a>
                             <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
+                            
                                 <li>
-                                    <a>
-                                        <span class="image"><img src="{% static 'account/build/images/img.jpg' %}"
-                                                                 alt="Profile Image"/></span>
-                                        <span>
-                          <span>مرتضی کریمی</span>
-                          <span class="time">3 دقیقه پیش</span>
-                        </span>
+                                        <a>
+                                     <span class="image"><img src="{% static 'account/build/images/img.jpg' %}" alt="Profile Image"/></span>
+                                    <span>
+                                        <span>مرتضی کریمی</span>
+                                        <span class="time">3 دقیقه پیش</span>
+                                    </span>
                                         <span class="message">
-                          فیلمای فستیوال فیلمایی که اجرا شده یا راجع به لحظات مرده ایه که فیلمسازا میسازن. آنها جایی بودند که....
-                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a>
-                                        <span class="image"><img src="{% static 'account/build/images/img.jpg' %}"
-                                                                 alt="Profile Image"/></span>
-                                        <span>
-                          <span>مرتضی کریمی</span>
-                          <span class="time">3 دقیقه پیش</span>
-                        </span>
-                                        <span class="message">
-                          فیلمای فستیوال فیلمایی که اجرا شده یا راجع به لحظات مرده ایه که فیلمسازا میسازن. آنها جایی بودند که....
-                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a>
-                                        <span class="image"><img src="{% static 'account/build/images/img.jpg' %}"
-                                                                 alt="Profile Image"/></span>
-                                        <span>
-                          <span>مرتضی کریمی</span>
-                          <span class="time">3 دقیقه پیش</span>
-                        </span>
-                                        <span class="message">
-                          فیلمای فستیوال فیلمایی که اجرا شده یا راجع به لحظات مرده ایه که فیلمسازا میسازن. آنها جایی بودند که....
-                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a>
-                                        <span class="image"><img src="{% static 'account/build/images/img.jpg' %}"
-                                                                 alt="Profile Image"/></span>
-                                        <span>
-                          <span>مرتضی کریمی</span>
-                          <span class="time">3 دقیقه پیش</span>
-                        </span>
-                                        <span class="message">
-                          فیلمای فستیوال فیلمایی که اجرا شده یا راجع به لحظات مرده ایه که فیلمسازا میسازن. آنها جایی بودند که....
-                        </span>
+                                        فیلمای فستیوال فیلمایی که اجرا شده یا راجع به لحظات مرده ایه که فیلمسازا میسازن. آنها جایی بودند که....
+                                        </span>
                                     </a>
                                 </li>
                                 <li>

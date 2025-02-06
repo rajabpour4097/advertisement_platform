@@ -126,12 +126,12 @@
             <div class="portfolioprice_box">
               <h6 class="portfolioprice_heading">قیمت پیشنهادی: {{ campaign.purposed_price|format_price }}</h6>
               <h5>زمان اتمام: <div class="countdown" data-deadline="{{ campaign.get_countdown_datetime }}"></div></h5>
-              <p>کارفرما: {{ campaign.customer }}</p>
+              <p>کارفرما: {{ campaign.customer.get_full_name }}</p>
             </div>
           </div>
             {% if campaign.list_of_participants %}
                 {% for participant in campaign.list_of_participants.all %}
-                <p>{{ participant.firstname }} - {{ participant.lastname }}</p>
+                <p>{{ participant.get_full_name }}</p>
             {% endfor %}
             <p>تعداد شرکت‌کنندگان: {{ campaign.list_of_participants.count }}</p>
             {% endif %}

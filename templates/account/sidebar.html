@@ -4,103 +4,65 @@
                 <!-- sidebar menu -->
                 <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                     <div class="menu_section">
-                        <h3>عمومی</h3>
                         <ul class="nav side-menu">
-                            <li><a><i class="fa fa-home"></i> خانه <span class="fa"></span></a>
-                               
-                            </li>
-                            <li><a><i class="fa fa-edit"></i> فرم <span class="fa fa-chevron-down"></span></a>
+                            <li><a href="{% url 'adv:home' %}"><i class="fa fa-desktop"></i> صفحه اصلی سایت</a></li>
+                            <li><a href="{% url 'account:home' %}"><i class="fa fa-home"></i> داشبورد</a></li>
+                            {% if user.is_staff%}
+                            <li><a><i class="fa fa-laptop"></i>مدیریت سایت<span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu">
-                                    <li><a href="form.html">فرم عمومی</a></li>
-                                    <li><a href="form_advanced.html">قطعات پیشرفته</a></li>
-                                    <li><a href="form_validation.html">فرم اعتبار سنجی</a></li>
-                                    <li><a href="form_wizards.html">فرم جادوگر</a></li>
-                                    <li><a href="form_upload.html">فرم بارگذاری</a></li>
-                                    <li><a href="form_buttons.html">فرم کلید ها</a></li>
-                                </ul>
-                            </li>
-                            <li><a><i class="fa fa-desktop"></i> عناصر ظاهری <span
-                                    class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="general_elements.html">عناصر عمومی</a></li>
-                                    <li><a href="media_gallery.html">گالری چندرسانه ای</a></li>
-                                    <li><a href="typography.html">تایپو گرافی</a></li>
-                                    <li><a href="icons.html">آیکون ها</a></li>
-                                    <li><a href="glyphicons.html">Glyphicons</a></li>
-                                    <li><a href="widgets.html">ابزارک</a></li>
-                                    <li><a href="invoice.html">صورت حساب</a></li>
-                                    <li><a href="inbox.html">صندوق</a></li>
-                                    <li><a href="calendar.html">تقویم</a></li>
-                                </ul>
-                            </li>
-                            <li><a><i class="fa fa-table"></i> جداول <span class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="tables.html">جداول</a></li>
-                                    <li><a href="tables_dynamic.html">جدول پویا</a></li>
-                                </ul>
-                            </li>
-                            <li><a><i class="fa fa-bar-chart-o"></i> ارائه داده <span class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="chartjs.html">Chart JS</a></li>
-                                    <li><a href="chartjs2.html">Chart JS2</a></li>
-                                    <li><a href="morisjs.html">Moris JS</a></li>
-                                    <li><a href="echarts.html">ECharts</a></li>
-                                    <li><a href="other_charts.html">چارت های دیگر</a></li>
-                                </ul>
-                            </li>
-                            <li><a><i class="fa fa-clone"></i>طرح بندی <span class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="fixed_sidebar.html">نوار کناری ثابت</a></li>
-                                    <li><a href="fixed_footer.html">پاورقی ثابت</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="menu_section">
-                        <h3>به صورت زنده</h3>
-                        <ul class="nav side-menu">
-                            <li><a><i class="fa fa-bug"></i> صفحات اضافی <span class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="e_commerce.html">تجارت الکترونیک</a></li>
-                                    <li><a href="projects.html">پروژه ها</a></li>
-                                    <li><a href="project_detail.html">جزئیات پروژه</a></li>
-                                    <li><a href="contacts.html">اطلاعات تماس</a></li>
-                                    <li><a href="profile.html">نمایه</a></li>
-                                </ul>
-                            </li>
-                            <li><a><i class="fa fa-windows"></i> افزودنیهای پیشنهاد شده <span
-                                    class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="page_403.html">403 ارور</a></li>
-                                    <li><a href="page_404.html">404 ارور</a></li>
-                                    <li><a href="page_500.html">500 ارور</a></li>
-                                    <li><a href="plain_page.html">صفحه ساده</a></li>
-                                    <li><a href="login.html">صفحه ورود</a></li>
-                                    <li><a href="pricing_tables.html">جداول قیمت</a></li>
-                                </ul>
-                            </li>
-                            <li><a><i class="fa fa-sitemap"></i> منو چند سطحی <span
-                                    class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="#level1_1">سطح یک</a>
-                                    <li><a>سطح یک<span class="fa fa-chevron-down"></span></a>
+                                    <li><a href="#users"><i class="fa fa-user"></i>لیست کاربران </a></li>
+                                    <li><a href="form_advanced.html"><i class="fa fa-users"></i>گروه های کاربری</a></li>
+                                    <li><a><i class="fa fa-laptop"></i>مدل های دیگر<span class="fa fa-chevron-down"></span></a>
                                         <ul class="nav child_menu">
-                                            <li class="sub_menu"><a href="level2.html">سطح دو</a>
-                                            </li>
-                                            <li><a href="#level2_1">سطح دو</a>
-                                            </li>
-                                            <li><a href="#level2_2">سطح دو</a>
-                                            </li>
+                                       
+                                            {% for model in valid_models %}
+                                            <li><a href="{{ model.model_name }}">{{ model.verbose_name_plural }}</a></li>
+                                            {% endfor %}    
                                         </ul>
                                     </li>
-                                    <li><a href="#level1_2">سطح یک</a>
+                                    <li><a><i class="fa fa-laptop"></i>گروه ها<span class="fa fa-chevron-down"></span></a>
+                                        <ul class="nav child_menu">
+                                       
+                                            {% for group in admin_groups %}
+                                            <li><a href="/admin/auth/group/{{ group.id }}/change/"> {{ group.name }}</a></li>
+                                            {% endfor %}    
+                                            <li><a href="form_advanced.html"><i class="fa fa-edit"></i>ایجاد گروه جدید</a></li>
+                                        </ul>
                                     </li>
                                 </ul>
                             </li>
-                            <li><a href="javascript:void(0)"><i class="fa fa-laptop"></i> صفحه مقصد <span
-                                    class="label label-success pull-left">به زودی</span></a></li>
+                            {% endif %}
+                          {% if user.user_type == 'customer' or user.is_staff%}
+                            <li><a><i class="fa fa-tachometer"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu">
+                                    <li><a href="#campaignlist"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
+                                    <li><a href="#createcampaign"><i class="fa fa-edit"></i>ایجاد کمپین‌ جدید</a></li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                            {% if user.user_type == 'customer'%}
+                            <li><a href="#yourmentors"><i class="fa fa-group"></i> مشاورین شما</a></li>
+                            {% endif %}
+                            {% if user.is_staff %}
+                            <li><a href="#mentors"><i class="fa fa-group"></i> مشاورین</a></li>
+                            {% endif %}
+                            
+                            {% if user.user_type == 'dealer' or user.is_staff%}
+                            <li><a><i class="fa fa-archive"></i> نمونه کارها <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu">
+                                    <li><a href="#portfolioslist"><i class="fa fa-list"></i>لیست نمونه کارها</a></li>
+                                    <li><a href="#createportfolio"><i class="fa fa-edit"></i>ایجاد نمونه کار جدید</a></li>
+                                </ul>
+                            </li>
+                            {% endif %}
+                            {% if user.user_type == 'mentor' %}
+                            <li><a href="#yourusers"><i class="fa fa-group"></i> لیست کاربران شما</a></li>
+                            {% endif %}
+                            <li><a href="#inbox"><i class="fa fa-envelope"></i> صندوق پیام</a></li>
+                          
                         </ul>
                     </div>
+                   
 
                 </div>
                 <!-- /sidebar menu -->

@@ -1,4 +1,6 @@
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
+from django.contrib.auth.models import BaseUserManager
 
 '''
     TODO:
@@ -7,32 +9,6 @@ from django.db import models
         
         
 ''' 
-
-CUSTOMER = 1
-DEALER = 2
-
-JURIDICAL = 1
-PRIVATE = 2
-
-CORPORATE = 1
-INFLUENCER = 2
-PRIVATE_DESIGNER = 3
-
-USER_TYPE = (
-        (CUSTOMER, "Customer"),
-        (DEALER, "Dealer"),
-    )
-
-CUSTOMER_TYPE = (
-    (JURIDICAL, "Juridical"),
-    (PRIVATE, "Private"),
-)
-
-DEALER_TYPE = (
-    (CORPORATE, "Corporate"),
-    (INFLUENCER, "Influencer"),
-    (PRIVATE_DESIGNER, "Private Designer"),
-)
 
 
 class ActivityCategory(models.Model):
@@ -45,8 +21,8 @@ class ActivityCategory(models.Model):
     modified_time = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = 'Activity Category'
-        verbose_name_plural = 'Activity Categories'
+        verbose_name = 'زمینه فعالیت'
+        verbose_name_plural = 'زمینه های فعالیت'
     
     def __str__(self):
         return self.name
@@ -62,8 +38,8 @@ class SpecialityCategory(models.Model):
     modified_time = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = 'Speciality Category'
-        verbose_name_plural = 'Speciality Categories'
+        verbose_name = 'دسته بندی تخصص'
+        verbose_name_plural = 'دسته بندی های تخصص'
     
     def __str__(self):
         return self.name
@@ -79,95 +55,102 @@ class Topic(models.Model):
     modified_time = models.DateTimeField(auto_now=True)
     
     class Meta:
-        verbose_name = 'Topic'
-        verbose_name_plural = 'Topics'
+        verbose_name = 'موضوع'
+        verbose_name_plural = 'موضوعات'
     
     def __str__(self):
         return self.name
         
-    
-class AbstarctUser(models.Model):
-    username = models.CharField(max_length=20, unique=True)
-    password = models.CharField(max_length=40)
-    firstname = models.CharField(max_length=30, null=True, blank=True)
-    lastname = models.CharField(max_length=30, null=True, blank=True)
-    phone_number = models.CharField(max_length=30, null=True, blank=True)
-    email = models.EmailField(max_length=40, null=True, blank=True)
+
+# مدیر کاربر سفارشی برای ایجاد و مدیریت کاربران
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        
+        if password:
+            user.set_password(password)  # هش کردن پسورد
+            print(f"Password set for {email}: {user.password}")  # پرینت پسورد هش شده برای بررسی
+
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(email, password, **extra_fields)
+
+# مدل کاربر سفارشی
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=30, null=True, blank=True, default="1")
     address = models.TextField(null=True, blank=True)
-    created_time = models.DateTimeField(auto_now_add=True)
-    modified_time = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
-    
-    def get_fullname(self):
-        return f'{self.firstname} {self.lastname}'
-
-
-class Mentor(AbstarctUser):
-    rank = models.SmallIntegerField(default=0)
-    speciality_field = models.ForeignKey(SpecialityCategory, on_delete=models.PROTECT)
-    
-    class Meta:
-        verbose_name = 'Mentor'
-        verbose_name_plural = 'Mentors'
-    
-    def __str__(self):
-        return (f'{self.firstname} {self.lastname}')
-    
-
-class Customer(AbstarctUser):
-    field_of_activity = models.ForeignKey(ActivityCategory, on_delete=models.PROTECT)
+    birth_date = models.DateField(null=True, blank=True)
+    field_of_activity = models.ForeignKey('ActivityCategory', on_delete=models.PROTECT, null=True, blank=True)
+    user_type = models.CharField(max_length=50, blank=True, null=True)  # customer, dealer, mentor
+    cutomer_type = models.CharField(max_length=50, blank=True, null=True)  # Juridical, Private
+    dealer_type = models.CharField(max_length=50, blank=True, null=True)  # Influencer, Private Designer, Corporate
+    rank = models.SmallIntegerField(default=2, blank=True, null=True)
     bussines_value = models.BigIntegerField(null=True, blank=True)
-    type = models.PositiveSmallIntegerField(choices=CUSTOMER_TYPE)
-    customer_mentor = models.ForeignKey(Mentor, on_delete=models.SET_NULL, blank=True, null=True)
+    speciality_field = models.ForeignKey('SpecialityCategory', on_delete=models.PROTECT, null=True, blank=True)
+    modified_time = models.DateTimeField(auto_now=True)
+    customer_mentor = models.ForeignKey(
+        'self',  # اشاره به خود مدل CustomUser
+        on_delete=models.SET_NULL,  # اگر کاربر حذف شد، مقدار این فیلد null شود
+        null=True,
+        blank=True,
+        limit_choices_to={'user_type': 'mentor'},  # فقط کاربران با user_type='mentor' انتخاب شوند
+        related_name='mentored_customers'  # نام رابطه برای دسترسی به مشتریانی که توسط این منتور منتور شده‌اند
+    )
+
+    # استفاده از CustomUserManager برای مدیریت کاربران
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'email'  # فیلد نام کاربری
+    REQUIRED_FIELDS = ['first_name', 'last_name']
     
     class Meta:
-        verbose_name = 'Customer'
-        verbose_name_plural = 'Customers'
-    
-    def __str__(self):
-        return (f'{self.firstname} {self.lastname}')
-       
+        verbose_name = 'کاربر'
+        verbose_name_plural = 'کاربران'
 
-class Dealer(AbstarctUser):
-    rank = models.SmallIntegerField(default=0)
-    type = models.PositiveSmallIntegerField(choices=DEALER_TYPE)
-    
-    class Meta:
-        verbose_name = 'Dealer'
-        verbose_name_plural = 'Dealers'
-    
     def __str__(self):
-        return (f'{self.firstname} {self.lastname}')
-
+        return f'{self.first_name} {self.last_name} - {self.email}'
     
 class Campaign(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE,
+        limit_choices_to={'is_active': True, 'user_type': 'customer'},
+        related_name='customers'
+        )
     topic = models.ManyToManyField(Topic)
     describe = models.TextField()
     purposed_price = models.BigIntegerField(default=0)
     starttimedate = models.DateTimeField(null=True, blank=True)
     endtimedate = models.DateTimeField(null=True, blank=True)
-    deadline = models.DateTimeField(null=True, blank=True)
+    deadline = models.DateField(null=True, blank=True)
     list_of_participants = models.ManyToManyField(
-        Dealer, blank=True,
-        related_name='campaigns'
+        CustomUser, blank=True,
+        related_name='campaigns',
+        limit_choices_to={'is_active': True, 'user_type': 'dealer'},
     )
     created_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=False)
+    campaign_dealer = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE,
+        limit_choices_to={'is_active': True, 'user_type': 'dealer'},
+        related_name='campaign_dealers',
+        blank=True, null=True
+      )
     is_active = models.BooleanField(default=True)
-    
     class Meta:
-        verbose_name = 'Campaign'
-        verbose_name_plural = 'Campaigns'
+        verbose_name = 'کمپین'
+        verbose_name_plural = 'کمپین ها'
     
     def get_countdown_datetime(self):
         return self.endtimedate.strftime('%Y-%m-%dT%H:%M:%S')
-    
-    # def  participants_to_str(self):
-    #     return ", ".join([participant.get_fullname for participant in self.list_of_participants])
-    
-    # def  topics_to_str(self):
-    #     return ", ".join([topic.name for topic in self.topic])
     
     def __str__(self):
         return (f'{self.id} {self.customer}')
@@ -175,7 +158,12 @@ class Campaign(models.Model):
     
 
 class Portfolio(models.Model):
-    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)
+    dealer = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        limit_choices_to={'is_active': True, 'user_type': 'dealer'},
+        related_name='dealers'
+        )
     topic = models.ForeignKey(Topic, on_delete=models.PROTECT)
     description = models.TextField(null=True, blank=True)
     done_time = models.DateField()
@@ -184,40 +172,32 @@ class Portfolio(models.Model):
     is_active = models.BooleanField(default=True)
     
     class Meta:
-        verbose_name = 'Portfolio'
-        verbose_name_plural = 'Portfolios'
+        verbose_name = 'نمونه کار'
+        verbose_name_plural = 'نمونه کارها'
     
     def __str__(self):
         return (f'{self.id} {self.dealer}')
     
 
-class CustomerImages(models.Model):
-    image = models.ImageField(upload_to='customers/')
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='customerimages')
+class UsersImages(models.Model):
+    image = models.ImageField(upload_to='users/')
+    customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='customuserimages')
+    
+    class Meta:
+        verbose_name = 'عکس کاربر'
+        verbose_name_plural = 'عکس های کاربر'
     
     def __str__(self):
         return str(self.customer)
 
 
-class DealerImages(models.Model):
-    image = models.ImageField(upload_to='dealers/')
-    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE, related_name='dealerimages')
-    
-    def __str__(self):
-        return str(self.dealer)
-
-
-class MentorImages(models.Model):
-    image = models.ImageField(upload_to='mentors/')
-    mentor = models.ForeignKey(Mentor, on_delete=models.CASCADE, related_name='mentorimages')
-    
-    def __str__(self):
-        return str(self.mentor)
-    
-
 class CampaignImages(models.Model):
     image = models.ImageField(upload_to='campaigns/')
     campaigns = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='campaignsimages')
+    
+    class Meta:
+        verbose_name = 'عکس کمپین'
+        verbose_name_plural = 'عکس های کمپین'
     
     def __str__(self):
         return str(self.campaigns)
@@ -226,6 +206,10 @@ class CampaignImages(models.Model):
 class PortfolioImages(models.Model):
     image = models.ImageField(upload_to='portfolios/')
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='portfolioimages')
+    
+    class Meta:
+        verbose_name = 'عکس نمونه کار'
+        verbose_name_plural = 'عکس های نمونه کارها'
     
     def __str__(self):
         return str(self.portfolio)

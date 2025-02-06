@@ -5,4 +5,289 @@
 
 {% block content %}
 
+
+  {% if user.is_staff %}<!-- Superuser section -->
+     <!-- top tiles -->
+     <div class="row tile_count">
+        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+            <span class="count_top"><i class="fa fa-user"></i> تعداد کاربران</span>
+            <div class="count">{{ user_count }}</div>
+            <span class="count_bottom"><i class="green">4% </i> از هفته گذشته</span>
+        </div>
+        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+            <span class="count_top"><i class="fa fa-user"></i> مجموع مشتریان</span>
+            <div class="count green">{{ customer_count }}</div>
+            <span class="count_bottom"><i class="green"><i
+                    class="fa fa-sort-asc"></i>34% </i> از هفته گذشته</span>
+        </div>
+        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+            <span class="count_top"><i class="fa fa-user"></i> مجموع عاملین تبلیغ</span>
+            <div class="count">{{ dealer_count }}</div>
+            <span class="count_bottom"><i class="red"><i
+                    class="fa fa-sort-desc"></i>12% </i> از هفته گذشته</span>
+        </div>
+        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+            <span class="count_top"><i class="fa fa-user"></i> مجموع مشاورین</span>
+            <div class="count">{{ mentor_count }}</div>
+            <span class="count_bottom"><i class="green"><i
+                    class="fa fa-sort-asc"></i>34% </i> از هفته گذشته</span>
+        </div>
+        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+            <span class="count_top"><i class="fa fa-user"></i> مجموع مدیران سایت</span>
+            <div class="count">{{ sitemanager_count }}</div>
+            <span class="count_bottom"><i class="green"><i
+                    class="fa fa-sort-asc"></i>34% </i> از هفته گذشته</span>
+        </div>
+        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+            <span class="count_top"><i class="fa fa-clock-o"></i>تعداد کمپین‌ های برگزارشده</span>
+            <div class="count">{{ done_campaign_count }}</div>
+            <span class="count_bottom"><i class="green"><i
+                    class="fa fa-sort-asc"></i>3% </i> از هفته گذشته</span>
+        </div>
+     </div>
+     <!-- /top tiles -->
+  
+     <!-- First chart -->
+     <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="dashboard_graph">
+
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h3>آمار سایت
+                            <small>نمودار آمار سایت </small>
+                        </h3>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="reportrange" class="pull-left"
+                             style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                            <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                            <span>اسفند 29, 1394 - فروردین 28, 1395</span> <b class="caret"></b>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-9 col-sm-9 col-xs-12">
+                    <div id="placeholder33" style="height: 260px; display: none" class="demo-placeholder"></div>
+                    <div style="width: 100%;">
+                        <div id="chart_plot_01" class="demo-placeholder" style="width: 100%; height:270px;"></div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-3 col-xs-12 bg-white">
+                    <div class="x_title">
+                        <h2>بالاترین عملکرد در کمپین</h2>
+                        <div class="clearfix"></div>
+                    </div>
+
+                    <div class="col-md-12 col-sm-12 col-xs-6">
+                        <div>
+                            <p>کمپین گوگل</p>
+                            <div class="">
+                                <div class="progress progress_sm" style="width: 76%;">
+                                    <div class="progress-bar bg-green" role="progressbar"
+                                         data-transitiongoal="{{ google_campaign_percent | floatformat:0 }}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p>کمپین اینستاگرام</p>
+                            <div class="">
+                                <div class="progress progress_sm" style="width: 76%;">
+                                    <div class="progress-bar bg-green" role="progressbar"
+                                         data-transitiongoal="{{ instagram_campaign_percent | floatformat:0 }}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-sm-12 col-xs-6">
+                        <div>
+                            <p>رسانه های متعارف</p>
+                            <div class="">
+                                <div class="progress progress_sm" style="width: 76%;">
+                                    <div class="progress-bar bg-green" role="progressbar"
+                                         data-transitiongoal="40"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p>بیلبوردهای تبلیغاتی</p>
+                            <div class="">
+                                <div class="progress progress_sm" style="width: 76%;">
+                                    <div class="progress-bar bg-green" role="progressbar"
+                                         data-transitiongoal="50"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="clearfix"></div>
+            </div>
+        </div>
+
+     </div>
+     <!-- End First chart -->
+  
+   <!-- Start last block -->
+    <div class="row">
+     <!-- Start List Last activities -->
+     <div class="col-md-4 col-sm-4 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>فعالیت های اخیر</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div class="dashboard-widget-content">
+
+                    <ul class="list-unstyled timeline widget">
+                        <li>
+                            <div class="block">
+                                <div class="block_content">
+                                    <h2 class="title">
+                                        <a>چه کسی نیاز به یک پنل مدیریت خوب دارد؟</a>
+                                    </h2>
+                                    <div class="byline">
+                                        <span>13 ساعت پیش</span> توسط <a>مرتضی کریمی</a>
+                                    </div>
+                                    <p class="excerpt">این یک متن نمونه برای بخش داشبورد پنل مدیریت پارسی
+                                        شده ی Gentelella می باشد که برای نمایش امکانات آن نوشته شده است و
+                                        هیچ معنا و مفهوم خاصی ندارد… <a>بیشتر&nbsp;بخوانید</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="block">
+                                <div class="block_content">
+                                    <h2 class="title">
+                                        <a>چه کسی نیاز به یک پنل مدیریت خوب دارد؟</a>
+                                    </h2>
+                                    <div class="byline">
+                                        <span>13 ساعت پیش</span> توسط <a>مرتضی کریمی</a>
+                                    </div>
+                                    <p class="excerpt">این یک متن نمونه برای بخش داشبورد پنل مدیریت پارسی
+                                        شده ی Gentelella می باشد که برای نمایش امکانات آن نوشته شده است و
+                                        هیچ معنا و مفهوم خاصی ندارد… <a>بیشتر&nbsp;بخوانید</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+     </div>
+     <!-- End List Last activities -->
+  
+     <div class="class="col-md-8 col-sm-8 col-xs-12"">
+         
+     
+       <div class="row">
+          
+       </div>
+       <div class="row">
+          
+       </div>
+     </div>
+    </div>
+   <!-- End last block --><!-- End Superuser section -->
+  {% elif user.user_type == 'customer' %}<!-- Customer section -->
+    <div class="row top_tiles">
+        <br><br><br><br><br><br><br><br><br><br><br>
+    </div>
+    <div class="row top_tiles">
+        <div class="animated flipInY col-lg-1 col-md-1 col-sm-6 col-xs-12">
+            
+        </div>
+        <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="tile-stats">
+                <div class="icon"><i class="fa fa-comments-o"></i></div>
+                <div class="count">{{ customer_campaigns_count }}</div>
+                <h3>کمپین های ایجاد شده</h3>
+                <br>
+            </div>
+        </div>
+        <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="tile-stats">
+                <div class="icon"><i class="fa fa-sort-amount-desc"></i></div>
+                <div class="count">{{ ended_customer_campaigns_count }}</div>
+                <h3>کمپین های تمام شده</h3>
+                <br>
+            </div>
+        </div>
+        <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="tile-stats">
+                <div class="icon"><i class="fa fa-check-square-o"></i></div>
+                <div class="count">{{ customer_success_campaigns_count }}</div>
+                <h3>کمپین های موفق</h3>
+                <br>
+            </div>
+        </div>
+    </div>
+  {% elif user.user_type == 'dealer'  %}<!-- Start Dealer section -->
+    <div class="row top_tiles">
+     <br><br><br><br><br><br><br><br><br><br><br>
+    </div>
+    <div class="row top_tiles">
+        <div class="animated flipInY col-lg-1 col-md-1 col-sm-6 col-xs-12">
+        
+        </div>
+     </div>
+     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="tile-stats">
+            <div class="icon"><i class="fa fa-comments-o"></i></div>
+            <div class="count">{{ dealer_campaigns_count }}</div>
+            <h3>کمپین های شرکت کرده</h3>
+            <br>
+        </div>
+     </div>
+     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="tile-stats">
+            <div class="icon"><i class="fa fa-sort-amount-desc"></i></div>
+            <div class="count">{{ dealer_success_campaigns }}</div>
+            <h3>کمپین های موفق</h3>
+            <br>
+        </div>
+     </div>
+     <div class="row top_tiles">
+      <div class="animated flipInY col-lg-1 col-md-1 col-sm-6 col-xs-12">
+        
+      </div>
+     </div>
+    </div>
+  {% elif user.user_type == 'mentor'  %}<!-- Start Mentor section -->
+    <div class="row top_tiles">
+     <br><br><br><br><br><br><br><br><br><br><br>
+    </div>
+    <div class="row top_tiles">
+        <div class="animated flipInY col-lg-1 col-md-1 col-sm-6 col-xs-12">
+        
+        </div>
+     </div>
+     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="tile-stats">
+            <div class="icon"><i class="fa fa-group"></i></div>
+            <div class="count">{{ mentor_customer_count }}</div>
+            <h3>تعداد کاربران شما</h3>
+            <br>
+        </div>
+     </div>
+     <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="tile-stats">
+            <div class="icon"><i class="fa fa-smile-o"></i></div>
+            <div class="count"><i
+                class="fa fa-sort-desc"></i>12% </i></div>
+            <h3>درصد رضایت کاربران</h3>
+            <br>
+        </div>
+     </div>
+     <div class="row top_tiles">
+      <div class="animated flipInY col-lg-1 col-md-1 col-sm-6 col-xs-12">
+        
+      </div>
+     </div>
+    </div>
+  {% endif %}
 {% endblock %}
