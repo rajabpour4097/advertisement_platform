@@ -1,0 +1,39 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+
+{% block title %}صفحه اصلی{% endblock %}n">
+
+{% block content %}
+{% if user.is_authenticated %}
+{% else %}
+<style>
+  body {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.471;
+  }
+  a {
+    color: #2ff;
+  }
+</style>  
+{% endif %}
+    <div class="container body">
+      <div class="main_container">
+        <!-- page content -->
+        <div class="col-md-12">
+          <div class="col-middle">
+            <div class="text-center text-center">
+              <h1 class="error-number">403</h1>
+              <h2>امکان دسترسی وجود ندارد</h2>
+              <p>احراز هویت کامل برای دسترسی به این منبع لازم است. <a href="#">گزارش مشکل؟</a>
+              </p>
+              <p class="red">{{ error_message }}</p>
+              <a href="{% url 'account:home' %}" class="green">بازگشت<a>
+            </div>
+          </div>
+        </div>
+        <!-- /page content -->
+      </div>
+    </div>
+{% endblock %}

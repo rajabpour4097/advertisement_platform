@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'advplatform.apps.AdvplatformConfig',
     'account.apps.AccountConfig',
     'widget_tweaks',
+    'crispy_forms',
+    'crispy_bootstrap5',
         
 ]
 
@@ -69,6 +71,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'advplatform.context_processors.get_model_meta_info',
                 'advplatform.context_processors.get_admin_groups',
+                'account.context_processors.user_null_field_percentage',
             ],
         },
     },
@@ -147,6 +150,8 @@ LOGOUT_REDIRECT_URL = "adv:login"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # LOGGING = {
 #     'version': 1,

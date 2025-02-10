@@ -1,9 +1,18 @@
-from django.shortcuts import render
-from django.utils import timezone
+from django.shortcuts import redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView, ListView
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView
+from account.forms import PortfolioEditForm, PortfolioImageFormSet, ProfileForm
+from account.mixins import (
+                            ContextsMixin, 
+                            DealerUserMixin, 
+                            PortfolioDeleteMixin, 
+                            PortfolioEditMixin
+                            )
+from advplatform.models import CustomUser, Portfolio
+from django.contrib.auth import logout
 
-from advplatform.models import Campaign, CustomUser, Topic
 
 
 '''
@@ -15,57 +24,126 @@ TODO:
 '''
 
 
-class AccountView(LoginRequiredMixin, TemplateView):
+class CustomLogoutView(View):
+    def post(self, request, *args, **kwargs):
+        logout(request)
+        return redirect('adv:home')
+
+
+class AccountView(LoginRequiredMixin, ContextsMixin,TemplateView):
     
     template_name = 'account/index.html'
     
+    
+class PortfolioListView(LoginRequiredMixin, DealerUserMixin, TemplateView):
+    
+    template_name = 'account/portfolio/portfolioslist.html'
+
+    def handle_no_permission(self):
+        return render(self.request, '403.html', 
+                          {'error_message': "شما به صفحه نمونه کار دسترسی ندارید"})  # یا HttpResponseForbidden()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        context['user_count'] = CustomUser.objects.count()
-        
-        filtered_customer_user = CustomUser.objects.filter(user_type='customer')
-        context['customer_count'] = filtered_customer_user.count()
-        
-        filtered_dealer_user = CustomUser.objects.filter(user_type='dealer')
-        context['dealer_count'] = filtered_dealer_user.count()
-        
-        filtered_mentor_user = CustomUser.objects.filter(user_type='dealer')
-        context['mentor_count'] = filtered_mentor_user.count()
-        
-        filtered_done_campaign = Campaign.objects.filter(status=True)
-        context['done_campaign_count'] = filtered_done_campaign.count()
-        
-        filtered_site_manager = CustomUser.objects.filter(is_staff=True)
-        context['sitemanager_count'] = filtered_site_manager.count()
-
-        campaign_with_instagram = Campaign.objects.filter(topic__name__icontains='اینستاگرام').distinct()
-        instagram_percent = 0 if filtered_done_campaign.count() == 0 else campaign_with_instagram.count() * 100 / filtered_done_campaign.count()
-        context['instagram_campaign_percent'] = instagram_percent 
-        
-        campaign_with_google = Campaign.objects.filter(topic__name__icontains='گوگل').distinct()
-        google_percent = 0 if filtered_done_campaign.count() == 0 else campaign_with_google.count() * 100 / filtered_done_campaign.count()
-        context['google_campaign_percent'] = google_percent
-        
-        filtered_customer_campaigns = Campaign.objects.filter(customer=self.request.user)
-        context['customer_campaigns_count'] = filtered_customer_campaigns.count()
-        
-        customer_success_campaigns_count = filtered_customer_campaigns.filter(status=True)
-        context['customer_success_campaigns_count'] = customer_success_campaigns_count.count()
-        
-        now = timezone.now()
-        ended_customer_campaigns_count = Campaign.objects.filter(endtimedate__lte=now, customer=self.request.user)
-        context['ended_customer_campaigns_count'] = ended_customer_campaigns_count.count()
-        
-        dealer_success_campaigns = Campaign.objects.filter(status=True, campaign_dealer=self.request.user)
-        context['dealer_success_campaigns'] = dealer_success_campaigns.count()
-        
-        dealer_campaigns_count = Campaign.objects.filter(list_of_participants__id=self.request.user.id)
-        context['dealer_campaigns_count'] = dealer_campaigns_count.count()
-        
-        mentor_customer_count = CustomUser.objects.filter(customer_mentor=self.request.user)
-        context['mentor_customer_count'] = mentor_customer_count.count()
-        
+        if self.request.user.is_staff:
+            context['portfolios'] = Portfolio.objects.all()
+        else:
+            context['portfolios'] = Portfolio.objects.filter(dealer=self.request.user)
         return context
     
 
+class PortfolioCreateView(LoginRequiredMixin, DealerUserMixin, CreateView):
+    model = Portfolio
+    form_class = PortfolioEditForm
+    template_name = 'account/portfolio/portfoliocreate.html'
+
+    def handle_no_permission(self):
+        return render(
+            self.request,
+            '403.html',
+            {'error_message': "شما به صفحه ایجاد نمونه کار دسترسی ندارید"},
+        )
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['image_formset'] = PortfolioImageFormSet(
+                self.request.POST, self.request.FILES
+            )
+        else:
+            context['image_formset'] = PortfolioImageFormSet()
+        return context
+
+    def form_valid(self, form):
+        # تنظیم فیلد dealer برای کاربران نوع 'dealer'
+        if self.request.user.user_type == 'dealer':
+            form.instance.dealer = self.request.user
+
+        # ذخیره‌ی نمونه اصلی
+        response = super().form_valid(form)
+
+        # مدیریت فرمت تصاویر
+        context = self.get_context_data()
+        image_formset = context['image_formset']
+        if image_formset.is_valid():
+            # تنظیم ارتباط تصاویر با نمونه ایجادشده
+            image_formset.instance = self.object
+            image_formset.save()
+        else:
+            # اگر فرمست معتبر نبود، خطا بازگردانده شود
+            return self.form_invalid(form)
+
+        return response
+
+
+class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin, UpdateView):
+    
+    model = Portfolio
+    form_class = PortfolioEditForm
+    template_name = 'account/portfolio/portfolioedit.html'
+    
+
+    def handle_no_permission(self):
+        return render(self.request, '403.html', 
+                          {'error_message': "شما به صفحه ویرایش نمونه کار دسترسی ندارید"})
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+
+class PortfolioDeleteView(LoginRequiredMixin, DealerUserMixin, PortfolioDeleteMixin, DeleteView):
+    
+    model = Portfolio
+    template_name = 'account/portfolio/portfolio_confirm_delete.html'
+    success_url = reverse_lazy('account:portfolios')
+    
+
+    def handle_no_permission(self):
+        return render(self.request, '403.html', 
+                          {'error_message': "شما به صفحه حذف این نمونه کار دسترسی ندارید"})
+
+
+class ProfileView(LoginRequiredMixin, UpdateView):
+    
+    model = CustomUser
+    form_class = ProfileForm
+    template_name = 'account/profile.html'
+    success_url = reverse_lazy('account:profile')
+
+    def handle_no_permission(self):
+        return reverse_lazy('account:login')
+    
+    def get_object(self):
+        return CustomUser.objects.get(pk=self.request.user.pk)
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs

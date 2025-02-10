@@ -1,69 +1,71 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-                <!-- sidebar menu -->
-                <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-                    <div class="menu_section">
-                        <ul class="nav side-menu">
-                            <li><a href="{% url 'adv:home' %}"><i class="fa fa-desktop"></i> صفحه اصلی سایت</a></li>
-                            <li><a href="{% url 'account:home' %}"><i class="fa fa-home"></i> داشبورد</a></li>
-                            {% if user.is_staff%}
-                            <li><a><i class="fa fa-laptop"></i>مدیریت سایت<span class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="#users"><i class="fa fa-user"></i>لیست کاربران </a></li>
-                                    <li><a href="form_advanced.html"><i class="fa fa-users"></i>گروه های کاربری</a></li>
-                                    <li><a><i class="fa fa-laptop"></i>مدل های دیگر<span class="fa fa-chevron-down"></span></a>
-                                        <ul class="nav child_menu">
-                                       
-                                            {% for model in valid_models %}
-                                            <li><a href="{{ model.model_name }}">{{ model.verbose_name_plural }}</a></li>
-                                            {% endfor %}    
-                                        </ul>
-                                    </li>
-                                    <li><a><i class="fa fa-laptop"></i>گروه ها<span class="fa fa-chevron-down"></span></a>
-                                        <ul class="nav child_menu">
-                                       
-                                            {% for group in admin_groups %}
-                                            <li><a href="/admin/auth/group/{{ group.id }}/change/"> {{ group.name }}</a></li>
-                                            {% endfor %}    
-                                            <li><a href="form_advanced.html"><i class="fa fa-edit"></i>ایجاد گروه جدید</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </li>
-                            {% endif %}
-                          {% if user.user_type == 'customer' or user.is_staff%}
-                            <li><a><i class="fa fa-tachometer"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="#campaignlist"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
-                                    <li><a href="#createcampaign"><i class="fa fa-edit"></i>ایجاد کمپین‌ جدید</a></li>
-                                </ul>
-                            </li>
-                            {% endif %}
-                            {% if user.user_type == 'customer'%}
-                            <li><a href="#yourmentors"><i class="fa fa-group"></i> مشاورین شما</a></li>
-                            {% endif %}
-                            {% if user.is_staff %}
-                            <li><a href="#mentors"><i class="fa fa-group"></i> مشاورین</a></li>
-                            {% endif %}
-                            
-                            {% if user.user_type == 'dealer' or user.is_staff%}
-                            <li><a><i class="fa fa-archive"></i> نمونه کارها <span class="fa fa-chevron-down"></span></a>
-                                <ul class="nav child_menu">
-                                    <li><a href="#portfolioslist"><i class="fa fa-list"></i>لیست نمونه کارها</a></li>
-                                    <li><a href="#createportfolio"><i class="fa fa-edit"></i>ایجاد نمونه کار جدید</a></li>
-                                </ul>
-                            </li>
-                            {% endif %}
-                            {% if user.user_type == 'mentor' %}
-                            <li><a href="#yourusers"><i class="fa fa-group"></i> لیست کاربران شما</a></li>
-                            {% endif %}
-                            <li><a href="#inbox"><i class="fa fa-envelope"></i> صندوق پیام</a></li>
-                          
-                        </ul>
-                    </div>
-                   
+ <!-- sidebar menu -->
+ <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+     <div class="menu_section">
+         <ul class="nav side-menu">
+             <li><a href="{% url 'adv:home' %}"><i class="fa fa-external-link"></i> صفحه اصلی سایت</a></li>
+             <li><a href="{% url 'account:home' %}"><i class="fa fa-home"></i> داشبورد</a></li>
+             <hr style="scale:90%;">
+             {% if user.is_staff%}
+             <li><a><i class="fa fa-laptop"></i>مدیریت سایت<span class="fa fa-chevron-down"></span></a>
+                 <ul class="nav child_menu">
+                     <li><a href="#users"><i class="fa fa-user"></i>لیست کاربران </a></li>
+                     <li><a href="form_advanced.html"><i class="fa fa-users"></i>گروه های کاربری</a></li>
+                     <li><a><i class="fa fa-laptop"></i>مدل های دیگر<span class="fa fa-chevron-down"></span></a>
+                         <ul class="nav child_menu">
+                        
+                             {% for model in valid_models %}
+                             <li><a href="{{ model.model_name }}">{{ model.verbose_name_plural }}</a></li>
+                             {% endfor %}    
+                         </ul>
+                     </li>
+                     <li><a><i class="fa fa-laptop"></i>گروه ها<span class="fa fa-chevron-down"></span></a>
+                         <ul class="nav child_menu">
+                        
+                             {% for group in admin_groups %}
+                             <li><a href="/admin/auth/group/{{ group.id }}/change/"> {{ group.name }}</a></li>
+                             {% endfor %}    
+                             <li><a href="form_advanced.html"><i class="fa fa-edit"></i>ایجاد گروه جدید</a></li>
+                         </ul>
+                     </li>
+                 </ul>
+             </li>
+             <hr style="scale:90%;">
+             {% endif %}
+           {% if user.user_type == 'customer' or user.is_staff%}
+             <li><a><i class="fa fa-tachometer"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
+                 <ul class="nav child_menu">
+                     <li><a href="#campaignlist"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
+                     <li><a href="#createcampaign"><i class="fa fa-edit"></i>ایجاد کمپین‌ جدید</a></li>
+                 </ul>
+             </li>
+             {% endif %}
 
-                </div>
-                <!-- /sidebar menu -->
+             {% if user.user_type == 'dealer' or user.is_staff%}
+             <li><a><i class="fa fa-archive"></i> نمونه کارها <span class="fa fa-chevron-down"></span></a>
+                 <ul class="nav child_menu">
+                     <li><a href="{% url 'account:portfolios' %}"><i class="fa fa-list"></i>لیست نمونه کارها</a></li>
+                     <li><a href="{% url 'account:portfoliocreate' %}"><i class="fa fa-edit"></i>ایجاد نمونه کار جدید</a></li>
+                 </ul>
+             </li>
+             {% endif %}
+             {% if user.user_type == 'customer'%}
+             <li><a href="#yourmentors"><i class="fa fa-group"></i> مشاورین شما</a></li>
+             {% endif %}
+             {% if user.is_staff %}
+             <li><a href="#mentors"><i class="fa fa-group"></i> مشاورین</a></li>
+             {% endif %}
+             {% if user.user_type == 'mentor' %}
+             <li><a href="#yourusers"><i class="fa fa-group"></i> لیست کاربران شما</a></li>
+             {% endif %}
+             <li><a href="#inbox"><i class="fa fa-envelope"></i> صندوق پیام</a></li>
+           
+         </ul>
+     </div>
+
+ </div>
+ <!-- /sidebar menu -->
+
 </html>

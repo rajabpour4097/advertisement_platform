@@ -64,7 +64,7 @@
                 </li>
                 <li><a href="{% url 'adv:aboutus' %}" class="st-smooth-move">درباره ما</a></li>
                 <li><a href="{% url 'adv:contactus' %}" class="st-smooth-move">ارتباط با ما</a></li>
-                {% if user.is_authenticated %}<li><a href="{% url 'adv:logout' %}" class="btn-outline-danger">خروج </a></li>{% endif %}
+                {% if user.is_authenticated %}<li><a href="#" class="btn-outline-danger" onclick="logout()">خروج </a></li>{% endif %}
               </ul>
             </div>
           </div>
@@ -247,6 +247,25 @@
   <!-- End Footer -->
 
   <!-- Scripts -->
+  <script>
+    function logout() {
+        fetch("{% url 'adv:logout' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                // بازگشت به صفحه اصلی یا هر مسیر دلخواه
+                window.location.href = "/";
+            } else {
+                alert("Logout failed!");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
+</script>
   <script src="{% static 'advplatform/assets/js/vendor/modernizr-3.5.0.min.js' %}"></script>
   <script src="{% static 'advplatform/assets/js/vendor/jquery-1.12.4.min.js' %}"></script>
   <script src="{% static 'advplatform/assets/js/isotope.pkg.min.js' %}"></script>

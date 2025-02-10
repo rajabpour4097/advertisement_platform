@@ -1,0 +1,65 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block title %}صفحه اصلی{% endblock %}
+
+{% block content %}
+<div class="col-md-6 col-xs-12">
+  <div class="x_panel">
+    <div class="x_title">
+        <h2>نمونه کار  
+            <small>{{ portfolio.subject}}</small>
+        </h2>
+
+        <div class="clearfix"></div>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if user.is_staff %}
+       <div class="row">
+        <div class="form-group col-md-4 mb-0">
+            {{ form.dealer|as_crispy_field}}
+        </div>
+       </div>
+       {% endif %}
+       <br>
+        {{ form.subject|as_crispy_field }}
+        <br>
+        {{ form.topic|as_crispy_field }}
+        <br>
+        {{ form.description|as_crispy_field }}
+        <br>
+        {{ form.done_time|as_crispy_field }}
+        <br>
+        <div class="col-md-6 col-sm-6 col-xs-10">
+        {{ form.is_active|as_crispy_field }}
+        </div>
+        <br>
+        <div>
+          <h3>تصاویر نمونه کار</h3>
+          {% for form in image_formset %}
+              <div class="image-form">
+                  {{ form.image|as_crispy_field }}  <!-- فرم تصویر -->
+  
+                  <!-- نمایش تصویر فقط اگر یک تصویر قبلاً وجود دارد -->
+                  {% if form.instance.image %}
+                      <p>در حال حاضر: <img src="{{ form.instance.image.url }}" alt="Current Image" width="100"></p>
+                  {% endif %}
+  
+                  <!-- چک باکس برای حذف -->
+                  <label>حذف تصویر</label>
+                  {{ form.delete }}
+              </div>
+          {% endfor %}
+      </div>
+        <br>
+        <a href="{% url 'account:portfolios' %}" class="btn btn-primary">بازگشت</a>
+        <button type="submit" class="btn btn-success">ارسال</button>    
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+

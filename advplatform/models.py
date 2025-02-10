@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
 from django.contrib.auth.models import BaseUserManager
+from django.urls import reverse
 
 '''
     TODO:
@@ -82,28 +83,38 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, password, **extra_fields)
 
-# مدل کاربر سفارشی
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=30, null=True, blank=True, default="1")
-    address = models.TextField(null=True, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
-    field_of_activity = models.ForeignKey('ActivityCategory', on_delete=models.PROTECT, null=True, blank=True)
-    user_type = models.CharField(max_length=50, blank=True, null=True)  # customer, dealer, mentor
-    cutomer_type = models.CharField(max_length=50, blank=True, null=True)  # Juridical, Private
-    dealer_type = models.CharField(max_length=50, blank=True, null=True)  # Influencer, Private Designer, Corporate
-    rank = models.SmallIntegerField(default=2, blank=True, null=True)
-    bussines_value = models.BigIntegerField(null=True, blank=True)
-    speciality_field = models.ForeignKey('SpecialityCategory', on_delete=models.PROTECT, null=True, blank=True)
-    modified_time = models.DateTimeField(auto_now=True)
+    phone_number = models.CharField(max_length=30, null=True, blank=True, verbose_name='شماره تماس')
+    address = models.TextField(null=True, blank=True, verbose_name='آدرس')
+    birth_date = models.DateField(null=True, blank=True, verbose_name='تاریخ تولد')
+    field_of_activity = models.ForeignKey(
+                                          'ActivityCategory', 
+                                          on_delete=models.PROTECT, 
+                                          null=True, blank=True, 
+                                          verbose_name='زمینه فعالیت'
+                                          ) # for Customer
+    user_type = models.CharField(max_length=50, blank=True, null=True, verbose_name='نوع کاربر')  # customer, dealer, mentor
+    cutomer_type = models.CharField(max_length=50, blank=True, null=True, verbose_name='نوع مشتری')  # Juridical, Private
+    dealer_type = models.CharField(max_length=50, blank=True, null=True, verbose_name='نوع عامل تبلیغ')  # Influencer, Private Designer, Corporate
+    rank = models.SmallIntegerField(default=2, blank=True, null=True, verbose_name='رتبه')# for Dealer and Mentor
+    bussines_value = models.BigIntegerField(null=True, blank=True, verbose_name='ارزش کسب و کار')# for Customer
+    speciality_field = models.ForeignKey(
+                                         'SpecialityCategory', 
+                                         on_delete=models.PROTECT, 
+                                         null=True, blank=True, 
+                                         verbose_name='تخصص'
+                                         ) # for Dealer
+    modified_time = models.DateTimeField(auto_now=True, verbose_name='آخرین تغییر پروفایل')
     customer_mentor = models.ForeignKey(
-        'self',  # اشاره به خود مدل CustomUser
-        on_delete=models.SET_NULL,  # اگر کاربر حذف شد، مقدار این فیلد null شود
-        null=True,
-        blank=True,
-        limit_choices_to={'user_type': 'mentor'},  # فقط کاربران با user_type='mentor' انتخاب شوند
-        related_name='mentored_customers'  # نام رابطه برای دسترسی به مشتریانی که توسط این منتور منتور شده‌اند
-    )
+                                        'self', 
+                                        on_delete=models.SET_NULL,  # اگر کاربر حذف شد، مقدار این فیلد null شود
+                                        null=True,
+                                        blank=True,
+                                        limit_choices_to={'user_type': 'mentor'}, 
+                                        related_name='mentored_customers',
+                                        verbose_name='مشاور'  
+                                        ) # for Customer
 
     # استفاده از CustomUserManager برای مدیریت کاربران
     objects = CustomUserManager()
@@ -117,6 +128,20 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name} - {self.email}'
+    
+    def count_null_fields(self):
+        null_fields = 0
+        # بررسی تمام فیلدهای مدل
+        for field in self._meta.get_fields():
+            if hasattr(self, field.name):  # اطمینان از وجود فیلد در آبجکت
+                value = getattr(self, field.name)
+                if value is None:  # اگر مقدار null باشد
+                    null_fields += 1
+        return null_fields
+    
+    def get_field_count(self):
+        return len([field for field in self._meta.get_fields() if field.concrete])
+    
     
 class Campaign(models.Model):
     customer = models.ForeignKey(
@@ -162,14 +187,15 @@ class Portfolio(models.Model):
         CustomUser, 
         on_delete=models.CASCADE, 
         limit_choices_to={'is_active': True, 'user_type': 'dealer'},
-        related_name='dealers'
+        related_name='dealers', verbose_name='نام مجری'
         )
-    topic = models.ForeignKey(Topic, on_delete=models.PROTECT)
-    description = models.TextField(null=True, blank=True)
-    done_time = models.DateField()
+    subject = models.CharField(max_length=50, null=True, blank=True, verbose_name='عنوان نمونه کار')
+    topic = models.ForeignKey(Topic, on_delete=models.PROTECT, verbose_name='موضوع')
+    description = models.TextField(null=True, blank=True, verbose_name='شرح نمونه کار')
+    done_time = models.DateField(verbose_name='زمان انجام')
     created_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, verbose_name='وضعیت')
     
     class Meta:
         verbose_name = 'نمونه کار'
@@ -177,6 +203,9 @@ class Portfolio(models.Model):
     
     def __str__(self):
         return (f'{self.id} {self.dealer}')
+    
+    def get_absolute_url(self):
+        return reverse("account:portfolios")
     
 
 class UsersImages(models.Model):
@@ -204,7 +233,7 @@ class CampaignImages(models.Model):
 
 
 class PortfolioImages(models.Model):
-    image = models.ImageField(upload_to='portfolios/')
+    image = models.ImageField(upload_to='portfolios/', verbose_name='عکس های نمونه کار')
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='portfolioimages')
     
     class Meta:

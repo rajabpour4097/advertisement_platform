@@ -1,0 +1,124 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block title %}پروفایل کاربری{% endblock %}
+
+{% block content %}
+
+<div class="col-md-6 col-xs-12">
+  <div class="x_panel" style="scale:90%;">
+    <div class="x_title">
+        <h2>پروفایل کاربری</h2>
+
+        <div class="clearfix"></div>
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+       <br>
+       <div class="col-md-12 col-sm-10 col-xs-12">
+
+        <div class="form-row">
+          <div class="form-group col-md-6 mb-0">
+            {{ form.username|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-6 mb-0">
+            {{ form.email|as_crispy_field }}
+          </div>
+        </div>
+        <br>
+        <div class="form-row">
+          <div class="form-group col-md-6 mb-0">
+              {{ form.first_name|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-6 mb-0">
+              {{ form.last_name|as_crispy_field }}
+          </div>
+        </div>
+        <br>
+        <div class="form-row">
+          <div class="form-group col-md-6 mb-0">
+            {{ form.phone_number|as_crispy_field }}
+          </div>
+          <div class="form-group col-md-6 mb-0">
+            {{ form.birth_date|as_crispy_field }}
+          </div>
+        </div>
+      </div>
+        <br>
+        {% if user.user_type == 'customer' or user.is_staff and form.bussines_value and form.customer_mentor %}
+        <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px;">
+          <div class="form-group col-md-6 mb-0">
+              {{ form.bussines_value|as_crispy_field }}
+          </div>
+        </div>
+          
+        <div class="col-md-12 col-sm-10 col-xs-12">
+          <div class="form-group col-md-6 mb-0">
+            {{ form.customer_mentor|as_crispy_field }}
+          </div>
+        </div>
+        {% endif %}
+        <br>
+        <br>
+        <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px;">
+          <div class="col-md-12 col-sm-10 col-xs-12">
+          {{ form.address|as_crispy_field }}
+          </div>
+        </div>
+        <br>
+        <br>
+        <div class="col-md-12 col-sm-10 col-xs-12">
+           <div class="form-group col-md-6 mb-0">
+           {{ form.user_type|as_crispy_field }}
+           </div>
+           <div class="form-group col-md-2 mb-0" style="margin-top: 30px;">
+            {{ form.is_active|as_crispy_field }}
+          </div>
+        </div>
+        <br>
+        {% if user.user_type == 'customer' or user.is_staff and form.cutomer_type %}
+        <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px;">
+          <div class="form-group col-md-6 mb-0">
+            {{ form.cutomer_type|as_crispy_field }}
+          </div>
+        </div>
+          <br>
+        {% endif %}
+        
+        {% if user.user_type == 'dealer' or user.user_type == 'mentor' or user.is_staff and form.rank %}
+       
+          {% if user.user_type == 'dealer' or user.is_staff and form.speciality_field %}
+          <div class="col-md-12 col-sm-10 col-xs-12" style="margin-top: 20px;">
+            <div class="form-group col-md-6 mb-0">
+             {{ form.speciality_field|as_crispy_field }}
+            </div>
+          </div>
+         <br>
+         {% endif %}
+         <div class="col-md-12 col-sm-10 col-xs-12" style="margin-top: 20px;">
+          <div class="form-group col-md-2 mb-0">
+            {{ form.rank|as_crispy_field }}
+          </div>
+        </div>
+        
+        <br>
+        {% endif %}  
+        
+       <br>
+       <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px; margin-right: 100px;">
+          <a href="{% url 'account:portfolios' %}" class="btn btn-primary">بازگشت</a>
+          <button type="submit" class="btn btn-success">بروزرسانی</button>    
+       </div>
+    </form>
+  </div>
+</div>
+<style>
+  textarea.form-control {
+    height: 80px;
+  }
+</style>
+{% endblock %}
+
