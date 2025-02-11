@@ -4,9 +4,7 @@ env/
 *.DS_Store
 *.pyc
 *.pyo
-__pycache__/
 
-local_*.py
 
 .idea/
 .vscode/
@@ -24,7 +22,18 @@ local_*.py
 /static/
 /media/
 
-db.sqlite3
 */migrations/*.py[cod]
 
 *.cache
+
+### Django ###
+*.log
+*.pot
+*.pyc
+__pycache__/
+advertisemnets/local_settings.py
+
+.env
+db.sqlite3
+/__pycache__/
+*/local_settings.py

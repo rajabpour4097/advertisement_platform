@@ -1,5 +1,6 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView
@@ -23,6 +24,17 @@ TODO:
 
 '''
 
+
+class PasswordChange(PasswordChangeView):
+    
+    template_name = 'account/password_change_form.html'
+    success_url = reverse_lazy('account:password_change_done')
+    
+
+class PasswordChangeDone(PasswordChangeDoneView):
+    
+    template_name = 'account/password_change_done.html'
+    
 
 class CustomLogoutView(View):
     def post(self, request, *args, **kwargs):

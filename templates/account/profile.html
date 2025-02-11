@@ -27,6 +27,10 @@
           <div class="form-group col-md-6 mb-0">
             {{ form.email|as_crispy_field }}
           </div>
+          <div class="col-3" style="font-size: small; margin-right: 20px;">
+            <label class="my-4" style="font-size: x-small;"> گذرواژه:</label>
+            <span style="background: #cffff2;">برای تغییر گذرواژه <a href="{% url 'account:password_change' %}" style="color: blue;">کلیک</a> کنید</span>
+          </div>
         </div>
         <br>
         <div class="form-row">
@@ -48,7 +52,7 @@
         </div>
       </div>
         <br>
-        {% if user.user_type == 'customer' or user.is_staff and form.bussines_value and form.customer_mentor %}
+        {% if user.user_type == 'customer' and form.bussines_value and form.customer_mentor %}
         <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px;">
           <div class="form-group col-md-6 mb-0">
               {{ form.bussines_value|as_crispy_field }}
@@ -71,15 +75,17 @@
         <br>
         <br>
         <div class="col-md-12 col-sm-10 col-xs-12">
+          {% if not user.is_staff %}
            <div class="form-group col-md-6 mb-0">
            {{ form.user_type|as_crispy_field }}
            </div>
+           {% endif %}
            <div class="form-group col-md-2 mb-0" style="margin-top: 30px;">
             {{ form.is_active|as_crispy_field }}
           </div>
         </div>
         <br>
-        {% if user.user_type == 'customer' or user.is_staff and form.cutomer_type %}
+        {% if user.user_type == 'customer' and form.cutomer_type %}
         <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px;">
           <div class="form-group col-md-6 mb-0">
             {{ form.cutomer_type|as_crispy_field }}
@@ -88,7 +94,7 @@
           <br>
         {% endif %}
         
-        {% if user.user_type == 'dealer' or user.user_type == 'mentor' or user.is_staff and form.rank %}
+        {% if user.user_type == 'dealer' or user.user_type == 'mentor' and form.rank %}
        
           {% if user.user_type == 'dealer' or user.is_staff and form.speciality_field %}
           <div class="col-md-12 col-sm-10 col-xs-12" style="margin-top: 20px;">
