@@ -72,12 +72,8 @@ class CustomUserAdmin(UserAdmin):
             obj.set_password(form.cleaned_data['password1'])
         super().save_model(request, obj, form, change)
 
-# ثبت مدل CustomUser با استفاده از CustomUserAdmin
 admin.site.register(CustomUser, CustomUserAdmin)
-    
-    # def get_username(self, obj):
-    #     return obj.user.username
-    # get_username.short_description = 'Username'
+
     
 
 @register(Campaign)
@@ -95,4 +91,3 @@ class PortfolioAdmin(admin.ModelAdmin):
     list_editable = ['is_active']
     search_fields = ['topic']
     inlines = [PortfolioImagesInline]
-

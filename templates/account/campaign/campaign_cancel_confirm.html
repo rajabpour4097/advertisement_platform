@@ -1,0 +1,23 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+
+{% block title %}لغو کمپین{% endblock %}
+
+{% block content %}
+   <br><br><br>
+   <div class="col-md-6 col-xs-12">
+      <div class="x_panel">
+         <div class="x_title">
+            <h2>لغو کمپین</h2>
+            <div class="clearfix"></div>
+         </div>
+         <form method="post">
+            {% csrf_token %}
+            <p>آیا از لغو کمپین "<strong>{{ campaign.describe | truncatewords:10 }}</strong>" اطمینان دارید؟</p>
+            <br>
+            <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
+            <button type="submit" class="btn btn-danger">لغو کمپین</button>
+         </form>
+      </div>
+   </div>
+{% endblock %}

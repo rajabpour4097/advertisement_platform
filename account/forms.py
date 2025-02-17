@@ -1,9 +1,18 @@
 from django import forms
-from advplatform.models import CustomUser, Portfolio, PortfolioImages
-from django.forms import inlineformset_factory, modelformset_factory
+from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, PortfolioImages
+from django.forms import inlineformset_factory
+from django.contrib.auth.forms import UserCreationForm
 
 
 
+
+class SignupForm(UserCreationForm):
+        
+    user_type = forms.ChoiceField(required=True)
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'email', 'password1', 'password2', 'user_type')
+        
         
 class ProfileForm(forms.ModelForm):
     
@@ -16,11 +25,10 @@ class ProfileForm(forms.ModelForm):
             self.fields['username'].disabled = True
             self.fields['email'].disabled = True
             self.fields['user_type'].disabled = True
-            self.fields['cutomer_type'].disabled = True
             self.fields['customer_mentor'].disabled = True
             self.fields['is_active'].disabled = True
             self.fields['rank'].disabled = True
-        if user.user_type != 'dealer' or user.is_staff:
+        if user.user_type != 'dealer' and user.user_type != 'mentor' or user.is_staff:
             del self.fields['speciality_field']
             
     
@@ -58,16 +66,76 @@ class PortfolioEditForm(forms.ModelForm):
         fields = '__all__'
         
 
-class PortfolioImageForm(forms.ModelForm):
+class PortfolioCreateForm(forms.ModelForm):
+    
+    subject = forms.CharField(
+        max_length=50, 
+        required=True, 
+        label='عنوان نمونه کار',
+        error_messages={
+            'required': 'لطفاً عنوان نمونه کار را وارد کنید!',
+            'max_length': 'عنوان نمونه کار نمی‌تواند بیش از ۵۰ کاراکتر باشد!',
+        }
+    )
+    
     class Meta:
-        model = PortfolioImages
-        fields = ['image'] 
+        model = Portfolio
+        fields = [
+                  'dealer', 
+                  'subject', 
+                  'topic', 
+                  'description', 
+                  'done_time', 
+                  'is_active'
+                  ]
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
         
+        if not user.is_staff and user.user_type == 'dealer':
+            self.fields['dealer'].initial = user
+            self.fields['dealer'].widget = forms.HiddenInput()
+      
+         
+PortfolioImageFormSet = inlineformset_factory(
+    Portfolio, 
+    PortfolioImages, 
+    fields=('image',), 
+    extra=1,
+    can_delete=True
+)
+
+
+class CampaignCreateForm(forms.ModelForm):
+    
+    class Meta:
+        model = Campaign
+        fields = [
+                  'customer',
+                  'topic', 
+                  'describe', 
+                  'purposed_price',
+                  'starttimedate', 
+                  'endtimedate'
+                  ]
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
         
-PortfolioImageFormSet = modelformset_factory(
-    PortfolioImages,
-    form=PortfolioImageForm,
-    extra=0,  
-    can_delete=True,  # امکان حذف تصاویر
+        if not user.is_staff and user.user_type == 'customer':
+            self.fields['customer'].initial = user
+            self.fields['customer'].widget = forms.HiddenInput()
+            self.fields['starttimedate'].widget = forms.HiddenInput()
+            self.fields['endtimedate'].widget = forms.HiddenInput()
+            
+
+CampaignImageFormSet = inlineformset_factory(
+    Campaign, 
+    CampaignImages, 
+    fields=('image',), 
+    extra=1,
+    can_delete=True
 )
 

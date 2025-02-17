@@ -8,6 +8,14 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 
 
 
+class NotLoginedMixin():
+    """Verify that the current user is not authenticated."""
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('account:profile')
+        return super().dispatch(request, *args, **kwargs)
+
+
 class FieldMixin():
     
     def dispatch(self, request, *args, **kwargs):
@@ -118,3 +126,29 @@ class PortfolioDeleteMixin():
                               )
         
         return super().dispatch(request, *args, **kwargs)
+    
+
+class CampaignUserMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.is_staff or\
+            self.request.user.user_type == 'dealer' or\
+                self.request.user.user_type == 'customer'
+                
+
+class CreateCampaignUserMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.user_type == 'customer'
+
+
+class StaffUserMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.is_staff
+    
+  
+class CustomerUserMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.user_type == 'customer'      

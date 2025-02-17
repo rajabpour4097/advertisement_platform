@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+{% load advplatform_tags %}
+{% block title%}
+کمپین های در حال برگزاری
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+
+{% block hh22 %}
+<style>
+  .portfoliocol {
+    display: flex;
+    flex-direction: column; /* برای چیدمان مرتب */
+    flex: 1; /* برای توزیع فضا */
+    min-height: 100%; /* حداقل ارتفاع */
+  }
+  .portfoliodetail-box {
+    flex-grow: 1; /* پر کردن فضای باقی‌مانده */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* چینش مناسب برای محتوا */
+    margin-top: 20px;
+  }
+  
+</style>
+<br><br><br>
+<section id="portfolios">
+  <div class="portfoliocontainer">
+    <div class="st-section-heading st-style1">
+      <h2 class="st-section-heading-title">کمپین های در حال برگزاری</h2>
+      <div class="st-section-heading-seperator left wow fadeInLeft" data-wow-duration="1s" data-wow-delay="0.2s" style="visibility: visible; animation-duration: 1s; animation-delay: 0.2s; animation-name: fadeInLeft;">
+      </div>
+      <div class="st-section-heading-subtitle">از تبلیغات خلاقانه تا کمپین‌های تعاملی: آخرین کمپین های در حال برگزاری در صنایع مختلف</div>
+    </div><br><br>
+    <div class="portfoliorow">
+      {% if not campaigns %}
+      <h6 class="text-center text-danger">کمپینی برای نمایش وجود ندارد</h6>
+      {% else %}
+      {% for campaign in campaigns %}
+      <div class="portfoliocol">
+        <div class="portfolioimg-box">
+          <img src="{% if campaign.campaignsimages.first.image.url %}
+                    {{ campaign.campaignsimages.first.image.url }}
+                    {% else %}
+                    {% static 'advplatform/assets/img/noimage.jpg' %}
+                    {% endif %}">
+          
+          <div class="portfolio-title">برگزارکننده: {{ campaign.customer.get_full_name }}</div>
+        </div>
+        <div class="portfoliodetail-box st-price">
+          {% if campaign.describe %}
+          <span>{{ campaign.describe | truncatewords:20 }}
+            {% else %}بدون توضیحات{% endif %}
+          </span>
+          <div class="row">
+            <!-- col1 -->
+            <div class="col">
+              <div class="portfolioprice_box" style="text-align:right; margin-right:20px;">
+                <small class="portfolioprice_heading">
+                  <i class="fa fa-calculator"></i><span> بودجه پیشنهادی:</span> 
+                  {% if campaign.purposed_price %}
+                  {{ campaign.purposed_price | format_price }}
+                  <br><br>
+                  <i class="fa fa-gift"></i><span> مبلغ جایزه:</span> 
+                  {{ campaign.get_gift_price | format_price }}
+                  {% else %}
+                   بدون مبلغ
+                  {% endif %}
+                </small>
+                <br>
+                <br>
+                <i class="fa fa-flag-checkered"></i><small class="text-success"><strong> تاریخ پایان مسابقه: {{ campaign.get_jalali_endtimedate | date:"d-m-Y" }}</strong></small><br>
+              </div>
+            </div>
+            <!-- End col1 -->
+            <!-- col2 -->
+            <div class="col">
+              <div class="portfolioprice_box" style="text-align:right; margin-right:40px;">
+                <br><br>
+                <small class="text-primary">
+                  <strong>زمان اتمام کمپین:</strong> 
+                  <div class="countdown" data-deadline="{{ campaign.get_countdown_datetime }}">
+                  </div>
+                </small>
+                
+              </div>
+            </div>
+            <!-- End col2 -->
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

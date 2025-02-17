@@ -1,11 +1,15 @@
 from django.shortcuts import redirect, render
+from django.utils import timezone
+from django.db.models import Q
 from django.contrib.auth.views import LoginView
-from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 from advplatform.forms import CustomAuthenticationForm
-from advplatform.models import Campaign, Portfolio
+from advplatform.models import Campaign, CustomUser, Portfolio
+from django.views.generic import TemplateView
 
 
+
+current_time = timezone.now()
 
 
 class CustomLoginView(LoginView):
@@ -22,27 +26,42 @@ class CustomLoginView(LoginView):
         context['subtitle'] = 'ورود به حساب کاربری'  # اضافه کردن subtitle به کانتکست
         return context
 
+
+class ContactUs(TemplateView):
+    template_name = 'advplatform/contactus.html'
+    
+
+class AboutUs(TemplateView):
+    template_name = 'advplatform/aboutus.html'
+    
+
 def home_view(request):
     context = dict()
     # context['mentors'] = Mentor.objects.filter(is_active=True)
-    context['campaigns'] = Campaign.objects.filter(is_active=True)
+    context['campaigns'] = Campaign.objects.filter(
+                                                    Q(status='progressing') &
+                                                    Q(is_active=True) &
+                                                    Q(endtimedate__isnull=False) & 
+                                                    Q(endtimedate__gte=current_time)
+                                                   )
     return render(request, 'index.html', context=context)
-
-def about_us(request):
-    return render(request, 'aboutus.html')
-
-def contact_us(request):
-    return render(request, 'contactus.html')
-
-def signup_page(request):
-    return render(request, 'advplatform/signup.html')
 
 def mentors_list(request):
     context = dict()
-    # context['mentors'] = Mentor.objects.filter(is_active=True)
+    context['mentors'] = CustomUser.objects.filter(user_type='mentor', is_active=True)
     return render(request, 'advplatform/mentors.html', context=context)
 
 def portfolios_list(request):
     context = dict()
     context['portfolios'] = Portfolio.objects.filter(is_active=True)
     return render(request, 'advplatform/portfolios.html', context=context)
+
+def campaigns_list(request):
+    context = dict()
+    context['campaigns'] = Campaign.objects.filter(
+                                                    Q(status='progressing') &
+                                                    Q(is_active=True) &
+                                                    Q(endtimedate__isnull=False) & 
+                                                    Q(endtimedate__gte=current_time)
+                                                   )
+    return render(request, 'advplatform/campaigns.html', context=context)

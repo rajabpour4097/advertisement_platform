@@ -1,7 +1,7 @@
 {% extends "account/account_base.html" %}
 {% load static %}
 
-{% block title %}صفحه اصلی{% endblock %}
+{% block title %}لیست نمونه کارها{% endblock %}
 
 {% block content %}
 
@@ -58,7 +58,15 @@
                      <tbody>
                         {% for portfolio in portfolios %}
                          <tr role="row" class="{% if forloop.counter0|divisibleby:2 %}even{% else %}odd{% endif %}">
-                             {% if user.is_staff %}<td class="sorting_1">{{ portfolio.dealer.get_full_name }}</td>{% endif %}
+                             {% if user.is_staff %}
+                             <td class="sorting_1">
+                                {% if portfolio.dealer.get_full_name %}
+                                {{ portfolio.dealer.get_full_name }}
+                                {% else %}
+                                {{ portfolio.dealer.email }}
+                                {% endif  %}
+                            </td>
+                            {% endif %}
                              <td><a href="{% url 'account:portfolioedit' portfolio.pk %}">{{ portfolio.subject }}</a></td>
                              <td>{{ portfolio.description | truncatewords:15 }}</td>
                              <td>{{ portfolio.topic }}</td>

@@ -26,10 +26,7 @@ env/
 
 *.cache
 
-### Django ###
-*.log
 *.pot
-*.pyc
 __pycache__/
 advertisemnets/local_settings.py
 
@@ -40,4 +37,4 @@ advplatform/__pycache__/
 */local_settings.py
 __pycache__/
 __pycache__/
-__pycache__
+__pycache__()

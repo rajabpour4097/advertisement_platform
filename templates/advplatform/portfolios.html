@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load advplatform_tags %}
 {% block title%}
 نمونه کارها
 {% endblock %}
@@ -10,6 +11,22 @@
 
 
 {% block hh22 %}
+<style>
+  .portfoliocol {
+    display: flex;
+    flex-direction: column; /* برای چیدمان مرتب */
+    flex: 1; /* برای توزیع فضا */
+    min-height: 100%; /* حداقل ارتفاع */
+  }
+  .portfoliodetail-box {
+    flex-grow: 1; /* پر کردن فضای باقی‌مانده */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* چینش مناسب برای محتوا */
+    margin-top: 20px;
+  }
+  
+</style>
 <br><br><br>
 <section id="services">
   <div class="portfoliocontainer">
@@ -22,16 +39,32 @@
       {% for portfolio in portfolios %}
       <div class="portfoliocol">
         <div class="portfolioimg-box">
-          <img src="{{ portfolio.portfolioimages.first.image.url }}" alt="Snow">
-        </div>
-        <div class="portfoliodetail-box">
-          <h5>{{ portfolio.description }}</h5>
+          <img src="{% if portfolio.portfolioimages.first.image.url %}
+                    {{ portfolio.portfolioimages.first.image.url }}
+                    {% else %}
+                    {% static 'advplatform/assets/img/noimage.jpg' %}
+                    {% endif %}" alt="{{ portfolio.subject }}">
+          
+          <div class="portfolio-title">{{ portfolio.subject }}</div>
+      </div>
+        <div class="portfoliodetail-box st-price">
+          {% if portfolio.description %}
+          <p>{{ portfolio.description | truncatewords:20 }}
+            {% else %}بدون توضیحات{% endif %}
+          </p>
           <div class="portfolioprice_box">
-            <h6 class="portfolioprice_heading">
-              <span>$</span> 100.00
-            </h6>
-            <h5>{{ portfolio.done_time }}</h5>
-            <a href="">{{ portfolio.dealer }}</a>
+            <small class="portfolioprice_heading">
+              <span>هزینه اجرا:</span> 
+              {% if portfolio.execution_price %}
+              {{ portfolio.execution_price | format_price }}
+              {% else %}
+               بدون مبلغ
+              {% endif %}
+            </small>
+            <br>
+            <small class="text-primary"><strong>زمان اجرا:</strong> {{ portfolio.get_jalali_datetime }}</small><br>
+            <small class="text-success"><strong>زمینه اجرا:</strong> {{ portfolio.topic }}</small><br>
+            <span style="background-color: #02e5382e; border-radius: 3px;">مجری: {{ portfolio.dealer.get_full_name }}</span>
           </div>
         </div>
       </div>

@@ -31,19 +31,18 @@
             <div class="slick-slide-in">
               <div class="st-member st-style1 st-zoom">
                 <div class="st-member-img">
-                  <img src="{{ mentor.mentorimages.first.image.url }}" alt="member4" class="st-zoom-in">
+                  <img src="{% if mentor.customuserimages.first.image.url %}
+                            {{ mentor.customuserimages.first.image.url }}
+                            {% else %}
+                            {% static 'advplatform/assets/img/noimage.jpg' %}{% endif %}" alt="member4" class="st-zoom-in">
                 </div>
                 <div class="st-member-meta">
                   <div class="st-member-meta-in">
-                    <h3 class="st-member-name">{{mentor.firstname}} {{mentor.lastname}}</h3>
+                    <h3 class="st-member-name">{{mentor.get_full_name}}</h3>
                     <div class="st-member-designation">{{ mentor.speciality_field}}</div>
                   </div>
                   <ul class="st-member-social st-mp0">
-                    <li><a href="#"><i class="fab fa-facebook-square"></i></a></li>
-                    <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
-                    <li><a href="#"><i class="fab fa-pinterest-square"></i></a></li>
-                    <li><a href="#"><i class="fab fa-twitter-square"></i></a></li>
-                    <li><a href="#"><i class="fab fa-dribbble-square"></i></a></li>
+                    <li><a href="mailto:{{ mentor.email }}"><i class="fa fa-envelope"></i></a></li>
                   </ul>
                 </div>
               </div>

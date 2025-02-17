@@ -1,0 +1,67 @@
+{% extends "login_base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title%}
+ثبت نام
+{% endblock %}
+
+
+
+{% block customcontent %}
+
+<form method="post" novalidate>
+    {% csrf_token %}
+  <div data-mdb-input-init class="form-outline mb-4">
+    <label class="form-label" type="text">نام کاربری</label>
+    {{ form.username|add_class:"form-control" }}
+    {% if form.username.errors %}
+      {% for error in form.username.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <div data-mdb-input-init class="form-outline mb-4">
+    <label class="form-label" type="text">آدرس ایمیل</label>
+    {{ form.email|add_class:"form-control" }}
+    {% if form.email.errors %}
+      {% for error in form.email.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <div data-mdb-input-init class="form-outline mb-4">
+    <label class="form-label" for="form2Example22">گذرواژه</label>
+     {{ form.password1|add_class:"form-control" }}
+    {% if form.password1.errors %}
+      {% for error in form.password1.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <div data-mdb-input-init class="form-outline mb-4">
+    <label class="form-label" for="form2Example22">تایید گذرواژه </label>
+     {{ form.password2|add_class:"form-control" }}
+    {% if form.password2.errors %}
+      {% for error in form.password2.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <div data-mdb-input-init class="form-outline mb-4">
+    <label class="form-label" for="form2Example22">نوع کاربری</label>
+     {{ form.user_type|add_class:"form-control" }}
+    {% if form.user_type.errors %}
+      {% for error in form.user_type.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <br>
+  <div class="text-center pt-1 mb-5 pb-1">
+    <button data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">ثبت نام</button>
+    <br>
+    <a class="text-muted" href="{% url 'adv:login' %}">قبلاً ثبت نام کرده اید؟</a>
+  </div>
+</form>
+               
+{% endblock %}

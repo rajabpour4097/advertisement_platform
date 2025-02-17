@@ -56,12 +56,7 @@
                 <li><a href="{% url 'adv:portfolios' %}" class="st-smooth-move">نمونه کارها</a></li>
                 <li><a href="{% url 'adv:mentors' %}" class="st-smooth-move">تیم مشاوران</a></li>
                 <li><a href="{% if user.is_authenticated %} {% url 'account:home' %}{% else %}{% url 'adv:login' %}{% endif %}" class="st-smooth-move">حساب کاربری</a></li>
-                <li class="menu-item-has-children"><a href="#blog" class="st-smooth-move">بلاگ</a>
-                  <ul>
-                    <li class="menu-item-has-children"><a href='blog.html'>وبلاگ</a></li>
-                    <li class="menu-item-has-children"><a href='blog-details.html'>جزئیات مطالب وبلاگ</a></li>
-                  </ul>
-                </li>
+                <li class="menu-item-has-children"><a href="{% url 'adv:campaigns' %}" class="st-smooth-move">کمپین های در حال برگزاری</a></li>
                 <li><a href="{% url 'adv:aboutus' %}" class="st-smooth-move">درباره ما</a></li>
                 <li><a href="{% url 'adv:contactus' %}" class="st-smooth-move">ارتباط با ما</a></li>
                 {% if user.is_authenticated %}<li><a href="#" class="btn-outline-danger" onclick="logout()">خروج </a></li>{% endif %}
@@ -81,75 +76,7 @@
 {% block hh22 %} {% endblock %}
 
     <hr>
-    <!-- Start Logo Carousel -->
-    <div>
-      <div class="st-height-b120 st-height-lg-b80"></div>
-      <div class="container">
-        <div class="st-slider st-style2 st-pricing-wrap">
-          <div class="slick-container" data-autoplay="0" data-loop="1" data-speed="600" data-center="0"  data-slides-per-view="responsive" data-xs-slides="1" data-sm-slides="2" data-md-slides="3" data-lg-slides="4" data-add-slides="5">
-            <div class="slick-wrapper">
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client1.png' %}" alt="client1">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client2.png' %}" alt="client2">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client3.png' %}" alt="client3">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client4.png' %}" alt="client4">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client5.png' %}" alt="client5">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client1.png' %}" alt="client1">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client2.png' %}" alt="client2">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client3.png' %}" alt="client3">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client4.png' %}" alt="client4">
-                </div>
-              </div><!-- .slick-slide-in -->
-              <div class="slick-slide-in">
-                <div class="st-logo-carousel st-style1">
-                  <img src="{% static 'advplatform/assets/img/client5.png' %}" alt="client5">
-                </div>
-              </div><!-- .slick-slide-in -->
-            </div>
-          </div><!-- .slick-container -->
-          <div class="pagination st-style1 st-flex st-hidden"></div> <!-- If dont need Pagination then add class .st-hidden -->
-          <div class="swipe-arrow st-style1"> <!-- If dont need navigation then add class .st-hidden -->
-            <div class="slick-arrow-left"><i class="fa fa-chevron-left"></i></div>
-            <div class="slick-arrow-right"><i class="fa fa-chevron-right"></i></div>
-          </div>
-        </div><!-- .st-slider -->
-      </div>
-      <div class="st-height-b120 st-height-lg-b80"></div>
-    </div>
-    <!-- End Logo Carousel -->
+
   </div>
 
   <!-- Start Footer -->
@@ -265,7 +192,7 @@
         })
         .catch(error => console.error("Error:", error));
     }
-</script>
+  </script>
   <script src="{% static 'advplatform/assets/js/vendor/modernizr-3.5.0.min.js' %}"></script>
   <script src="{% static 'advplatform/assets/js/vendor/jquery-1.12.4.min.js' %}"></script>
   <script src="{% static 'advplatform/assets/js/isotope.pkg.min.js' %}"></script>

@@ -1,15 +1,18 @@
+from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
 from django.contrib.auth.models import BaseUserManager
 from django.urls import reverse
+import jdatetime
+import datetime
+from advplatform.choices_type import CAMPAIGN_TYPE, CUSTOMER_TYPE, DEALER_TYPE, USER_TYPE
 
 '''
     TODO:
-        3-start time and end time and deadline of 
-            campaigns will be set
-        
+        1-       
         
 ''' 
+
 
 
 class ActivityCategory(models.Model):
@@ -94,9 +97,30 @@ class CustomUser(AbstractUser):
                                           null=True, blank=True, 
                                           verbose_name='زمینه فعالیت'
                                           ) # for Customer
-    user_type = models.CharField(max_length=50, blank=True, null=True, verbose_name='نوع کاربر')  # customer, dealer, mentor
-    cutomer_type = models.CharField(max_length=50, blank=True, null=True, verbose_name='نوع مشتری')  # Juridical, Private
-    dealer_type = models.CharField(max_length=50, blank=True, null=True, verbose_name='نوع عامل تبلیغ')  # Influencer, Private Designer, Corporate
+    user_type = models.CharField(
+                                 choices=USER_TYPE, 
+                                 max_length=30, 
+                                 blank=True, 
+                                 null=True, 
+                                 verbose_name='نوع کاربر',
+                                 default=''
+                                )  # customer, dealer, mentor
+    cutomer_type = models.CharField(
+                                    choices=CUSTOMER_TYPE, 
+                                    max_length=30, 
+                                    blank=True, 
+                                    null=True, 
+                                    verbose_name='نوع مشتری', 
+                                    default=''
+                                    )  # Juridical, Private
+    dealer_type = models.CharField(
+                                   choices=DEALER_TYPE, 
+                                   max_length=30, 
+                                   blank=True, 
+                                   null=True, 
+                                   verbose_name='نوع عامل تبلیغ', 
+                                   default=''
+                                   )  # Influencer, Private Designer, Corporate
     rank = models.SmallIntegerField(default=2, blank=True, null=True, verbose_name='رتبه')# for Dealer and Mentor
     bussines_value = models.BigIntegerField(null=True, blank=True, verbose_name='ارزش کسب و کار')# for Customer
     speciality_field = models.ForeignKey(
@@ -147,29 +171,38 @@ class Campaign(models.Model):
     customer = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE,
         limit_choices_to={'is_active': True, 'user_type': 'customer'},
-        related_name='customers'
+        related_name='customers',
+        verbose_name='کارفرما'
         )
-    topic = models.ManyToManyField(Topic)
-    describe = models.TextField()
-    purposed_price = models.BigIntegerField(default=0)
-    starttimedate = models.DateTimeField(null=True, blank=True)
-    endtimedate = models.DateTimeField(null=True, blank=True)
-    deadline = models.DateField(null=True, blank=True)
+    topic = models.ManyToManyField(Topic, verbose_name='موضوعات کمپین')
+    describe = models.TextField(verbose_name='شرح کمپین')
+    purposed_price = models.BigIntegerField(verbose_name='قیمت پیشنهادی')
+    starttimedate = models.DateTimeField(null=True, blank=True, verbose_name='زمان شروع')
+    endtimedate = models.DateTimeField(null=True, blank=True, verbose_name='زمان اتمام')
+    deadline = models.DateField(null=True, blank=True, verbose_name='تاریخ مهلت اجرا')
     list_of_participants = models.ManyToManyField(
         CustomUser, blank=True,
         related_name='campaigns',
         limit_choices_to={'is_active': True, 'user_type': 'dealer'},
+        verbose_name='لیست شرکت کنندگان'
     )
     created_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=False)
+    status = models.CharField(
+                              choices=CAMPAIGN_TYPE, 
+                              max_length=30, 
+                              verbose_name='وضعیت اجرای کمپین', 
+                              default='reviewing'
+                              )
+    
     campaign_dealer = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE,
         limit_choices_to={'is_active': True, 'user_type': 'dealer'},
         related_name='campaign_dealers',
-        blank=True, null=True
+        blank=True, null=True,
+        verbose_name='مجری کمپین'
       )
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False, verbose_name='وضعیت کمپین')
     class Meta:
         verbose_name = 'کمپین'
         verbose_name_plural = 'کمپین ها'
@@ -180,6 +213,28 @@ class Campaign(models.Model):
     def __str__(self):
         return (f'{self.id} {self.customer}')
     
+    def get_jalali_endtimedate(self):
+        if self.endtimedate:
+            return jdatetime.datetime.fromgregorian(datetime=self.endtimedate)
+        return None
+    
+    def get_jalali_endtimedate_clean(self):
+        jalali_date = self.get_jalali_endtimedate()
+        if jalali_date:
+            return f"{jalali_date.year}-{jalali_date.month}-{jalali_date.day} {jalali_date.hour}:{jalali_date.minute}:{jalali_date.second}"
+        return None
+    
+    def get_participant_count(self):
+        return self.list_of_participants.count()
+    
+    def get_gift_price(self):
+        return (self.purposed_price * 5) / 100
+    
+    def get_ended_campaign(self):
+        current_time = timezone.now()
+        if self.endtimedate and self.endtimedate < current_time:
+            return 'پایان یافته'
+        return None
     
 
 class Portfolio(models.Model):
@@ -195,6 +250,7 @@ class Portfolio(models.Model):
     done_time = models.DateField(verbose_name='زمان انجام')
     created_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
+    execution_price = models.BigIntegerField(blank=True, null=True, verbose_name='هزینه اجرا')
     is_active = models.BooleanField(default=True, verbose_name='وضعیت')
     
     class Meta:
@@ -206,6 +262,13 @@ class Portfolio(models.Model):
     
     def get_absolute_url(self):
         return reverse("account:portfolios")
+    
+    def get_jalali_datetime(self):
+        if self.done_time:
+            self.jalali_done_time = jdatetime.date.fromgregorian(date=self.done_time)
+        else:
+            self.jalali_done_time = None
+        return self.jalali_done_time
     
 
 class UsersImages(models.Model):

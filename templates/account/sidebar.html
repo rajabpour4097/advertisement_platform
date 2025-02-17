@@ -35,14 +35,21 @@
              <hr style="scale:90%;">
              {% endif %}
            {% if user.user_type == 'customer' or user.is_staff%}
+             
              <li><a><i class="fa fa-tachometer"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
-                     <li><a href="#campaignlist"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
-                     <li><a href="#createcampaign"><i class="fa fa-edit"></i>ایجاد کمپین‌ جدید</a></li>
+                     <li><a href="{% url 'account:campaigns' %}"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
+                     <li><a href="{% url 'account:campaigncreate' %}"><i class="fa fa-edit"></i>ایجاد کمپین‌ جدید</a></li>
                  </ul>
              </li>
              {% endif %}
-
+             {% if user.user_type == 'dealer' %}
+             <li><a><i class="fa fa-tachometer"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                    <li><a href="{% url 'account:campaigns' %}"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
+                </ul>
+             </li>
+             {% endif %}
              {% if user.user_type == 'dealer' or user.is_staff%}
              <li><a><i class="fa fa-archive"></i> نمونه کارها <span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">

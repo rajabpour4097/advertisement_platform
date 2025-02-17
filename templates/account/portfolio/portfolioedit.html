@@ -2,30 +2,46 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
-
 {% block title %}ویرایش نمونه کار{% endblock %}
 
 {% block content %}
 <div>
-<div class="col-md-6 col-xs-12">
-  <div class="x_panel">
-    <div class="x_title">
+  <div class="col-md-6 col-xs-12">
+    <div class="x_panel">
+      <div class="x_title">
         <h2>نمونه کار  
-            <small>{{ portfolio.subject}}</small>
+          <small>{{ portfolio.subject }}</small>
         </h2>
-
         <div class="clearfix"></div>
-    </div>
-    <form method="post" enctype="multipart/form-data">
+      </div>
+      <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        
+        <!-- نمایش خطاهای فرم اصلی -->
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>خطا در فرم اصلی:</strong>
+                {{ form.errors }}
+            </div>
+        {% endif %}
+    
+        <!-- نمایش خطاهای FormSet -->
+        {% if image_formset.errors %}
+            <div class="alert alert-danger">
+                <strong>خطا در تصاویر:</strong>
+                {{ image_formset.errors }}
+            </div>
+        {% endif %}
+    
         {% if user.is_staff %}
-       <div class="row">
-        <div class="form-group col-md-4 mb-0">
-            {{ form.dealer|as_crispy_field}}
-        </div>
-       </div>
-       {% endif %}
-       <br>
+          <div class="row">
+            <div class="form-group col-md-4 mb-0">
+              {{ form.dealer|as_crispy_field }}
+            </div>
+          </div>
+          <br>
+        {% endif %}
+    
         {{ form.subject|as_crispy_field }}
         <br>
         {{ form.topic|as_crispy_field }}
@@ -35,15 +51,29 @@
         {{ form.done_time|as_crispy_field }}
         <br>
         <div class="col-md-6 col-sm-6 col-xs-10">
-        {{ form.is_active|as_crispy_field }}
+          {{ form.is_active|as_crispy_field }}
         </div>
         <br>
+    
+        <h3>تصاویر نمونه کار</h3>
+        {{ image_formset.management_form|crispy }}
+        {% for form in image_formset %}
+          <div class="image-form">
+            {% if form.instance.image %}
+              <p>تصویر فعلی: <img src="{{ form.instance.image.url }}" alt="تصویر نمونه کار" width="100"></p>
+            {% endif %}
+            {{ form.image|as_crispy_field }}
+            {% if form.instance.pk %}
+              {{ form.DELETE|as_crispy_field }}
+            {% endif %}
+          </div>
+        {% endfor %}
+    
+        <br>
         <a href="{% url 'account:portfolios' %}" class="btn btn-primary">بازگشت</a>
-        <button type="submit" class="btn btn-success">ارسال</button>    
-
+        <button type="submit" class="btn btn-success">ارسال</button>
     </form>
+    </div>
   </div>
 </div>
-</div>
 {% endblock %}
-

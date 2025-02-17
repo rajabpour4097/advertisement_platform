@@ -1,0 +1,11 @@
+.centered-cell {
+    
+     text-align: center; 
+    vertical-align: middle; 
+}
+
+.btn-custom-red {
+  color: #0009;
+  background-color: #ea4f4f99;
+  border-color: #ea4f4f99;
+}
