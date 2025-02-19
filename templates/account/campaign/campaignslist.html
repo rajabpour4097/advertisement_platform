@@ -74,8 +74,14 @@
                              </td>
                              {% endif %}
 
-                             <td class="center"><a href="#">{{ campaign.topic.all|join:", " }}</a></td>
-                             <td class="center">{{ campaign.describe | truncatewords:15 }}</td>
+                             <td class="center">{{ campaign.topic.all|join:", " }}</td>
+                             <td class="center">
+                                {% if user.is_staff %}
+                                <a href="{% url 'account:campaignedit' campaign.pk %}">{{ campaign.describe | truncatewords:15 }}</a>
+                                {% else %}
+                                {{ campaign.describe | truncatewords:15 }}
+                                {% endif %}
+                            </td>
                              <td class="center">{{ campaign.purposed_price | format_price }}</td>
                              <td class="center">{{ campaign.get_gift_price | format_price }}</td>
 
@@ -103,10 +109,9 @@
 
                                     {% if user.is_staff and campaign.status == 'reviewing' %}
                                         <p > منتظر تایید  <i class="fa fa-binoculars" style="color: #0088fc;"></i></p>
-                                        <a href="#" class="btn btn-primary btn-xs right" style="scale:0.8;"><small>بررسی کردن</small></a>
+                                        <a href="{% url 'account:reviewcampaign' campaign.pk %}" class="btn btn-primary btn-xs right" style="scale:0.8;"><small>بررسی کردن</small></a>
 
                                     {% elif user.is_staff and campaign.status == 'editing' %}
-                                        <p > منتظر تایید  <i class="fa fa-binoculars" style="color: #0088fc;"></i></p>
                                         <small > در حال بررسی توسط مشتری <i class="fa fa-binoculars" style="color:rgb(50, 83, 113);"></i></small>
 
                                     {% elif user.user_type == 'customer' and campaign.status == 'reviewing' %}
@@ -116,14 +121,21 @@
                                         </a>
                                     {% elif user.user_type == 'customer' and campaign.status == 'editing' %}
                                     <p > منتظر بررسی مشتری  <i class="fa fa-binoculars" style="color: #0088fc;"></i></p>
-                                    <a href="#" class="btn btn-primary btn-xs right" style="scale:0.8;"><small>بررسی کردن</small></a>
+                                    <a href="{% url 'account:campaignedit' campaign.pk %}" class="btn btn-info btn-xs right" style="scale:0.8;"><small>بررسی کردن</small></a>
                                     {% endif %}
 
                                 <!-- In progressing section campaign -->  
                                 {% elif campaign.status == 'progressing' %}
                                     در حال برگزاری <i class="fa fa-dashboard" style="color:blue; margin-right: 10px;"></i>
-                                    {% if user.user_type == 'dealer' %}
-                                    <a href="#" class="btn btn-primary btn-xs right" style="scale:0.8; margin-top:8px;"><small>شرکت در مسابقه</small></a>
+                                    {% if user.user_type == 'dealer' and request.user not in campaign.list_of_participants.all%}
+                                    <a href="{% url 'account:campaignparticipate' campaign.pk %}" class="btn btn-primary btn-xs right" style="scale:0.8; margin-top:8px;">
+                                        <small>شرکت در مسابقه</small>
+                                    </a>
+                                    {% elif user.user_type == 'dealer' and request.user in campaign.list_of_participants.all%}
+                                    <div class="text-center" style="margin-top:5px;"> 
+                                   <small class="text-danger">شما در این کمپین شرکت کرده اید</small> <br>
+                                    <a href="#" class="btn btn-primary btn-xs right" style="scale:0.8; margin-top:8px;"><small>انصراف</small></a>
+                                    </div>
                                     {% endif %}
 
                                 <!-- In unsuccessful section campaign -->  
@@ -140,29 +152,37 @@
                             
                             <!-- Active status -->  
                              <td class="text-center">
+                                
+                                <!-- Show status -->  
                                 {% if campaign.is_active == True %}فعال <i class="fa fa-check-circle" style="color:green"></i>
                                 {% else %}غیرفعال <i class="fa fa-minus-circle" style="color:red"></i>
                                 {% endif %}
+                                                              
+                                <!-- Change Active status -->
                                 {% if user.is_staff %}
-                                <div style="margin-top: 10px;">
-                                <a class="btn btn-danger btn-xs left" style="scale:0.8;" href="{% url 'account:campaignsdelete' campaign.pk %}"><small>حذف</small></a>
-                                {% if campaign.is_active %}
-                                <form action="{% url 'account:deactivecampaign' campaign.pk %}" method="POST" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button class="btn btn-primary btn-xs right" style="scale:0.8;" type="submit">
-                                        <small>غیرفعالسازی</small>
-                                    </button>
-                                </form>
-                                {% endif %}
-                                {% if  not campaign.is_active %}
-                                <form action="{% url 'account:activecampaign' campaign.pk %}" method="POST" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button class="btn btn-success btn-xs right" style="scale:0.8;" type="submit">
-                                        <small>فعالسازی</small>
-                                    </button>
-                                </form>
-                                {% endif %}
-                                </div>
+                                    <div style="margin-top: 10px;">
+                                        <a class="btn btn-danger btn-xs left" style="scale:0.8;" href="{% url 'account:campaignsdelete' campaign.pk %}"><small>حذف</small></a>
+                                    
+                                        <!-- Change Active status  to deactive -->
+                                        {% if campaign.is_active %}
+                                        <form action="{% url 'account:deactivecampaign' campaign.pk %}" method="POST" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button class="btn btn-primary btn-xs right" style="scale:0.8;" type="submit">
+                                                <small>غیرفعالسازی</small>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+
+                                        <!-- Change Active status  to active -->
+                                        {% if  not campaign.is_active %}
+                                        <form action="{% url 'account:activecampaign' campaign.pk %}" method="POST" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button class="btn btn-success btn-xs right" style="scale:0.8;" type="submit">
+                                                <small>فعالسازی</small>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
                                 {% endif %}
                             </td>
                             

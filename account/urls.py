@@ -6,6 +6,9 @@ from account.views import (
     CampaignCreateView,
     CampaignDeactivateView,
     CampaignDeleteView,
+    CampaignEditView,
+    CampaignParticipateView,
+    CampaignReviewView,
     CampaignListView,
     PasswordChange,
     PasswordChangeDone, 
@@ -34,5 +37,8 @@ urlpatterns = [
     path('campaigns/deactive/<int:pk>', CampaignDeactivateView.as_view(), name='deactivecampaign'), 
     path('campaigns/active/<int:pk>', CampaignActivateView.as_view(), name='activecampaign'), 
     path('campaigns/cancel/<int:pk>', CampaignCancelView.as_view(), name='cancelcampaign'), 
+    path('campaigns/review/<int:pk>', CampaignReviewView.as_view(), name='reviewcampaign'), 
+    path('campaigns/edit/<int:pk>/', CampaignEditView.as_view(), name='campaignedit'),
+    path('campaigns/participate/<int:pk>/', CampaignParticipateView.as_view(), name='campaignparticipate'),
      
 ]

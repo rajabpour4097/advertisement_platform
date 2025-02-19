@@ -9,3 +9,25 @@
   background-color: #ea4f4f99;
   border-color: #ea4f4f99;
 }
+
+.campaign-details {
+        direction: rtl;
+        text-align: right;
+    }
+.campaign-form {
+        direction: rtl;
+        text-align: right;
+    }
+
+.campaign-strong {
+        color: red;
+        font-size: small;
+        font-weight: normal;
+    }
+
+.countdown {
+  font-size: 14px;
+  color: #ff0066;
+  font-weight: bold;
+  margin-top: 10px;
+}

@@ -8,6 +8,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
+
+from account.models import EditingCampaign
 from .tokens import account_activation_token
 from django.core.mail import EmailMessage
 from django.db.models import Q
@@ -16,18 +18,23 @@ from django.views.generic.edit import BaseUpdateView
 from account.forms import (
                             CampaignCreateForm,
                             CampaignImageFormSet,
+                            EditCampaignForm,
+                            ParticipateCampaignForm,
                             PortfolioCreateForm,
                             PortfolioEditForm, 
                             PortfolioImageFormSet, 
-                            ProfileForm, 
-                            SignupForm
+                            ProfileForm,
+                            ReviewCampaignForm, 
+                            SignupForm,
+                            StartCampaignForm
                             )
 from account.mixins import (
                             CampaignUserMixin,
                             ContextsMixin,
                             CreateCampaignUserMixin,
-                            CustomerUserMixin,
+                            CancelUserMixin,
                             DealerUserMixin,
+                            EditCampaignUserMixin,
                             NotLoginedMixin, 
                             PortfolioDeleteMixin, 
                             PortfolioEditMixin,
@@ -282,7 +289,7 @@ class CampaignListView(LoginRequiredMixin, CampaignUserMixin, TemplateView):
         return context
     
 
-class CampaignCreateView(LoginRequiredMixin, CreateCampaignUserMixin, CreateView):
+class CampaignCreateView(CreateCampaignUserMixin, CreateView):
     model = Campaign
     form_class = CampaignCreateForm
     template_name = 'account/campaign/campaigncreate.html'
@@ -369,7 +376,7 @@ class CampaignActivateView(StaffUserMixin, View):
         return JsonResponse({'error': 'Method Not Allowed'}, status=405)
     
 
-class CampaignCancelView(LoginRequiredMixin, View):
+class CampaignCancelView(CancelUserMixin, View):
     template_name = "account/campaign/campaign_cancel_confirm.html"  
 
     def get(self, request, *args, **kwargs):
@@ -381,4 +388,173 @@ class CampaignCancelView(LoginRequiredMixin, View):
         campaign.status = 'cancel'
         campaign.save()
         return HttpResponseRedirect(reverse_lazy('account:campaigns'))
+
+
+class CampaignReviewView(StaffUserMixin, View):
+    template_name = "account/campaign/campaign_review.html"
     
+    def dispatch(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, id=kwargs['pk'])
+        if campaign.is_active:
+            return render(self.request, '403.html', 
+                          {'error_message': "این کمپین در مرحله تایید مدیریت نمیباشد.",
+                               'back_url': "account:campaigns"},
+                          )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        editings = campaign.editings.all() 
+        form1 = ReviewCampaignForm()
+        form2 = StartCampaignForm()
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form1': form1,
+            'form2': form2,
+            'editings': editings, 
+        })
+    
+    def post(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        form1 = ReviewCampaignForm(request.POST)
+        form2 = StartCampaignForm(request.POST)
+
+        editing_campaign = None  # مقداردهی اولیه برای جلوگیری از خطا
+
+        if form1.is_valid():
+            editing_campaign = form1.save(commit=False)
+            editing_campaign.campaign = campaign
+            editing_campaign.submitted_user = request.user
+            editing_campaign.save()
+
+            campaign.status = "editing"
+            campaign.save()
+
+            return redirect('account:campaigns')  
+
+        elif form2.is_valid():
+        # فقط starttimedate و endtimedate از فرم گرفته شوند
+            campaign.starttimedate = form2.cleaned_data['starttimedate']
+            campaign.endtimedate = form2.cleaned_data['endtimedate']
+            campaign.is_active = True
+            campaign.status = "progressing"
+            campaign.save()  # ذخیره کمپین
+
+            return redirect('account:campaigns')
+
+        editings = campaign.editings.all()
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form1': form1,
+            'form2': form2,
+            'editings': editings,
+        })
+
+class CampaignEditView(EditCampaignUserMixin, View):
+    template_name = "account/campaign/campaign_edit.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, id=kwargs['pk'])
+        if campaign.is_active:
+            return render(self.request, '403.html', 
+                          {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
+                               'back_url': "account:campaigns"},
+                          )
+
+        if campaign.status == "reviewing" and not request.user.is_staff:
+            return render(self.request, '403.html', 
+                          {'error_message': "فقط مدیران اجازه بررسی این کمپین را دارند.",
+                               'back_url': "account:campaigns"},
+                          )
+
+        if campaign.status not in ["editing", "reviewing"]:
+            return render(self.request, '403.html', 
+                          {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
+                               'back_url': "account:campaigns"},
+                          )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        
+        editing_campaign = EditingCampaign.objects.filter(campaign=campaign).all()
+        
+        form = EditCampaignForm(instance=campaign, user=request.user)
+
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'editing_campaign': editing_campaign,
+        })
+
+    def post(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        
+        form = EditCampaignForm(request.POST, instance=campaign, user=request.user)
+
+        if form.is_valid():
+            form.save()
+            campaign.status = "reviewing"
+            campaign.save()
+            return redirect('account:campaigns')
+        
+        editing_campaign = get_object_or_404(EditingCampaign, campaign=campaign)
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'editing_campaign': editing_campaign,
+        })
+
+
+class CampaignParticipateView(DealerUserMixin, View):
+    template_name = "account/campaign/campaign_participate.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, id=kwargs['pk'])
+        
+        if request.user in campaign.list_of_participants.all():
+            return render(self.request, '403.html', 
+                          {'error_message': "شما قبلاً به این کمپین پیوسته اید.",
+                           'back_url': "account:campaigns"},
+                          )
+        
+        if campaign.status != 'progressing':
+            return render(self.request, '403.html', 
+                          {'error_message': "این کمپین در مرحله برگزاری نمیباشد.",
+                           'back_url': "account:campaigns"},
+                          )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        proposal = campaign.running_campaign.filter(campaign=campaign) 
+        form = ParticipateCampaignForm()
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'proposal': proposal, 
+        })
+    
+    def post(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        form = ParticipateCampaignForm(request.POST)
+        print("Request POST Data:", request.POST)
+        if form.is_valid():
+            proposal_campaign = form.save(commit=False)
+            proposal_campaign.campaign = campaign
+            proposal_campaign.dealer = request.user
+            proposal_campaign.save()
+
+            campaign.list_of_participants.add(request.user)
+            campaign.save()
+
+            return redirect('account:campaigns')  
+
+        proposal = campaign.running_campaign.filter(campaign=campaign)
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'editings': proposal,
+        })
+        

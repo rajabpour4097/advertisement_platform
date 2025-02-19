@@ -1,5 +1,3 @@
-from itertools import zip_longest
-from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from advplatform.models import Campaign, CustomUser, Portfolio, Topic
 from django.utils import timezone
@@ -148,7 +146,20 @@ class StaffUserMixin(UserPassesTestMixin):
         return self.request.user.is_staff
     
   
-class CustomerUserMixin(UserPassesTestMixin):
+class CancelUserMixin(UserPassesTestMixin):
+
+    def test_func(self):
+        campaign_id = self.kwargs.get('pk')
+        campaign = Campaign.objects.filter(pk=campaign_id).first()
+
+        return campaign and self.request.user == campaign.customer
+
+
+class EditCampaignUserMixin(UserPassesTestMixin):
     
     def test_func(self):
-        return self.request.user.user_type == 'customer'      
+        campaign_id = self.kwargs.get('pk')
+        campaign = Campaign.objects.filter(pk=campaign_id).first()
+        return self.request.user.is_staff or\
+            self.request.user.user_type == 'customer' and self.request.user == campaign.customer
+            

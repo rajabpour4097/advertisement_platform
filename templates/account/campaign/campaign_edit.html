@@ -1,0 +1,69 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}ویرایش کمپین{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    
+    <!-- بخش ویرایش کمپین -->
+    <div class="col-md-6 col-xs-12 campaign-form">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color: #028c32;">ویرایش کمپین</h2>
+                <div class="clearfix"></div>
+            </div>
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                {{ form|crispy }}
+                
+                <br>
+                <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
+                <button type="submit" class="btn btn-success">ذخیره تغییرات</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- نمایش دلیل اصلاح کمپین -->
+    <div class="col-md-6 col-xs-12 campaign-details">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color: #028c32;">تاریخچه اصلاحیه‌ها</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                {% if editing_campaign %}
+                    <!-- آخرین اصلاحیه -->
+                    {% with latest_edit=editing_campaign.0 %}
+                        <h4 style="color: blue;">آخرین اصلاحیه:</h4>
+                        <p>
+                            <strong class="campaign-strong">تاریخ:</strong> {{ latest_edit.created_time|date:"Y-m-d H:i" }} <br>
+                            <strong class="campaign-strong">ویرایش کننده:</strong> {{ latest_edit.submitted_user }} <br>
+                            <strong class="campaign-strong">دلیل ویرایش:</strong> {{ latest_edit.edit_reason }}
+                        </p>
+                        <hr>
+                    {% endwith %}
+                    
+                    <!-- نمایش بقیه اصلاحیه‌ها -->
+                    <h4 style="color: #00a871;">اصلاحیه‌های قبلی:</h4>
+                    <ul>
+                        {% for edit in editing_campaign|slice:"1:" %}
+                            <li>
+                                <strong class="campaign-strong">تاریخ:</strong> {{ edit.created_time|date:"Y-m-d H:i" }} <br>
+                                <strong class="campaign-strong">ویرایش کننده:</strong> {{ edit.submitted_user }} <br>
+                                <strong class="campaign-strong">دلیل ویرایش:</strong> {{ edit.edit_reason }}
+                            </li>
+                            <hr>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>هیچ اصلاحیه‌ای برای این کمپین ثبت نشده است.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>   
+</div>
+
+{% endblock %}

@@ -2,6 +2,7 @@ from django import forms
 from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, PortfolioImages
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
+from account.models import CampaignTransaction, EditingCampaign
 
 
 
@@ -139,3 +140,51 @@ CampaignImageFormSet = inlineformset_factory(
     can_delete=True
 )
 
+
+class ReviewCampaignForm(forms.ModelForm):
+    class Meta:
+        model = EditingCampaign
+        fields = ['edit_reason']
+        widgets = {
+            'edit_reason': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'دلیل ویرایش را وارد کنید...'}
+                ),
+        }
+
+
+class StartCampaignForm(forms.ModelForm):
+    class Meta:
+        model = Campaign
+        fields = ['starttimedate', 'endtimedate']
+        
+
+
+class EditCampaignForm(forms.ModelForm):
+    class Meta:
+        model = Campaign
+        fields = ['topic', 'describe', 'purposed_price', 'starttimedate', 'endtimedate']
+        widgets = {
+            'describe': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'starttimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'endtimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
+        
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user.user_type == 'customer':
+            self.fields.pop('starttimedate', None)
+            self.fields.pop('endtimedate', None)
+            
+
+class ParticipateCampaignForm(forms.ModelForm):
+    class Meta:
+        model = CampaignTransaction
+        fields = ['proposals', 'proposal_price']
+        widgets = {
+            'proposals': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'طرح خود را ارائه کنید...'}
+                ),
+            }

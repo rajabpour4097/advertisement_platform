@@ -4,7 +4,6 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager
 from django.urls import reverse
 import jdatetime
-import datetime
 from advplatform.choices_type import CAMPAIGN_TYPE, CUSTOMER_TYPE, DEALER_TYPE, USER_TYPE
 
 '''
@@ -211,7 +210,7 @@ class Campaign(models.Model):
         return self.endtimedate.strftime('%Y-%m-%dT%H:%M:%S')
     
     def __str__(self):
-        return (f'{self.id} {self.customer}')
+        return (f'{self.describe} {self.customer}')
     
     def get_jalali_endtimedate(self):
         if self.endtimedate:
@@ -305,3 +304,4 @@ class PortfolioImages(models.Model):
     
     def __str__(self):
         return str(self.portfolio)
+     

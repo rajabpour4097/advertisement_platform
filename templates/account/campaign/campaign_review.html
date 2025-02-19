@@ -1,0 +1,66 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}بررسی کمپین‌ تبلیغاتی{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    
+    <!-- Edit reason section -->
+    <div class="col-md-6 col-xs-12 campaign-form">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color: #028c32;">ویرایش کمپین</h2>
+                <div class="clearfix"></div>
+            </div>
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                {{ form1|crispy }}
+                
+                <br>
+                <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
+                <button type="submit" class="btn btn-success">ارسال</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Campaign detail section -->
+    <div class="col-md-6 col-xs-12 campaign-details">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color: #028c32;">جزئیات کمپین</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <p><strong class="campaign-strong">کارفرما:</strong> {{ campaign.customer }}</p>
+                <p><strong class="campaign-strong">موضوعات:</strong> {{ campaign.topic.all|join:", " }}</p>
+                <p><strong class="campaign-strong">شرح کمپین:</strong> {{ campaign.describe }}</p>
+                <p><strong class="campaign-strong">قیمت پیشنهادی:</strong> {{ campaign.purposed_price }}</p>
+                <p><strong class="campaign-strong">وضعیت:</strong> {{ campaign.get_status_display }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- بخش تایید و شروع کمپین -->
+<div class="col-md-6 col-xs-12 campaign-form center-block">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2 style="color:rgb(3, 38, 195);">تایید و شروع کمپین</h2>
+            <div class="clearfix"></div>
+        </div>
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {{ form2|crispy }}
+            
+            <br>
+            <button type="submit" class="btn btn-warning">تایید و شروع کمپین</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
