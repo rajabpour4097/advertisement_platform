@@ -162,4 +162,15 @@ class EditCampaignUserMixin(UserPassesTestMixin):
         campaign = Campaign.objects.filter(pk=campaign_id).first()
         return self.request.user.is_staff or\
             self.request.user.user_type == 'customer' and self.request.user == campaign.customer
-            
+
+
+class MentorUserMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.user_type == 'mentor'
+
+
+class CustomerUserMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.user_type == 'customer'

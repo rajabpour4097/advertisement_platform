@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
@@ -9,7 +10,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 
-from account.models import EditingCampaign
+from account.models import CampaignTransaction, EditingCampaign
 from .tokens import account_activation_token
 from django.core.mail import EmailMessage
 from django.db.models import Q
@@ -33,8 +34,10 @@ from account.mixins import (
                             ContextsMixin,
                             CreateCampaignUserMixin,
                             CancelUserMixin,
+                            CustomerUserMixin,
                             DealerUserMixin,
                             EditCampaignUserMixin,
+                            MentorUserMixin,
                             NotLoginedMixin, 
                             PortfolioDeleteMixin, 
                             PortfolioEditMixin,
@@ -558,3 +561,58 @@ class CampaignParticipateView(DealerUserMixin, View):
             'editings': proposal,
         })
         
+
+class CampaignCancelParticipateView(DealerUserMixin, View):
+    template_name = 'account/campaign/campaign_cancel_participate_confirm.html'
+    
+    def get(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        return render(request, self.template_name, {'campaign': campaign})
+    
+    def post(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        user = request.user
+        
+        # Check campaign status
+        if campaign.status != 'progressing':
+            messages.error(request, "امکان خروج از کمپین در این وضعیت وجود ندارد.")
+            return HttpResponseRedirect(reverse_lazy('account:campaigns'))
+        
+        transaction = CampaignTransaction.objects.filter(dealer=user, campaign=campaign).first()
+
+        # Remove from participate list
+        if request.user in campaign.list_of_participants.all():
+            if transaction:
+                transaction.delete()
+            campaign.list_of_participants.remove(request.user)
+            messages.success(request, "شما با موفقیت از کمپین خارج شدید.")
+        else:
+            messages.warning(request, "شما در این کمپین عضو نبودید.")
+
+        return HttpResponseRedirect(reverse_lazy('account:campaigns'))
+
+
+class MentorUsersList(MentorUserMixin, TemplateView):
+    
+    template_name = 'account/mentor/mentoruserslist.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        mentor = self.request.user
+        context['users'] = CustomUser.objects.filter(customer_mentor=mentor)
+    
+        return context
+
+
+class MyMentor(CustomerUserMixin, TemplateView):
+    
+    template_name = 'account/mentor/mymentor.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['user'] = CustomUser.objects.get(pk=user.pk)
+    
+        return context
+
+   

@@ -12,6 +12,10 @@ from django.views.generic import TemplateView
 current_time = timezone.now()
 
 
+def custom_404_view(request, exception):
+    return render(request, "404.html", status=404)
+
+
 class CustomLoginView(LoginView):
     authentication_form = CustomAuthenticationForm
     template_name = 'login.html'

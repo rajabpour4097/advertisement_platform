@@ -5,12 +5,17 @@ from advplatform.views import (
                                 ContactUs,
                                 CustomLoginView,
                                 campaigns_list,
+                                custom_404_view,
                                 home_view, mentors_list,
                                 portfolios_list, 
                               )
 
 
 app_name = 'adv'
+
+handler404 = custom_404_view
+
+
 
 urlpatterns = [
     path('', home_view, name='home'),

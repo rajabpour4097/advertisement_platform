@@ -96,7 +96,7 @@
                                  {% endif %}
 
                                  <!-- Campaign have end time if ended-->
-                                 {% if campaign.get_ended_campaign %}
+                                 {% if campaign.get_ended_campaign %}انصراف
                                  <br>
                                  <small style="color:red;">{{ campaign.get_ended_campaign }}</small>
                                  {% endif %}
@@ -134,7 +134,7 @@
                                     {% elif user.user_type == 'dealer' and request.user in campaign.list_of_participants.all%}
                                     <div class="text-center" style="margin-top:5px;"> 
                                    <small class="text-danger">شما در این کمپین شرکت کرده اید</small> <br>
-                                    <a href="#" class="btn btn-primary btn-xs right" style="scale:0.8; margin-top:8px;"><small>انصراف</small></a>
+                                    <a href="{% url 'account:cancelcampaignparticipate' campaign.pk %}" class="btn btn-primary btn-xs right" style="scale:0.8; margin-top:8px;"><small>انصراف</small></a>
                                     </div>
                                     {% endif %}
 

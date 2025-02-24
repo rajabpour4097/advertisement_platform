@@ -1,7 +1,9 @@
 from django.urls import path
+from django.conf.urls import handler404
 from account.views import (
     AccountView,
     CampaignActivateView,
+    CampaignCancelParticipateView,
     CampaignCancelView,
     CampaignCreateView,
     CampaignDeactivateView,
@@ -10,17 +12,23 @@ from account.views import (
     CampaignParticipateView,
     CampaignReviewView,
     CampaignListView,
+    MentorUsersList,
+    MyMentor,
     PasswordChange,
     PasswordChangeDone, 
     PortfolioCreateView,
     PortfolioDeleteView, 
     PortfolioEditView, 
     PortfolioListView,
-    ProfileView
+    ProfileView,
     )
+from advplatform.views import custom_404_view
 
 
 app_name = 'account'
+
+handler404 = custom_404_view
+
 
 urlpatterns = [
     path('', AccountView.as_view(), name='home'),
@@ -40,5 +48,8 @@ urlpatterns = [
     path('campaigns/review/<int:pk>', CampaignReviewView.as_view(), name='reviewcampaign'), 
     path('campaigns/edit/<int:pk>/', CampaignEditView.as_view(), name='campaignedit'),
     path('campaigns/participate/<int:pk>/', CampaignParticipateView.as_view(), name='campaignparticipate'),
-     
+    path('campaigns/cancelparticipate/<int:pk>', CampaignCancelParticipateView.as_view(), name='cancelcampaignparticipate'), 
+    path('mentoruserslist/', MentorUsersList.as_view(), name='mentoruserslist'), 
+    path('mymentor/', MyMentor.as_view(), name='mymentor'), 
+         
 ]

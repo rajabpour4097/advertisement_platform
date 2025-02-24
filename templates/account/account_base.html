@@ -50,7 +50,7 @@
                         <img src="{% if user.customuserimages.first.image.url %}
                         {{ user.customuserimages.first.image.url }}
                          {% else %}
-                          {% static 'account/build/images/img.jpg' %}{% endif %}" alt="..." class="img-circle profile_img">
+                          {% static 'account/build/images/user.png' %}{% endif %}" alt="..." class="img-circle profile_img">
                     </div>
                     <div class="profile_info">
                         <span>خوش آمدید,</span>
@@ -100,7 +100,7 @@
                                 <img src="{% if user.customuserimages.first.image.url %}
                                           {{ user.customuserimages.first.image.url }}
                                           {% else %}
-                                          {% static 'account/build/images/img.jpg' %}{% endif %}" alt="">
+                                          {% static 'account/build/images/user.png' %}{% endif %}" alt="">
                                            {% if user.get_full_name %}
                                            {{ user.get_full_name }} 
                                            {% else %}

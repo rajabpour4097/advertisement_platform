@@ -59,13 +59,13 @@
              </li>
              {% endif %}
              {% if user.user_type == 'customer'%}
-             <li><a href="#yourmentors"><i class="fa fa-group"></i> مشاورین شما</a></li>
+             <li><a href="{% url 'account:mymentor' %}"><i class="fa fa-group"></i> مشاورین شما</a></li>
              {% endif %}
              {% if user.is_staff %}
              <li><a href="#mentors"><i class="fa fa-group"></i> مشاورین</a></li>
              {% endif %}
              {% if user.user_type == 'mentor' %}
-             <li><a href="#yourusers"><i class="fa fa-group"></i> لیست کاربران شما</a></li>
+             <li><a href="{% url 'account:mentoruserslist' %}"><i class="fa fa-group"></i> لیست کاربران شما</a></li>
              {% endif %}
              <li><a href="#inbox"><i class="fa fa-envelope"></i> صندوق پیام</a></li>
            
