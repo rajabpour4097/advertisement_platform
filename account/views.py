@@ -63,23 +63,24 @@ class Register(NotLoginedMixin, CreateView):
     
     def form_valid(self, form):
         user = form.save(commit=False)
-        user.is_active = False
+        user.is_active = True # If use email activate it may be False
         user.save()
-        current_site = get_current_site(self.request)
-        mail_subject = 'فعالسازی حساب کاربری'
-        message = render_to_string('registration/activate_account.html', {
-            'user': user,
-            'domain': current_site.domain,
-            'uid':urlsafe_base64_encode(force_bytes(user.pk)),
-            'token':account_activation_token.make_token(user),
-        })
-        to_email = form.cleaned_data.get('email')
-        email = EmailMessage(
-                    mail_subject, message, to=[to_email]
-        )
-        email.send()
-        return HttpResponse('لینک فعالسازی برای ایمیل شما ارسال شد. <a href="/login">صفحه ورود</a>')
-    
+        # current_site = get_current_site(self.request)
+        # mail_subject = 'فعالسازی حساب کاربری'
+        # message = render_to_string('registration/activate_account.html', {
+        #     'user': user,
+        #     'domain': current_site.domain,
+        #     'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+        #     'token':account_activation_token.make_token(user),
+        # })
+        # to_email = form.cleaned_data.get('email')
+        # email = EmailMessage(
+        #             mail_subject, message, to=[to_email]
+        # )
+        # email.send()
+        # return HttpResponse('لینک فعالسازی برای ایمیل شما ارسال شد. <a href="/login">صفحه ورود</a>')
+        return HttpResponse('ثبت نام با موفقیت انجام شد. <a href="/login">صفحه ورود</a>')
+        
 
 def activate(request, uidb64, token):
     try:

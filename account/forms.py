@@ -1,4 +1,5 @@
 from django import forms
+from advplatform.choices_type import USER_TYPE
 from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, PortfolioImages
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
@@ -9,7 +10,7 @@ from account.models import CampaignTransaction, EditingCampaign
 
 class SignupForm(UserCreationForm):
         
-    user_type = forms.ChoiceField(required=True)
+    user_type = forms.ChoiceField(choices=USER_TYPE, required=True)
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'password1', 'password2', 'user_type')
