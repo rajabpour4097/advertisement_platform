@@ -2,6 +2,7 @@ from django.urls import path
 from django.conf.urls import handler404
 from account.views import (
     AccountView,
+    ChangeStatusRequestForMentor,
     CampaignActivateView,
     CampaignCancelParticipateView,
     CampaignCancelView,
@@ -12,7 +13,10 @@ from account.views import (
     CampaignParticipateView,
     CampaignReviewView,
     CampaignListView,
+    ListOfRequestForMentor,
+    MentorChooseView,
     MentorUsersList,
+    MentorsList,
     MyMentor,
     PasswordChange,
     PasswordChangeDone, 
@@ -51,5 +55,8 @@ urlpatterns = [
     path('campaigns/cancelparticipate/<int:pk>', CampaignCancelParticipateView.as_view(), name='cancelcampaignparticipate'), 
     path('mentoruserslist/', MentorUsersList.as_view(), name='mentoruserslist'), 
     path('mymentor/', MyMentor.as_view(), name='mymentor'), 
-         
+    path('mentorslist/', MentorsList.as_view(), name='mentorslist'), 
+    path('mentor/choosementor/<int:pk>', MentorChooseView.as_view(), name='choosementor'), 
+    path('requestformentor/', ListOfRequestForMentor.as_view(), name='listofrequestformentor'), 
+    path('requestformentor/<int:request_id>/change-status/', ChangeStatusRequestForMentor.as_view(), name='changestatusrequestformentor'),    
 ]

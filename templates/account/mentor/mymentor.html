@@ -19,10 +19,49 @@
             
             <div class="clearfix"></div>
         </div>
-        {% if not user.customer_mentor %}
+        {% if user_last_request %}
+        <div class="col-md-4 col-sm-4 col-xs-12 profile_details">
+            <div class="well profile_view">
+                <div class="col-sm-12">
+                    <h6 class="text-success">درخواست شما برای انتخاب این مشاور در حال بررسی است</h6>
+                    <div class="left col-xs-7">
+                        <h2>{{ user_last_request.mentor.get_full_name }}</h2>
+                        <br>
+                    </div>
+                    <div class="right col-xs-5 text-center">
+                        <img src="{% if user.customer_mentor.customuserimages.first.image.url %}
+                                    {{ user.customer_mentor.customuserimages.first.image.url }}
+                                    {% else %}
+                                    {% static 'account/build/images/img.jpg' %}{% endif %}" alt="..." class="img-circle img-responsive"> 
+                    </div>
+                </div>
+                <br>
+                <p>وضعیت: <small class="text-danger">{{ user_last_request.get_status_display }}</small>
+                </p>
+                <br>
+                <div class="col-xs-12 bottom text-center">
+                    <div class="col-xs-12 col-sm-6 emphasis">
+                        <p class="ratings">
+                            <a>{{ user.customer_mentor.rank }}</a>
+                            <a href="#"><span class="fa fa-star"></span></a>
+                            <a href="#"><span class="fa fa-star"></span></a>
+                            <a href="#"><span class="fa fa-star"></span></a>
+                            <a href="#"><span class="fa fa-star-o"></span></a>
+                            <a href="#"><span class="fa fa-star-o"></span></a>
+                        </p>
+                    </div>
+                    <div class="col-xs-12 col-sm-6 emphasis">
+                        <button type="button" class="btn btn-primary btn-xs">
+                            <i class="fa fa-user"> </i> مشاهد حساب
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% elif not user.customer_mentor %}
             <div class="text-center">
-                <strong class="text-center text-danger"> شما در حال حاضر مشاوری ندارید </strong>
-                <h6><a href="" class="btn text-success"><i class="fa fa-users"></i>انتخاب مشاور</a></h6> 
+                <strong class="text-center text-danger"> شما در حال حاضر مشاور یا درخواست مشاوره در حال بررسی ندارید </strong>
+                <h6><a href="{% url 'account:mentorslist' %}" class="btn text-success"><i class="fa fa-users"></i>انتخاب مشاور</a></h6> 
             </div>
         {% else %} 
         <div class="col-md-4 col-sm-4 col-xs-12 profile_details">
@@ -31,10 +70,6 @@
                     <div class="left col-xs-7">
                         <h2>{{ user.customer_mentor.get_full_name }}</h2>
                         <br>
-                        <p><strong>درباره: </strong>{{ user.customer_mentor.email}}</p>
-                        <ul class="list-unstyled">
-                            <li><i class="fa fa-phone"></i> تلفن: {{ user.customer_mentor.phone_number }}</li>
-                        </ul>
                     </div>
                     <div class="right col-xs-5 text-center">
                         <img src="{% if user.customer_mentor.customuserimages.first.image.url %}
@@ -42,6 +77,7 @@
                                     {% else %}
                                     {% static 'account/build/images/img.jpg' %}{% endif %}" alt="..." class="img-circle img-responsive"> 
                     </div>
+                    
                 </div>
                 <div class="col-xs-12 bottom text-center">
                     <div class="col-xs-12 col-sm-6 emphasis">
@@ -55,8 +91,12 @@
                         </p>
                     </div>
                     <div class="col-xs-12 col-sm-6 emphasis">
-                        <button type="button" class="btn btn-success btn-xs"><i class="fa fa-user">
-                        </i> <i class="fa fa-comments-o"></i></button>
+                        <button type="button" class="btn btn-success btn-xs">
+                            <i class="fa fa-user">
+                            </i>
+                            <i class="fa fa-comments-o">
+                            </i>
+                        </button>
                         <button type="button" class="btn btn-primary btn-xs">
                             <i class="fa fa-user"> </i> مشاهد حساب
                         </button>

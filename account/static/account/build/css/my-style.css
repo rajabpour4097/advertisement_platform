@@ -31,3 +31,10 @@
   font-weight: bold;
   margin-top: 10px;
 }
+
+.profile_view {
+        min-height: 400px; /* مقدار را متناسب با محتوای خود تغییر دهید */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }

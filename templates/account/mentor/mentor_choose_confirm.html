@@ -1,0 +1,24 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+
+{% block title %}تایید انتخاب مشاور{% endblock %}
+
+{% block content %}
+   <br><br><br>
+   <div class="col-md-6 col-xs-12">
+      <div class="x_panel">
+         <div class="x_title">
+            <h2>تایید انتخاب مشاور</h2>
+            <div class="clearfix"></div>
+         </div>
+         <form method="post">
+            {% csrf_token %}
+            <p>آیا از انتخاب مشاور "<strong>{{ mentor.get_full_name }}</strong>" اطمینان دارید؟</p>
+            <br>
+            <a href="{% url 'account:mentorslist' %}" class="btn btn-primary">بازگشت</a>
+            <button type="submit" class="btn btn-success">ارسال درخواست</button>
+         </form>
+      </div>
+   </div>
+{% endblock %}
+

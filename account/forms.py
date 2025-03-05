@@ -11,9 +11,10 @@ from account.models import CampaignTransaction, EditingCampaign
 class SignupForm(UserCreationForm):
         
     user_type = forms.ChoiceField(choices=USER_TYPE, required=True)
+    phone_number = forms.CharField(max_length=30, required=True)
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'password1', 'password2', 'user_type')
+        fields = ('email', 'password1', 'password2', 'user_type', 'phone_number')
         
         
 class ProfileForm(forms.ModelForm):

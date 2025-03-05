@@ -11,15 +11,7 @@
 
 <form method="post" novalidate>
     {% csrf_token %}
-  <div data-mdb-input-init class="form-outline mb-4">
-    <label class="form-label" type="text">نام کاربری</label>
-    {{ form.username|add_class:"form-control" }}
-    {% if form.username.errors %}
-      {% for error in form.username.errors %}
-      <span class="text-danger">{{ error }}</span>
-      {% endfor %}
-    {% endif %}
-  </div>
+
   <div data-mdb-input-init class="form-outline mb-4">
     <label class="form-label" type="text">آدرس ایمیل</label>
     {{ form.email|add_class:"form-control" }}
@@ -52,6 +44,16 @@
      {{ form.user_type|add_class:"form-control" }}
     {% if form.user_type.errors %}
       {% for error in form.user_type.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <br>
+  <div data-mdb-input-init class="form-outline mb-4">
+    <label class="form-label" type="text">شماره تماس</label>
+    {{ form.phone_number|add_class:"form-control" }}
+    {% if form.phone_number.errors %}
+      {% for error in form.phone_number.errors %}
       <span class="text-danger">{{ error }}</span>
       {% endfor %}
     {% endif %}

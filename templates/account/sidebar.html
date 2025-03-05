@@ -62,7 +62,13 @@
              <li><a href="{% url 'account:mymentor' %}"><i class="fa fa-group"></i> مشاورین شما</a></li>
              {% endif %}
              {% if user.is_staff %}
-             <li><a href="#mentors"><i class="fa fa-group"></i> مشاورین</a></li>
+             <li><a><i class="fa fa-group"></i> مشاورین<span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                    <li><a href="{% url 'account:listofrequestformentor' %}"><i class="fa fa-list"></i>لیست درخواست مشاوره</a></li>
+                    <li><a href="{% url 'account:mentorslist' %}"><i class="fa fa-edit"></i>لیست مشاورین</a></li>
+                    <li><a href="{% url 'account:mentorslist' %}"><i class="fa fa-edit"></i>لیست مشاورین منتظر تایید</a></li>
+                </ul>
+            </li>
              {% endif %}
              {% if user.user_type == 'mentor' %}
              <li><a href="{% url 'account:mentoruserslist' %}"><i class="fa fa-group"></i> لیست کاربران شما</a></li>

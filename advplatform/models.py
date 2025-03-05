@@ -201,6 +201,7 @@ class Campaign(models.Model):
         blank=True, null=True,
         verbose_name='مجری کمپین'
       )
+    
     is_active = models.BooleanField(default=False, verbose_name='وضعیت کمپین')
     class Meta:
         verbose_name = 'کمپین'

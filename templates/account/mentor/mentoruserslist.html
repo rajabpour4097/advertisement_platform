@@ -53,9 +53,6 @@
                               <th class="sorting centered-cell" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="نوع مشتری: activate to sort column ascending" style="width: 100px;">نوع مشتری</th>
                               <th class="sorting centered-cell" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="زمینه فعالیت: activate to sort column ascending" style="width: 190px;">زمینه فعالیت</th>
                               <th class="sorting centered-cell" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="ارزش کسب و کار: activate to sort column ascending" style="width: 170px;">ارزش کسب و کار</th>
-                              <th class="sorting centered-cell" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="ایمیل: activate to sort column ascending" style="width: 100px;">ایمیل</th>
-                              <th class="sorting centered-cell" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="شماره تماس: activate to sort column ascending" style="width: 110px;">شماره تماس</th>
-                              <th class="sorting centered-cell" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="سوابق مشاوره: activate to sort column ascending" style="width: 110px;">سوابق مشاوره</th>
                               <th class="sorting centered-cell" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="ارتباط: activate to sort column ascending" style="width: 110px;">ارتباط</th>
                              </tr>
 
@@ -70,9 +67,6 @@
                           <td class="sorting_1 text-center">{{ user.get_cutomer_type_display }}</td>
                           <td class="sorting_1 text-center">{{ user.field_of_activity }}</td>
                           <td class="sorting_1 text-center">{{ user.bussines_value | format_price }}</td>
-                          <td class="sorting_1 text-center">{{ user.email }}</td>
-                          <td class="sorting_1 text-center">{{ user.phone_number }}</td>
-                          <td class="sorting_1 text-center"><a href="#"  style="color: #8d0ef7;"><small>مشاهده</small> <i class="fa fa-search"></i></a></td>
                           <td class="sorting_1 text-center"><a href="#"  style="color: #0088fc;"><small>ارسال پیام</small> <i class="fa fa-envelope"></i></a></td>
                       </tr>
                     {% endfor %}

@@ -10,7 +10,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
 
-from account.models import CampaignTransaction, EditingCampaign
+from account.models import CampaignTransaction, EditingCampaign, RequestForMentor
 from .tokens import account_activation_token
 from django.core.mail import EmailMessage
 from django.db.models import Q
@@ -31,6 +31,7 @@ from account.forms import (
                             )
 from account.mixins import (
                             CampaignUserMixin,
+                            CheckHaveRequestOrMentor,
                             ContextsMixin,
                             CreateCampaignUserMixin,
                             CancelUserMixin,
@@ -63,7 +64,13 @@ class Register(NotLoginedMixin, CreateView):
     
     def form_valid(self, form):
         user = form.save(commit=False)
-        user.is_active = True # If use email activate it may be False
+        
+        if user.user_type == 'mentor':
+            user.is_active = False
+        else:
+            user.is_active = True
+            
+        user.username = user.email
         user.save()
         # current_site = get_current_site(self.request)
         # mail_subject = 'فعالسازی حساب کاربری'
@@ -612,8 +619,77 @@ class MyMentor(CustomerUserMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        if RequestForMentor.objects.filter(requested_user=user, status='pending').exists():
+            context['user_last_request'] = RequestForMentor.objects.get(requested_user=user, status='pending')
+        
         context['user'] = CustomUser.objects.get(pk=user.pk)
     
         return context
 
    
+class MentorsList(CreateCampaignUserMixin, CheckHaveRequestOrMentor, TemplateView):
+    
+    template_name = 'account/mentor/mentorslist.html'
+ 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['mentors'] = CustomUser.objects.filter(user_type='mentor')
+    
+        return context
+    
+
+class MentorChooseView(CustomerUserMixin, CheckHaveRequestOrMentor, View):
+    
+    template_name = "account/mentor/mentor_choose_confirm.html"  
+    
+    def get(self, request, *args, **kwargs):
+        mentor = get_object_or_404(CustomUser, pk=self.kwargs.get('pk'))
+        return render(request, self.template_name, {'mentor': mentor})
+    
+    def post(self, request, *args, **kwargs):
+        mentor = get_object_or_404(CustomUser, pk=self.kwargs.get('pk'))
+        user = request.user
+        
+        request_for_mentor = RequestForMentor.objects.create(
+            requested_user=user,
+            mentor=mentor
+        )
+        
+        return redirect('account:mymentor')
+
+
+class ListOfRequestForMentor(StaffUserMixin, TemplateView):
+    
+    template_name = "account/mentor/requestformentor.html"  
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['requests'] = RequestForMentor.objects.all()
+    
+        return context
+
+
+class ChangeStatusRequestForMentor(StaffUserMixin, View):
+    def post(self, request, request_id, *args, **kwargs):
+        request_for_mentor = get_object_or_404(RequestForMentor, pk=request_id)
+        
+        requested_user_id = request.POST.get('requested_user_id')
+        mentor_id = request.POST.get('mentor_id')
+        status = request.POST.get('status')
+
+        if status =='reject': 
+            request_for_mentor.status = status
+            request_for_mentor.save()
+        elif status == 'approved':
+            requested_user = get_object_or_404(CustomUser, pk=requested_user_id)
+            mentor = get_object_or_404(CustomUser, pk=mentor_id)
+            request_for_mentor.status = status
+            request_for_mentor.save()
+            requested_user.customer_mentor = mentor
+            requested_user.save()
+            
+        
+        return HttpResponseRedirect(reverse_lazy('account:listofrequestformentor'))
+
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({'error': 'Method Not Allowed'}, status=405)

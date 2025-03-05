@@ -1,0 +1,85 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+
+{% load advplatform_tags %}
+
+{% block title %}لیست مشاورین{% endblock %}
+
+{% block content %}
+<style>
+    .profile_view .right img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 50%;
+        background-color: #f8f8f8; /* رنگ پس‌زمینه برای تصاویر شفاف */
+    }   
+    .profile_view {
+        min-height: 250px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+</style>
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>لیست مشاورین</h2>
+            
+            <div class="clearfix"></div>
+        </div>
+      {% for mentor in mentors %}
+      {% if not request.user.customer_mentor == mentor %}
+        <div class="col-md-4 col-sm-4 col-xs-12 profile_details">
+            <div class="well profile_view">
+                <div class="col-sm-12">
+                    <div class="left col-xs-7">
+                        {% if mentor.get_full_name %}
+                        <h2>{{ mentor.get_full_name }}</h2>
+                        {% else %}
+                            <h6>{{ mentor.email }}</h6>
+                        {% endif %}
+                        <br>
+                        <h6 class="text-primary">تعداد مشتریان: {{ mentor.mentored_customers.count}}</h6>
+                    </div>
+                    <div class="right col-xs-5 text-center">
+                        <img src="{% if mentor.customuserimages.first.image.url %}
+                                    {{ mentor.customuserimages.first.image.url }}
+                                    {% else %}
+                                    {% static 'account/build/images/img.jpg' %}{% endif %}" alt="..." class="img-circle img-responsive"> 
+                    </div>
+                </div>
+                <div class="col-xs-12 bottom text-center">
+                    <div class="col-xs-12 col-sm-6 emphasis">
+                        <p class="ratings">
+                            <a>{{ mentor.rank }}</a>
+                            <a href="#"><span class="fa fa-star"></span></a>
+                            <a href="#"><span class="fa fa-star"></span></a>
+                            <a href="#"><span class="fa fa-star"></span></a>
+                            <a href="#"><span class="fa fa-star-o"></span></a>
+                            <a href="#"><span class="fa fa-star-o"></span></a>
+                        </p>
+                    </div>
+                    <div class="col-xs-12 col-sm-6 emphasis">
+                        {% if request.user.user_type == 'customer' %}
+                        <a href="{% url 'account:choosementor' mentor.pk %}">
+                            <button type="button" class="btn btn-primary btn-xs">
+                                <i class="fa fa-user"> </i> انتخاب مشاور
+                            </button>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'account:choosementor' mentor.pk %}">
+                            <button type="button" class="btn btn-success btn-xs">
+                                <i class="fa fa-user"> </i> جزئیات مشاور
+                            </button>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

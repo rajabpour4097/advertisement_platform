@@ -30,3 +30,10 @@ CAMPAIGN_TYPE = [
                  ('cancel', 'انصراف مشتری'),
                  
                 ]
+
+REQUEST_TYPE = [
+                ('', ''),
+                ('pending', 'در حال بررسی'),
+                ('approved', 'تایید'),
+                ('reject', 'عدم تایید'),
+              ]
