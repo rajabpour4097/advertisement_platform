@@ -1,0 +1,14 @@
+{% extends "login_base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title%}
+ثبت نام موفق
+{% endblock %}
+
+
+{% block customcontent %}
+  <div class="text-center" >
+    <h6 class="text-success">{{ message }}</h6>
+    <p><a href="{% url 'adv:login' %}" class="text-primary">ورود به حساب کاربری</a></p>
+  </div>
+{% endblock %}

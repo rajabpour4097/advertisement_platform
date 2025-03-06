@@ -87,7 +87,7 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=30, null=True, blank=True, verbose_name='شماره تماس')
+    phone_number = models.CharField(max_length=30, unique=True, verbose_name='شماره تماس')
     address = models.TextField(null=True, blank=True, verbose_name='آدرس')
     birth_date = models.DateField(null=True, blank=True, verbose_name='تاریخ تولد')
     field_of_activity = models.ForeignKey(
@@ -173,7 +173,7 @@ class Campaign(models.Model):
         related_name='customers',
         verbose_name='کارفرما'
         )
-    topic = models.ManyToManyField(Topic, verbose_name='موضوعات کمپین')
+    topic = models.ManyToManyField(Topic, verbose_name='موضوعات کمپین', related_name='topics')
     describe = models.TextField(verbose_name='شرح کمپین')
     purposed_price = models.BigIntegerField(verbose_name='قیمت پیشنهادی')
     starttimedate = models.DateTimeField(null=True, blank=True, verbose_name='زمان شروع')
@@ -206,6 +206,7 @@ class Campaign(models.Model):
     class Meta:
         verbose_name = 'کمپین'
         verbose_name_plural = 'کمپین ها'
+        ordering = ['-created_time']
     
     def get_countdown_datetime(self):
         return self.endtimedate.strftime('%Y-%m-%dT%H:%M:%S')

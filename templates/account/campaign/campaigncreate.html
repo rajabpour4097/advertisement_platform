@@ -5,8 +5,41 @@
 {% block title %}ایجاد کمپین‌ تبلیغاتی{% endblock %}
 
 {% block content %}
+<style>
+.form-group label {
+    margin-top: 10px;  
+    font-size: 1.0em;
+    color: #34495e;
+}
 
-<div class="col-md-6 col-xs-12">
+.form-group .form-control {
+    margin-top: 5px;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.form-group .form-control:focus {
+    border-color: #028c32;
+    box-shadow: 0 0 5px rgba(2, 140, 50, 0.5);
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+.btn-success {
+    background-color: #028c32;
+    border-color: #028c32;
+}
+
+.btn-success:hover {
+    background-color: #026a24;
+    border-color: #026a24;
+}
+</style>
+<div class="col-md-6 col-xs-12 form-group" style="scale:95%;">
   <div class="x_panel">
     <div class="x_title">
         <h2 style="color: #028c32;">ایجاد کمپین‌ جدید</h2>
@@ -18,7 +51,7 @@
 
         {{ form|crispy }}  <!-- فرم اصلی Campaign -->
     
-        <h3>تصاویر کمپین‌</h3>
+        <label>تصاویر کمپین‌:</label>
         {{ image_formset.management_form|crispy }}  <!-- مدیریت FormSet -->
         {% for form in image_formset %}
             <div class="image-form">
@@ -27,10 +60,9 @@
         {% endfor %}
         
         <br>
-        <a href="{% url 'account:portfolios' %}" class="btn btn-primary">بازگشت</a>
+        <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
         <button type="submit" class="btn btn-success">ارسال</button>
     </form>
   </div>
 </div>
 {% endblock %}
-

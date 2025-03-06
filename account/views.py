@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.sites.shortcuts import get_current_site
@@ -64,14 +64,22 @@ class Register(NotLoginedMixin, CreateView):
     
     def form_valid(self, form):
         user = form.save(commit=False)
-        
+
         if user.user_type == 'mentor':
             user.is_active = False
+            message = "ثبت‌نام شما به عنوان مشاور انجام شد. لطفاً منتظر تأیید مدیریت باشید."
         else:
             user.is_active = True
-            
+            message = "ثبت‌نام شما با موفقیت انجام شد! حالا می‌توانید وارد شوید."
+
         user.username = user.email
         user.save()
+
+        self.request.session['signup_success'] = True
+        self.request.session['signup_message'] = message
+        
+        success_url = reverse('signup_success') + f"?message={message}"
+    
         # current_site = get_current_site(self.request)
         # mail_subject = 'فعالسازی حساب کاربری'
         # message = render_to_string('registration/activate_account.html', {
@@ -86,9 +94,30 @@ class Register(NotLoginedMixin, CreateView):
         # )
         # email.send()
         # return HttpResponse('لینک فعالسازی برای ایمیل شما ارسال شد. <a href="/login">صفحه ورود</a>')
-        return HttpResponse('ثبت نام با موفقیت انجام شد. <a href="/login">صفحه ورود</a>')
         
+        return redirect(success_url)
 
+
+class SignupSuccessView(TemplateView):
+    template_name = "registration/signup_success.html"
+
+    def get(self, request, *args, **kwargs):
+        if not request.session.get('signup_success', False):
+            return redirect('adv:login')
+
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['message'] = self.request.session.get("signup_message", "عملیات انجام شد!")
+
+        del self.request.session['signup_success']
+        del self.request.session['signup_message']
+        
+        return context
+
+
+#Activate with email
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -340,14 +369,12 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
 
         self.object = form.save()
 
-        # ذخیره‌سازی تصاویر
         context = self.get_context_data()
         image_formset = context['image_formset']
         if image_formset.is_valid():
             image_formset.instance = self.object
             image_formset.save()
         else:
-            # اگر فرم‌ست تصاویر معتبر نباشد، خطا برگردانید
             return self.form_invalid(form)
 
         return super().form_valid(form)
@@ -632,8 +659,12 @@ class MentorsList(CreateCampaignUserMixin, CheckHaveRequestOrMentor, TemplateVie
     template_name = 'account/mentor/mentorslist.html'
  
     def get_context_data(self, **kwargs):
+        print(self.request.user.is_staff)
         context = super().get_context_data(**kwargs)
-        context['mentors'] = CustomUser.objects.filter(user_type='mentor')
+        if self.request.user.is_staff:
+            context['mentors'] = CustomUser.objects.filter(user_type='mentor')
+        else:    
+            context['mentors'] = CustomUser.objects.filter(user_type='mentor', is_active=True)
     
         return context
     
@@ -693,3 +724,8 @@ class ChangeStatusRequestForMentor(StaffUserMixin, View):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({'error': 'Method Not Allowed'}, status=405)
+    
+    
+class NewMentorActivate(StaffUserMixin, TemplateView):
+    
+    template_name = "account/activatenewmentor.html"  

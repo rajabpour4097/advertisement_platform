@@ -1,17 +1,15 @@
 from django import forms
 from advplatform.choices_type import USER_TYPE
-from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, PortfolioImages
+from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, PortfolioImages, Topic
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from account.models import CampaignTransaction, EditingCampaign
 
 
 
-
 class SignupForm(UserCreationForm):
         
     user_type = forms.ChoiceField(choices=USER_TYPE, required=True)
-    phone_number = forms.CharField(max_length=30, required=True)
     class Meta:
         model = CustomUser
         fields = ('email', 'password1', 'password2', 'user_type', 'phone_number')
@@ -119,19 +117,19 @@ class CampaignCreateForm(forms.ModelForm):
                   'topic', 
                   'describe', 
                   'purposed_price',
-                  'starttimedate', 
-                  'endtimedate'
                   ]
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        self.fields['customer'].widget.attrs.update({'class': 'form-control'})
+        self.fields['topic'].widget.attrs.update({'class': 'form-control'})
+        self.fields['describe'].widget.attrs.update({'class': 'form-control'})
+        self.fields['purposed_price'].widget.attrs.update({'class': 'form-control'})
         
         if not user.is_staff and user.user_type == 'customer':
             self.fields['customer'].initial = user
             self.fields['customer'].widget = forms.HiddenInput()
-            self.fields['starttimedate'].widget = forms.HiddenInput()
-            self.fields['endtimedate'].widget = forms.HiddenInput()
             
 
 CampaignImageFormSet = inlineformset_factory(
