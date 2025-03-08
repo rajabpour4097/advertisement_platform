@@ -39,6 +39,7 @@
     border-color: #026a24;
 }
 </style>
+
 <div class="col-md-6 col-xs-12 form-group" style="scale:95%;">
   <div class="x_panel">
     <div class="x_title">
@@ -51,18 +52,50 @@
 
         {{ form|crispy }}  <!-- فرم اصلی Campaign -->
     
-        <label>تصاویر کمپین‌:</label>
-        {{ image_formset.management_form|crispy }}  <!-- مدیریت FormSet -->
-        {% for form in image_formset %}
-            <div class="image-form">
-                {{ form|crispy }}  <!-- نمایش فرم‌های تصاویر -->
-            </div>
-        {% endfor %}
-        
-        <br>
-        <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
-        <button type="submit" class="btn btn-success">ارسال</button>
+        {% comment %} <label>تصاویر کمپین‌:</label> {% endcomment %}
+            {{ image_formset.management_form|crispy }}  <!-- مدیریت FormSet -->
+        <div id="image-form-container">  <!-- کانتینر برای فرم‌های تصویر -->
+            {% for form in image_formset %}
+                <div class="image-form">
+                {{ form | crispy }}  <!-- نمایش فرم‌های تصاویر -->
+                </div>
+            {% endfor %}
+        </div>
+
+<!-- دکمه افزودن تصویر -->
+<button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
+
+<br><br>
+
+<!-- دکمه‌های ارسال و بازگشت -->
+<a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
+<button type="submit" class="btn btn-success">ارسال</button>
     </form>
   </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let totalForms = document.querySelector("#id_campaignsimages-TOTAL_FORMS");  
+        let formContainer = document.querySelector("#image-form-container");  
+        let firstForm = formContainer.querySelector(".image-form");  
+        let addButton = document.querySelector("#add-image-form");  
+
+        addButton.addEventListener("click", function() {
+            let formCount = parseInt(totalForms.value);
+            let newForm = firstForm.cloneNode(true);  
+
+            // جایگزینی شماره فرم در IDهای فیلدهای جدید
+            newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
+
+            // مقدار فیلدهای جدید را پاک کنیم
+            newForm.querySelectorAll("input").forEach(input => input.value = "");
+
+            // افزودن فرم جدید به **داخل** فرم‌های تصاویر
+            formContainer.appendChild(newForm);
+            totalForms.value = formCount + 1;
+        });
+    });
+</script>
 {% endblock %}
+

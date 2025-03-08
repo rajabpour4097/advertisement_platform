@@ -285,7 +285,7 @@ class UsersImages(models.Model):
 
 
 class CampaignImages(models.Model):
-    image = models.ImageField(upload_to='campaigns/')
+    image = models.ImageField(upload_to='campaigns/', verbose_name='آپلود تصویر کمپین')
     campaigns = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='campaignsimages')
     
     class Meta:

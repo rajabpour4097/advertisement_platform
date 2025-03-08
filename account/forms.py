@@ -130,7 +130,7 @@ class CampaignCreateForm(forms.ModelForm):
         if not user.is_staff and user.user_type == 'customer':
             self.fields['customer'].initial = user
             self.fields['customer'].widget = forms.HiddenInput()
-            
+
 
 CampaignImageFormSet = inlineformset_factory(
     Campaign, 
