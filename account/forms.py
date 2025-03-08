@@ -162,11 +162,11 @@ class StartCampaignForm(forms.ModelForm):
 class EditCampaignForm(forms.ModelForm):
     class Meta:
         model = Campaign
-        fields = ['topic', 'describe', 'purposed_price', 'starttimedate', 'endtimedate']
+        fields = ['topic', 'describe', 'purposed_price']
         widgets = {
             'describe': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'starttimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'endtimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            # 'starttimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            # 'endtimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
         

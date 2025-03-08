@@ -510,7 +510,7 @@ class CampaignEditView(EditCampaignUserMixin, View):
                           {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
                                'back_url': "account:campaigns"},
                           )
-
+        
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, pk):

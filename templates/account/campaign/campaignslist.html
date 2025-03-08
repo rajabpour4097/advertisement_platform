@@ -76,7 +76,7 @@
 
                              <td class="center">{{ campaign.topic.all|join:", " }}</td>
                              <td class="center">
-                                {% if user.is_staff %}
+                                {% if user.is_staff or user.user_type == 'customer' %}
                                 <a href="{% url 'account:campaignedit' campaign.pk %}">{{ campaign.describe | truncatewords:15 }}</a>
                                 {% else %}
                                 {{ campaign.describe | truncatewords:15 }}
