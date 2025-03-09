@@ -257,6 +257,7 @@ class Portfolio(models.Model):
     class Meta:
         verbose_name = 'نمونه کار'
         verbose_name_plural = 'نمونه کارها'
+        ordering = ['-created_time']
     
     def __str__(self):
         return (f'{self.id} {self.dealer}')
@@ -282,6 +283,11 @@ class UsersImages(models.Model):
     
     def __str__(self):
         return str(self.customer)
+    
+    def save(self, *args, **kwargs):
+        # حذف عکس قبلی کاربر (در صورت وجود)
+        UsersImages.objects.filter(customer=self.customer).delete()
+        super().save(*args, **kwargs)
 
 
 class CampaignImages(models.Model):

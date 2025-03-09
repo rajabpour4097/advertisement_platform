@@ -42,35 +42,36 @@
 
 <div class="col-md-6 col-xs-12 form-group" style="scale:95%;">
   <div class="x_panel">
-    <div class="x_title">
-        <h2 style="color: #028c32;">ایجاد کمپین‌ جدید</h2>
-
-        <div class="clearfix"></div>
-    </div>
-    <form method="post" enctype="multipart/form-data" novalidate>
-        {% csrf_token %}
-
-        {{ form|crispy }}  <!-- فرم اصلی Campaign -->
-    
-        {% comment %} <label>تصاویر کمپین‌:</label> {% endcomment %}
-            {{ image_formset.management_form|crispy }}  <!-- مدیریت FormSet -->
-        <div id="image-form-container">  <!-- کانتینر برای فرم‌های تصویر -->
-            {% for form in image_formset %}
-                <div class="image-form">
-                {{ form | crispy }}  <!-- نمایش فرم‌های تصاویر -->
-                </div>
-            {% endfor %}
-        </div>
-
-<!-- دکمه افزودن تصویر -->
-<button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
-
-<br><br>
-
-<!-- دکمه‌های ارسال و بازگشت -->
-<a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
-<button type="submit" class="btn btn-success">ارسال</button>
-    </form>
+      <div class="x_title">
+          <h2 style="color: #028c32;">ایجاد کمپین‌ جدید</h2>
+  
+          <div class="clearfix"></div>
+      </div>
+      <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+  
+          {{ form|crispy }}  <!-- فرم اصلی Campaign -->
+      
+          {% comment %} <label>تصاویر کمپین‌:</label> {% endcomment %}
+              {{ image_formset.management_form|crispy }}  <!-- مدیریت FormSet -->
+          <div id="image-form-container">  <!-- کانتینر برای فرم‌های تصویر -->
+              {% for form in image_formset %}
+                  <div class="image-form">
+                  {{ form | crispy }}  <!-- نمایش فرم‌های تصاویر -->
+                  </div>
+              {% endfor %}
+          </div>
+  
+          <!-- دکمه افزودن تصویر -->
+          <button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
+  
+          <br>
+          <br>
+  
+          <!-- دکمه‌های ارسال و بازگشت -->
+          <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
+          <button type="submit" class="btn btn-success">ارسال</button>
+      </form>
   </div>
 </div>
 
@@ -96,6 +97,6 @@
             totalForms.value = formCount + 1;
         });
     });
-</script>
+</script> 
 {% endblock %}
 

@@ -44,7 +44,7 @@ from account.mixins import (
                             PortfolioEditMixin,
                             StaffUserMixin
                             )
-from advplatform.models import Campaign, CustomUser, Portfolio
+from advplatform.models import Campaign, CustomUser, Portfolio, UsersImages
 from django.contrib.auth import logout
 
 
@@ -202,9 +202,9 @@ class PortfolioCreateView(LoginRequiredMixin, DealerUserMixin, CreateView):
 
     def form_valid(self, form):
         if self.request.user.user_type == 'dealer':
-            form.instance.dealer = self.request.user  # اگر `dealer` باشد، مقدار را خودش بگیرد
+            form.instance.dealer = self.request.user 
         elif self.request.user.is_staff and not form.instance.dealer:
-            form.instance.dealer = self.request.user  # اگر `is_staff` باشد و مقدار `dealer` در فرم خالی باشد
+            form.instance.dealer = self.request.user
 
         if not form.instance.dealer:
             form.add_error('dealer', "فیلد مجری نمی‌تواند خالی باشد.")
@@ -229,6 +229,8 @@ class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin,
     model = Portfolio
     form_class = PortfolioEditForm
     template_name = 'account/portfolio/portfolioedit.html'
+    success_url = reverse_lazy('account:portfolios') 
+    
 
     def handle_no_permission(self):
         return render(self.request, '403.html', 
@@ -243,10 +245,15 @@ class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin,
         context = super().get_context_data(**kwargs)
         if self.request.POST:
             context['image_formset'] = PortfolioImageFormSet(
-                self.request.POST, self.request.FILES, instance=self.object
-            )
+            self.request.POST, self.request.FILES, instance=self.object
+        )
         else:
             context['image_formset'] = PortfolioImageFormSet(instance=self.object)
+    
+        # فرم‌های خالی معتبر باشند
+        for form in context['image_formset']:
+            form.empty_permitted = True
+    
         return context
 
     def form_valid(self, form):
@@ -256,8 +263,14 @@ class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin,
         self.object = form.save()
     
         if image_formset.is_valid():
-            image_formset.instance = self.object
-            image_formset.save()
+            for form in image_formset:
+                if form.cleaned_data.get('DELETE') and form.instance.pk:
+                    form.instance.delete()
+                elif form.cleaned_data.get('image') is None:
+                    continue
+                else:
+                    form.instance = self.object
+                    form.save()
         else:
             print("خطاهای FormSet:", image_formset.errors)
             return self.form_invalid(form)
@@ -274,6 +287,7 @@ class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin,
             print("FormSet نامعتبر است. خطاها:", image_formset.errors)
 
         return super().form_invalid(form)
+    
 
 class PortfolioDeleteView(LoginRequiredMixin, DealerUserMixin, PortfolioDeleteMixin, DeleteView):
     
@@ -288,23 +302,33 @@ class PortfolioDeleteView(LoginRequiredMixin, DealerUserMixin, PortfolioDeleteMi
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
-    
     model = CustomUser
     form_class = ProfileForm
     template_name = 'account/profile.html'
     success_url = reverse_lazy('account:profile')
+    
+    def get_object(self, queryset=None):
+        return self.request.user
 
-    def handle_no_permission(self):
-        return reverse_lazy('account:login')
-    
-    def get_object(self):
-        return CustomUser.objects.get(pk=self.request.user.pk)
-    
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        
+        # ذخیره تصویر جدید در مدل UsersImages
+        profile_image = self.request.FILES.get('profile_image')
+        if profile_image:
+            # بررسی برای حذف تصویر قدیمی (در صورت وجود)
+            user_images = UsersImages.objects.filter(customer=self.request.user)
+            if user_images.exists():
+                user_images.first().delete()  # حذف تصویر قدیمی
+            # ذخیره تصویر جدید
+            UsersImages.objects.create(customer=self.request.user, image=profile_image)
+
+        return response
 
 class CampaignListView(LoginRequiredMixin, CampaignUserMixin, TemplateView):
     
@@ -487,6 +511,7 @@ class CampaignReviewView(StaffUserMixin, View):
             'form2': form2,
             'editings': editings,
         })
+        
 
 class CampaignEditView(EditCampaignUserMixin, View):
     template_name = "account/campaign/campaign_edit.html"

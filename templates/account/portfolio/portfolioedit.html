@@ -5,8 +5,45 @@
 {% block title %}ویرایش نمونه کار{% endblock %}
 
 {% block content %}
+<style>
+
+  .form-group label {
+      margin-top: 10px;  
+      font-size: 1.0em;
+      color: #34495e;
+  }
+  
+  .form-group .form-control {
+      margin-top: 5px;
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #ccc;
+  }
+  
+  .form-group .form-control:focus {
+      border-color: #028c32;
+      box-shadow: 0 0 5px rgba(2, 140, 50, 0.5);
+  }
+  
+  .btn {
+      border-radius: 8px;
+      padding: 10px 20px;
+  }
+  
+  .btn-success {
+      background-color: #028c32;
+      border-color: #028c32;
+  }
+  
+  .btn-success:hover {
+      background-color: #026a24;
+      border-color: #026a24;
+  }
+  
+</style>
+
 <div>
-  <div class="col-md-6 col-xs-12">
+  <div class="col-md-6 col-xs-12 form-group" style="scale:90%;">
     <div class="x_panel">
       <div class="x_title">
         <h2>نمونه کار  
@@ -50,9 +87,11 @@
         <br>
         {{ form.done_time|as_crispy_field }}
         <br>
+        {% if form.is_active %}
         <div class="col-md-6 col-sm-6 col-xs-10">
           {{ form.is_active|as_crispy_field }}
         </div>
+        {% endif %}
         <br>
     
         <h3>تصاویر نمونه کار</h3>
@@ -76,4 +115,29 @@
     </div>
   </div>
 </div>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      let totalForms = document.querySelector("#id_portfolioimages-TOTAL_FORMS");  
+      let formContainer = document.querySelector("#image-form-container");  
+      let firstForm = formContainer.querySelector(".image-form");  
+      let addButton = document.querySelector("#add-image-form");  
+
+      addButton.addEventListener("click", function() {
+          let formCount = parseInt(totalForms.value);
+          let newForm = firstForm.cloneNode(true);  
+
+          // جایگزینی شماره فرم در IDهای فیلدهای جدید
+          newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
+
+          // مقدار فیلدهای جدید را پاک کنیم
+          newForm.querySelectorAll("input").forEach(input => input.value = "");
+
+          // افزودن فرم جدید به **داخل** فرم‌های تصاویر
+          formContainer.appendChild(newForm);
+          totalForms.value = formCount + 1;
+      });
+  });
+</script>
 {% endblock %}

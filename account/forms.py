@@ -1,6 +1,6 @@
 from django import forms
 from advplatform.choices_type import USER_TYPE
-from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, PortfolioImages, Topic
+from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, PortfolioImages, Topic, UsersImages
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from account.models import CampaignTransaction, EditingCampaign
@@ -16,6 +16,8 @@ class SignupForm(UserCreationForm):
         
         
 class ProfileForm(forms.ModelForm):
+    
+    profile_image = forms.ImageField(required=False, label="عکس پروفایل")
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
@@ -52,20 +54,18 @@ class ProfileForm(forms.ModelForm):
                 'customer_mentor',# /for Customer
                 'is_active',#/
             ]
-
-
-class PortfolioEditForm(forms.ModelForm):
     
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
-        if user.user_type == 'dealer':
-            self.fields.pop('dealer', None)
-            
-    class Meta:
-        model = Portfolio
-        fields = '__all__'
+    def save(self, commit=True):
+        user = super().save(commit=False)
         
+        profile_image = self.cleaned_data.get('profile_image')
+        if profile_image:
+            UsersImages.objects.create(customer=user, image=profile_image)
+
+        if commit:
+            user.save()
+        return user
+
 
 class PortfolioCreateForm(forms.ModelForm):
     
@@ -78,6 +78,7 @@ class PortfolioCreateForm(forms.ModelForm):
             'max_length': 'عنوان نمونه کار نمی‌تواند بیش از ۵۰ کاراکتر باشد!',
         }
     )
+    done_time = forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
     
     class Meta:
         model = Portfolio
@@ -89,7 +90,9 @@ class PortfolioCreateForm(forms.ModelForm):
                   'done_time', 
                   'is_active'
                   ]
-
+        widgets = {
+            'done_time': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
@@ -106,6 +109,20 @@ PortfolioImageFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
+
+
+class PortfolioEditForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user.user_type == 'dealer':
+            self.fields.pop('dealer', None)
+            self.fields.pop('is_active', None)
+            
+    class Meta:
+        model = Portfolio
+        fields = '__all__'
 
 
 class CampaignCreateForm(forms.ModelForm):
@@ -167,7 +184,6 @@ class EditCampaignForm(forms.ModelForm):
             'describe': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             # 'starttimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             # 'endtimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'deadline': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
         
     def __init__(self, *args, **kwargs):

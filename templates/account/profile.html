@@ -6,9 +6,40 @@
 {% block title %}پروفایل کاربری{% endblock %}
 
 {% block content %}
+<style>
+  textarea.form-control {
+    height: 80px;
+  }
+  .custom-file-upload {
+    display: inline-block;
+    background-color: #28a745; /* رنگ سبز */
+    color: white;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.custom-file-upload:hover {
+    background-color: #218838;
+}
+
+.file-input {
+    display: none; /* مخفی کردن input اصلی */
+}
+
+#file-name {
+    margin-right: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+
+</style>
 
 <div class="col-md-6 col-xs-12">
-  <div class="x_panel" style="scale:90%;">
+  <div class="x_panel" style="scale:85%;">
     <div class="x_title">
         <h2>پروفایل کاربری</h2>
 
@@ -76,8 +107,9 @@
         <br>
         <div class="col-md-12 col-sm-10 col-xs-12">
           {% if not user.is_staff %}
-           <div class="form-group col-md-6 mb-0">
-           {{ form.user_type|as_crispy_field }}
+           <div class="form-group col-md-4 mb-0">
+            <p class="btn btn-default">{{ user.get_user_type_display}}</p>
+           
            </div>
            {% endif %}
            <div class="form-group col-md-2 mb-0" style="margin-top: 30px;">
@@ -117,7 +149,25 @@
           </div>
           <br>
         {% endif %}  
-        
+        <div class="col-md-12 col-sm-10 col-xs-12">
+          <label for="profile-image">عکس پروفایل</label>
+          <br>
+          {% with user.customuserimages.last as profile_image %}
+              {% if profile_image %}
+                  <img id="profile-preview" src="{{ profile_image.image.url }}" class="img-thumbnail" width="150">
+              {% else %}
+                  <img id="profile-preview" src="{% static 'images/default-profile.png' %}" class="img-thumbnail" width="150">
+              {% endif %}
+          {% endwith %}
+          <br><br>
+      
+          <!-- دکمه آپلود جایگزین -->
+          <label for="profile_image" class="custom-file-upload">انتخاب فایل</label>
+          <span id="file-name"></span>
+      
+          <!-- فیلد آپلود مخفی شده -->
+          <input type="file" name="profile_image" id="profile_image" class="file-input" accept="image/*" style="display:none;">
+        </div>
        <br>
        <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px; margin-right: 100px;">
           <a href="{% url 'account:portfolios' %}" class="btn btn-primary">بازگشت</a>
@@ -126,10 +176,31 @@
     </form>
   </div>
 </div>
-<style>
-  textarea.form-control {
-    height: 80px;
-  }
-</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var fileInput = document.getElementById('profile_image');
+    var fileNameSpan = document.getElementById('file-name');
+    var previewImage = document.getElementById('profile-preview');
+    var defaultImage = previewImage.src; // ذخیره تصویر پیش‌فرض
+
+    fileInput.addEventListener('change', function(event) {
+        var file = fileInput.files[0];
+
+        if (file) {
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result; // نمایش پیش‌نمایش تصویر
+            };
+            reader.readAsDataURL(file);
+        } else {
+            fileNameSpan.textContent = "هیچ فایلی انتخاب نشده است";
+            previewImage.src = defaultImage; // اگر فایلی انتخاب نشود، تصویر پیش‌فرض را برگردان
+        }
+    });
+});
+</script>
+
 {% endblock %}
 
