@@ -75,7 +75,8 @@
                                 </button>
                             </a>
                               {% if not mentor.is_active %}
-                              <i class="fa fa-plug text-danger"> </i><a class="text-danger"> منتظر تایید</a>
+                                <i class="fa fa-plug text-danger"> </i>
+                                <a href="{% url 'account:activementor' mentor.pk %}" class="text-danger"> منتظر تایید</a>
                               {% endif %}
                           {% endif %}
                       </div>

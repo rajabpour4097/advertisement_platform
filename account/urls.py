@@ -18,6 +18,7 @@ from account.views import (
     MentorUsersList,
     MentorsList,
     MyMentor,
+    NewMentorActivate,
     PasswordChange,
     PasswordChangeDone, 
     PortfolioCreateView,
@@ -57,6 +58,7 @@ urlpatterns = [
     path('mymentor/', MyMentor.as_view(), name='mymentor'), 
     path('mentorslist/', MentorsList.as_view(), name='mentorslist'), 
     path('mentor/choosementor/<int:pk>', MentorChooseView.as_view(), name='choosementor'), 
+    path('mentor/activementor/<int:pk>', NewMentorActivate.as_view(), name='activementor'), 
     path('requestformentor/', ListOfRequestForMentor.as_view(), name='listofrequestformentor'), 
     path('requestformentor/<int:request_id>/change-status/', ChangeStatusRequestForMentor.as_view(), name='changestatusrequestformentor'),    
 ]

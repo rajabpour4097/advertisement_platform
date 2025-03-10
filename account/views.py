@@ -719,7 +719,18 @@ class ChangeStatusRequestForMentor(StaffUserMixin, View):
     def get(self, request, *args, **kwargs):
         return JsonResponse({'error': 'Method Not Allowed'}, status=405)
     
-    
-class NewMentorActivate(StaffUserMixin, TemplateView):
+
+class NewMentorActivate(StaffUserMixin, View):
     
     template_name = "account/activatenewmentor.html"  
+    
+    def get(self, request, *args, **kwargs):
+        mentor = get_object_or_404(CustomUser, pk=self.kwargs.get('pk'))
+        return render(request, self.template_name, {'mentor': mentor})
+
+    def post(self, request, *args, **kwargs):
+        mentor = get_object_or_404(CustomUser, pk=self.kwargs.get('pk'))
+        mentor.is_active = True
+        mentor.save()
+        return redirect('account:mentorslist')
+        

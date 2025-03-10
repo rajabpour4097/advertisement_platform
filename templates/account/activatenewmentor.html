@@ -1,0 +1,56 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}بررسی منتور جدید{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    
+    <!-- Edit reason section -->
+    <div class="col-md-6 col-xs-12 campaign-form">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color: #028c32;">بررسی منتور جدید</h2>
+                <div class="clearfix"></div>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <a href="{% url 'account:mentorslist' %}" class="btn btn-primary">بازگشت</a>
+                <button type="submit" class="btn btn-success">تایید</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Campaign detail section -->
+    <div class="col-md-6 col-xs-12 campaign-details">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color: #028c32;">جزئیات مشاور</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <p><strong class="campaign-strong">نام مشاور:</strong> 
+                    {% if mentor.get_full_name %}
+                        {{ mentor.get_full_name }}
+                    {% else %}
+                        نامی وارد نکرده است
+                    {% endif %}
+                </p>
+                <p><strong class="campaign-strong">ایمیل:</strong> {{ mentor.email}}</p>
+                <p><strong class="campaign-strong">شماره تماس:</strong> {{ mentor.phone_number }}</p>
+                <p><strong class="campaign-strong">آدرس:</strong> 
+                    {% if mentor.address %}
+                        {{ mentor.address }}
+                    {% else %}
+                        آدرسی وارد نکرده است
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
