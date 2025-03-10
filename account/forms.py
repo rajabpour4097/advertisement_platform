@@ -107,7 +107,7 @@ PortfolioImageFormSet = inlineformset_factory(
     PortfolioImages, 
     fields=('image',), 
     extra=1,
-    can_delete=True
+    can_delete=True,
 )
 
 
@@ -174,7 +174,6 @@ class StartCampaignForm(forms.ModelForm):
         model = Campaign
         fields = ['starttimedate', 'endtimedate']
         
-
 
 class EditCampaignForm(forms.ModelForm):
     class Meta:

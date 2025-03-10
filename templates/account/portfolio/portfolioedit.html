@@ -94,20 +94,14 @@
         {% endif %}
         <br>
     
-        <h3>تصاویر نمونه کار</h3>
-        {{ image_formset.management_form|crispy }}
+        <h5>تصاویر نمونه کار</h5>
         {% for form in image_formset %}
           <div class="image-form">
             {% if form.instance.image %}
-              <p>تصویر فعلی: <img src="{{ form.instance.image.url }}" alt="تصویر نمونه کار" width="100"></p>
-            {% endif %}
-            {{ form.image|as_crispy_field }}
-            {% if form.instance.pk %}
-              {{ form.DELETE|as_crispy_field }}
+              <p>تصاویر فعلی: <img src="{{ form.instance.image.url }}" alt="تصویر نمونه کار" width="100"></p>
             {% endif %}
           </div>
         {% endfor %}
-    
         <br>
         <a href="{% url 'account:portfolios' %}" class="btn btn-primary">بازگشت</a>
         <button type="submit" class="btn btn-success">ارسال</button>
@@ -116,28 +110,5 @@
   </div>
 </div>
 
-
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-      let totalForms = document.querySelector("#id_portfolioimages-TOTAL_FORMS");  
-      let formContainer = document.querySelector("#image-form-container");  
-      let firstForm = formContainer.querySelector(".image-form");  
-      let addButton = document.querySelector("#add-image-form");  
-
-      addButton.addEventListener("click", function() {
-          let formCount = parseInt(totalForms.value);
-          let newForm = firstForm.cloneNode(true);  
-
-          // جایگزینی شماره فرم در IDهای فیلدهای جدید
-          newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
-
-          // مقدار فیلدهای جدید را پاک کنیم
-          newForm.querySelectorAll("input").forEach(input => input.value = "");
-
-          // افزودن فرم جدید به **داخل** فرم‌های تصاویر
-          formContainer.appendChild(newForm);
-          totalForms.value = formCount + 1;
-      });
-  });
-</script>
 {% endblock %}
+

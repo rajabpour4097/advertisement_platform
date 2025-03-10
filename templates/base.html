@@ -55,7 +55,15 @@
                 </li>
                 <li><a href="{% url 'adv:portfolios' %}" class="st-smooth-move">نمونه کارها</a></li>
                 <li><a href="{% url 'adv:mentors' %}" class="st-smooth-move">تیم مشاوران</a></li>
-                <li><a href="{% if user.is_authenticated %} {% url 'account:home' %}{% else %}{% url 'adv:login' %}{% endif %}" class="st-smooth-move">حساب کاربری</a></li>
+                {% if user.is_authenticated %}
+                  <li><a href=" {% url 'account:home' %}" class="st-smooth-move">حساب کاربری</a></li>
+                {% else %}
+                  <li><a href="" class="st-smooth-move">حساب کاربری</a>
+                    <ul>
+                      <li class="menu-item-has-children"><a href="{% url 'adv:login' %}">ورود</a></li>
+                      <li class="menu-item-has-children"><a href="{% url 'signup' %}">ثبت نام</a></li>
+                    </ul>
+                {% endif %}
                 <li class="menu-item-has-children"><a href="{% url 'adv:campaigns' %}" class="st-smooth-move">کمپین های در حال برگزاری</a></li>
                 <li><a href="{% url 'adv:aboutus' %}" class="st-smooth-move">درباره ما</a></li>
                 <li><a href="{% url 'adv:contactus' %}" class="st-smooth-move">ارتباط با ما</a></li>

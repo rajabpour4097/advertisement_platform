@@ -61,13 +61,14 @@
     
         {% comment %} <h3>تصاویر نمونه کار</h3> {% endcomment %}
         {{ image_formset.management_form|crispy }}  <!-- مدیریت FormSet -->
-          <div id="image-form-container">  <!-- کانتینر برای فرم‌های تصویر -->
-              {% for form in image_formset %}
-                  <div class="image-form">
-                  {{ form | crispy }}  <!-- نمایش فرم‌های تصاویر -->
-                  </div>
-              {% endfor %}
-          </div>
+        <div id="image-form-container">  
+            {% for form in image_formset %}
+                <div class="image-form">
+                    <img class="preview-image" src="{% static 'images/default-placeholder.png' %}" width="100" style="display: none; margin-bottom: 10px;">
+                    {{ form | crispy }}  
+                </div>
+            {% endfor %}
+        </div>
   
           <!-- دکمه افزودن تصویر -->
           <button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
@@ -80,27 +81,58 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        let totalForms = document.querySelector("#id_portfolioimages-TOTAL_FORMS");  
-        let formContainer = document.querySelector("#image-form-container");  
-        let firstForm = formContainer.querySelector(".image-form");  
-        let addButton = document.querySelector("#add-image-form");  
+    document.addEventListener("DOMContentLoaded", function () {
+        function previewImage(input, previewElement) {
+            if (input.files && input.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    previewElement.src = e.target.result;
+                    previewElement.style.display = "block";
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                previewElement.style.display = "none";
+            }
+        }
 
-        addButton.addEventListener("click", function() {
+        // برای فرم‌های موجود در ابتدا
+        document.querySelectorAll(".image-form").forEach(function (form) {
+            let input = form.querySelector("input[type='file']");
+            let preview = form.querySelector(".preview-image");
+
+            if (input) {
+                input.addEventListener("change", function () {
+                    previewImage(input, preview);
+                });
+            }
+        });
+
+        // برای فرم‌های جدیدی که با دکمه اضافه می‌شوند
+        document.querySelector("#add-image-form").addEventListener("click", function () {
+            let totalForms = document.querySelector("#id_portfolioimages-TOTAL_FORMS");
+            let formContainer = document.querySelector("#image-form-container");
+            let firstForm = formContainer.querySelector(".image-form");
             let formCount = parseInt(totalForms.value);
-            let newForm = firstForm.cloneNode(true);  
 
-            // جایگزینی شماره فرم در IDهای فیلدهای جدید
+            let newForm = firstForm.cloneNode(true);
             newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
 
-            // مقدار فیلدهای جدید را پاک کنیم
-            newForm.querySelectorAll("input").forEach(input => input.value = "");
+            // مقدار فیلد‌های جدید را پاک کنیم
+            let input = newForm.querySelector("input[type='file']");
+            let preview = newForm.querySelector(".preview-image");
+            input.value = "";
+            preview.src = "{% static 'images/default-placeholder.png' %}";
+            preview.style.display = "none";
 
-            // افزودن فرم جدید به **داخل** فرم‌های تصاویر
+            input.addEventListener("change", function () {
+                previewImage(input, preview);
+            });
+
             formContainer.appendChild(newForm);
             totalForms.value = formCount + 1;
         });
     });
 </script>
+
 {% endblock %}
 

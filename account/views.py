@@ -210,17 +210,22 @@ class PortfolioCreateView(LoginRequiredMixin, DealerUserMixin, CreateView):
             form.add_error('dealer', "فیلد مجری نمی‌تواند خالی باشد.")
             return self.form_invalid(form)
 
-        self.object = form.save()
-
-        # ذخیره‌سازی تصاویر
         context = self.get_context_data()
         image_formset = context['image_formset']
-        if image_formset.is_valid():
-            image_formset.instance = self.object
-            image_formset.save()
-        else:
-            # اگر فرم‌ست تصاویر معتبر نباشد، خطا برگردانید
+
+        if not image_formset.is_valid():
             return self.form_invalid(form)
+
+        # بررسی اینکه حداقل یک تصویر انتخاب شده باشد
+        has_image = any(bool(f.cleaned_data.get('image')) for f in image_formset if not f.cleaned_data.get('DELETE'))
+        if not has_image:
+            form.add_error(None, "افزودن حداقل یک تصویر الزامی است.")
+            return self.form_invalid(form)
+
+        self.object = form.save()
+
+        image_formset.instance = self.object
+        image_formset.save()
 
         return super().form_valid(form)
 
@@ -250,43 +255,7 @@ class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin,
         else:
             context['image_formset'] = PortfolioImageFormSet(instance=self.object)
     
-        # فرم‌های خالی معتبر باشند
-        for form in context['image_formset']:
-            form.empty_permitted = True
-    
         return context
-
-    def form_valid(self, form):
-        context = self.get_context_data()
-        image_formset = context['image_formset']
-        
-        self.object = form.save()
-    
-        if image_formset.is_valid():
-            for form in image_formset:
-                if form.cleaned_data.get('DELETE') and form.instance.pk:
-                    form.instance.delete()
-                elif form.cleaned_data.get('image') is None:
-                    continue
-                else:
-                    form.instance = self.object
-                    form.save()
-        else:
-            print("خطاهای FormSet:", image_formset.errors)
-            return self.form_invalid(form)
-    
-        return super().form_valid(form)
-    
-    def form_invalid(self, form):
-        context = self.get_context_data()
-        image_formset = context['image_formset']
-
-        print("فرم اصلی نامعتبر است. خطاها:", form.errors)
-
-        if image_formset:
-            print("FormSet نامعتبر است. خطاها:", image_formset.errors)
-
-        return super().form_invalid(form)
     
 
 class PortfolioDeleteView(LoginRequiredMixin, DealerUserMixin, PortfolioDeleteMixin, DeleteView):
@@ -329,6 +298,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
             UsersImages.objects.create(customer=self.request.user, image=profile_image)
 
         return response
+    
 
 class CampaignListView(LoginRequiredMixin, CampaignUserMixin, TemplateView):
     
@@ -602,7 +572,6 @@ class CampaignParticipateView(DealerUserMixin, View):
     def post(self, request, pk):
         campaign = get_object_or_404(Campaign, id=pk)
         form = ParticipateCampaignForm(request.POST)
-        print("Request POST Data:", request.POST)
         if form.is_valid():
             proposal_campaign = form.save(commit=False)
             proposal_campaign.campaign = campaign
