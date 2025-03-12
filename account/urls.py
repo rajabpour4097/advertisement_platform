@@ -19,6 +19,8 @@ from account.views import (
     MentorsList,
     MyMentor,
     NewMentorActivate,
+    NotificationDetailView,
+    NotificationsView,
     PasswordChange,
     PasswordChangeDone, 
     PortfolioCreateView,
@@ -37,6 +39,8 @@ handler404 = custom_404_view
 
 urlpatterns = [
     path('', AccountView.as_view(), name='home'),
+    path('notifications/', NotificationsView.as_view(), name='notifications_list'),
+    path('notifications/detail/<int:pk>', NotificationDetailView.as_view(), name='notifications_detail'),
     path('profile/', ProfileView.as_view(), name='profile'), 
     path('password_change/', PasswordChange.as_view(), name='password_change'), 
     path('password_change/done/', PasswordChangeDone.as_view(), name='password_change_done'), 

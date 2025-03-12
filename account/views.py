@@ -5,8 +5,8 @@ from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from account.models import CampaignTransaction, EditingCampaign, RequestForMentor
 from .tokens import account_activation_token
 from django.core.mail import EmailMessage
@@ -43,6 +43,11 @@ from account.mixins import (
                             )
 from advplatform.models import Campaign, CustomUser, Portfolio, UsersImages
 from django.contrib.auth import logout
+from notifications.models import Notification
+from django.contrib.auth.decorators import login_required
+from notifications.signals import notify
+from django.utils import timezone
+
 
 
 
@@ -52,6 +57,38 @@ TODO:
     2-Change activate HttpResponse template with render
 
 '''
+
+
+staff_users = CustomUser.objects.filter(is_staff=True)
+dealers = CustomUser.objects.filter(user_type='dealer')
+
+
+class NotificationsView(LoginRequiredMixin, TemplateView):
+    template_name = 'notifications/list.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['notifications'] = Notification.objects.filter(recipient=self.request.user).order_by('-timestamp')
+        return context
+
+
+class NotificationDetailView(LoginRequiredMixin, TemplateView):
+    template_name = 'notifications/detail.html'
+    
+    def get(self, request, *args, **kwargs):
+        notification = get_object_or_404(Notification, pk=self.kwargs.get('pk'))
+
+        # Check if the notification is for the requested user or if the user is staff
+        if notification.recipient == request.user or request.user.is_staff:
+            # Mark as read if the user has permission to view it
+            notification.unread = False
+            notification.save()
+            
+            return render(request, self.template_name, {'notification': notification})
+        else:
+            # If not authorized, return a 403 forbidden response
+            return render(request, '403.html', {'error_message': 'شما به این اعلان دسترسی ندارید'})
+
 
 
 class Register(NotLoginedMixin, CreateView):
@@ -254,6 +291,21 @@ class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin,
     
         return context
     
+    def form_valid(self, form):
+        # Send notification after edit portfolio
+        response = super().form_valid(form)
+
+        notify.send(
+                    self.request.user, 
+                    recipient=self.object.dealer, 
+                    timestamp=timezone.now(), 
+                    verb=f"ویرایش نمونه کار", 
+                    description=self.object.subject,
+                    target=self.object
+                    )
+
+        return response
+    
 
 class PortfolioDeleteView(LoginRequiredMixin, DealerUserMixin, PortfolioDeleteMixin, DeleteView):
     
@@ -359,7 +411,27 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
             return self.form_invalid(form)
 
         self.object = form.save()
-
+        
+        # Send notification to user created campaign
+        notify.send(
+                    self.request.user,
+                    recipient=form.instance.customer,
+                    verb="ایجاد کمپین جدید",
+                    description=f"کمپین جدید با عنوان '{self.object.get_describe_summrize()}' توسط شما ایجاد شد.",
+                    target=self.object, 
+                    timestamp=timezone.now(), 
+                    )
+        # Send notification to all staff users
+        for staff in staff_users:
+                notify.send(
+                    self.request.user, 
+                    recipient=staff, 
+                    verb="ایجاد کمپین جدید", 
+                    description=f"کمپین جدید با عنوان '{self.object.get_describe_summrize()}' توسط {self.request.user.get_full_name()} ایجاد شد.", 
+                    target=self.object, 
+                    timestamp=timezone.now()
+                )
+        
         context = self.get_context_data()
         image_formset = context['image_formset']
         if image_formset.is_valid():
@@ -467,6 +539,43 @@ class CampaignReviewView(StaffUserMixin, View):
             campaign.endtimedate = form2.cleaned_data['endtimedate']
             campaign.is_active = True
             campaign.status = "progressing"
+            
+            campaign_customer = campaign.customer
+            notification_message = f"کمپین '{campaign.get_describe_summrize()}'  شروع شده است."
+            notification_message2 = f"کمپین '{campaign.get_describe_summrize()}' توسط کاربر '{campaign_customer.get_full_name()}' شروع شده است."
+            
+            #Send notification to campaign created user
+            notify.send(
+                        request.user, 
+                        recipient=campaign_customer, 
+                        verb="برگزاری کمپین", 
+                        description=notification_message, 
+                        target=campaign, 
+                        timestamp=timezone.now()
+                        )
+            
+            # Send notification to all dealer users
+            for dealer in dealers:
+                notify.send(
+                            request.user, 
+                            recipient=dealer, 
+                            verb="برگزاری کمپین", 
+                            description=notification_message2, 
+                            target=campaign, 
+                            timestamp=timezone.now()
+                            )
+
+            # Send notification to all staff users
+            for staff in staff_users:
+                notify.send(
+                    request.user, 
+                    recipient=staff, 
+                    verb="برگزاری کمپین", 
+                    description=notification_message2, 
+                    target=campaign, 
+                    timestamp=timezone.now()
+                )
+                
             campaign.save()  # ذخیره کمپین
 
             return redirect('account:campaigns')

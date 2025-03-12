@@ -36,5 +36,6 @@ urlpatterns = [
     path('signup/success/', SignupSuccessView.as_view(), name='signup_success'),
     re_path(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z\-]+)/$', 
         activate, name='activate'),
+    # path('notifications/', include('notifications.urls', namespace='notifications')),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

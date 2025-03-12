@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'crispy_forms',
     'crispy_bootstrap5',
+    'notifications',
         
 ]
 
@@ -72,6 +73,7 @@ TEMPLATES = [
                 'advplatform.context_processors.get_model_meta_info',
                 'advplatform.context_processors.get_admin_groups',
                 'account.context_processors.user_null_field_percentage',
+                'account.context_processors.latest_notifications',
             ],
         },
     },

@@ -1,0 +1,130 @@
+<!-- notifications_list.html -->
+{% extends "account/account_base.html" %}
+
+{% block title %}لیست اعلان ها{% endblock %}
+
+
+{% block content %}
+<style>
+  
+</style>
+
+
+<br>
+{% if notifications %}
+   <div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>لیست اعلان ها </h2>
+         
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div id="datatable_wrapper" class="dataTables_wrapper form-inline dt-bootstrap no-footer">
+                <div class="row"><div class="col-sm-6">
+                    <div class="dataTables_length" id="datatable_length">
+                        <label>Show 
+                            <select name="datatable_length" aria-controls="datatable" class="form-control input-sm">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select> 
+                            entries
+                        </label>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div id="datatable_filter" class="dataTables_filter">
+                        <label>جستجو:
+                            <input type="search" class="form-control input-sm" placeholder="" aria-controls="datatable">
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <table id="datatable" class="table table-striped jambo_table bulk_action" role="grid" aria-describedby="datatable_info">
+                      <thead>
+                         <tr role="row">
+                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="نوع اعلان: activate to sort column ascending" style="width: 200px;">نوع اعلان</th>
+                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="عنوان اعلان: activate to sort column ascending" style="width: 200px;">عنوان اعلان</th>
+                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="زمان اعلان: activate to sort column ascending" style="width: 149px;">زمان اعلان</th>
+                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="وضعیت: activate to sort column ascending" style="width: 112px;">وضعیت</th>
+                         </tr>
+                      </thead>
+
+
+                     <tbody style="font-size: 10px; color:#4a53a4;">
+                        {% for notice in notifications %}
+                          <tr role="row" class="{% if forloop.counter0|divisibleby:2 %}even{% else %}odd{% endif %} fw-bold" {% if notice.unread %}style="font-weight: bold;"{% endif %}>
+                            <td>{{ notice.verb }}</td>
+                            <td class="sorting_1" >
+                              <a href="{% url 'account:notifications_detail' notice.pk %}">
+                                  {{ notice.description|linebreaksbr }}
+                              </a>
+                             </td>
+                             <td>{{ notice.timesince }} پیش</td>
+                             <td>
+                                {% if notice.unread %} 
+                                  <p class="text-danger">دیده نشده</p>
+                                {% else %} 
+                                  <p class="text-success">دیده شده</p>
+                                {% endif %}
+                             </td>
+                          </tr>
+                        {% endfor %}
+                     </tbody>
+                    </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="dataTables_info" id="datatable_info" role="status" aria-live="polite">Showing 1 to 10 of 57 entries
+
+            </div>
+        </div>
+        <div class="col-sm-7">
+            <div class="dataTables_paginate paging_simple_numbers" id="datatable_paginate">
+                <ul class="pagination">
+                    <li class="paginate_button previous disabled" id="datatable_previous">
+                        <a href="#" aria-controls="datatable" data-dt-idx="0" tabindex="0">Previous</a>
+                    </li>
+                    <li class="paginate_button active">
+                        <a href="#" aria-controls="datatable" data-dt-idx="1" tabindex="0">1</a>
+                    </li>
+                    <li class="paginate_button ">
+                        <a href="#" aria-controls="datatable" data-dt-idx="2" tabindex="0">2</a>
+                    </li>
+                    <li class="paginate_button ">
+                        <a href="#" aria-controls="datatable" data-dt-idx="3" tabindex="0">3</a>
+                    </li>
+                    <li class="paginate_button ">
+                        <a href="#" aria-controls="datatable" data-dt-idx="4" tabindex="0">4</a>
+                    </li>
+                    <li class="paginate_button ">
+                        <a href="#" aria-controls="datatable" data-dt-idx="5" tabindex="0">5</a>
+                    </li>
+                    <li class="paginate_button ">
+                        <a href="#" aria-controls="datatable" data-dt-idx="6" tabindex="0">6</a>
+                    </li>
+                    <li class="paginate_button next" id="datatable_next">
+                        <a href="#" aria-controls="datatable" data-dt-idx="7" tabindex="0">Next</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+   </div>
+   {% else %}
+   <div style="text-align: center;  margin: 100px;">
+    <h3 class="name mx-auto ">اعلانی برای نمایش وجود ندارد</h3>
+   </div>
+
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+

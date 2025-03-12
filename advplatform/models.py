@@ -237,6 +237,10 @@ class Campaign(models.Model):
             return 'پایان یافته'
         return None
     
+    def get_describe_summrize(self):
+        words = self.describe.split()  # Split the text into words
+        return " ".join(words[:10])
+    
 
 class Portfolio(models.Model):
     dealer = models.ForeignKey(

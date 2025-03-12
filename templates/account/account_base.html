@@ -1,4 +1,6 @@
 {% load static %}
+{% load notifications_tags %}
+{% load account_tags %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -153,25 +155,23 @@
                             <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown"
                                aria-expanded="false">
                                 <i class="fa fa-bell-o"></i>
-                                <span class="badge bg-red">3</span>
+                                <span class="badge bg-red"> {% notifications_unread %} </span>
                             </a>
                             <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
-                            
+                                {% for notice in latest_notifications %}
                                 <li>
-                                        <a>
-                                     <span class="image"><img src="{% static 'account/build/images/img.jpg' %}" alt="Profile Image"/></span>
-                                    <span>
-                                        <span>مرتضی کریمی</span>
-                                        <span class="time">3 دقیقه پیش</span>
-                                    </span>
-                                        <span class="message">
-                                        فیلمای فستیوال فیلمایی که اجرا شده یا راجع به لحظات مرده ایه که فیلمسازا میسازن. آنها جایی بودند که....
+                                    <a href="{% url 'account:notifications_detail' notice.pk %}">
+                                        <span>
+                                            <span>{{ notice.actor.get_full_name }}</span>
+                                            <span class="time">{{ notice.timesince }} دقیقه پیش</span>
                                         </span>
+                                        <span class="message">{{ notice.verb }} {{ notice.description | truncatewords:5 }}</span>
                                     </a>
                                 </li>
+                                {% endfor %}
                                 <li>
                                     <div class="text-center">
-                                        <a>
+                                        <a href="{% url 'account:notifications_list' %}">
                                             <strong>مشاهده تمام اعلان ها</strong>
                                             <i class="fa fa-angle-right"></i>
                                         </a>
