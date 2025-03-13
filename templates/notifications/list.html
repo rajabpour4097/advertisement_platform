@@ -6,7 +6,69 @@
 
 {% block content %}
 <style>
-  
+    .table td {
+        vertical-align: middle;
+        padding: 1rem;
+    }
+    
+    .badge {
+        padding: 0.5em 1em;
+        border-radius: 20px;
+        font-weight: normal;
+    }
+    
+    .badge.bg-success {
+        background-color: #e8f5e9 !important;
+        color: #2e7d32;
+    }
+    
+    .badge.bg-warning {
+        background-color: #fff3e0 !important;
+        color: #ef6c00;
+    }
+    
+    .badge.bg-danger {
+        background-color: #ffebee !important;
+        color: #c62828;
+    }
+    
+    .table tr {
+        border-bottom: 1px solid #eee;
+    }
+    
+    .table th {
+        border-bottom: 2px solid #eee;
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .avatar-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .avatar-info img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .user-name {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .user-title {
+        color: #666;
+        font-size: 0.875rem;
+    }
 </style>
 
 
@@ -44,82 +106,104 @@
             </div>
             <div class="row">
                 <div class="col-sm-12">
-                    <table id="datatable" class="table table-striped jambo_table bulk_action" role="grid" aria-describedby="datatable_info">
-                      <thead>
-                         <tr role="row">
-                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="نوع اعلان: activate to sort column ascending" style="width: 200px;">نوع اعلان</th>
-                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="عنوان اعلان: activate to sort column ascending" style="width: 200px;">عنوان اعلان</th>
-                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="زمان اعلان: activate to sort column ascending" style="width: 149px;">زمان اعلان</th>
-                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="وضعیت: activate to sort column ascending" style="width: 112px;">وضعیت</th>
-                         </tr>
-                      </thead>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>نوع اعلان</th>
+                                    <th>عنوان اعلان</th>
+                                    <th>زمان اعلان</th>
+                                    <th>وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for notice in notifications %}
+                                <tr>
+                                    <td>
+                                        <div class="avatar-info">
+                                            {% if request.user.is_staff %}
+                                                {% if notice.actor.customuserimages.all|length > 0 %}
+                                                    <img src="{{ notice.actor.customuserimages.first.image.url }}" alt="Avatar">
+                                                {% else %}
+                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 46px; height: 46px;">
+                                                        <span class="text-white">{{ notice.actor.first_name|make_list|first|upper }}{{ notice.actor.last_name|make_list|first|upper }}</span>
+                                                    </div>
+                                                {% endif %}
+                                                <div class="user-details">
+                                                    <span class="user-name">{{ notice.actor.get_full_name }}</span>
+                                                    <span class="user-title">{{ notice.verb }}</span>
+                                                </div>
+                                            {% else %}
+                                                <div class="user-details">
+                                                    <span class="user-title">{{ notice.verb }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'account:notifications_detail' notice.pk %}" class="text-decoration-none text-dark">
+                                            {{ notice.description|linebreaksbr }}
+                                        </a>
+                                    </td>
+                                    <td>{{ notice.timesince }} پیش</td>
+                                    <td>
+                                        {% if notice.unread %}
+                                            <span class="badge bg-danger">دیده نشده</span>
+                                        {% else %}
+                                            <span class="badge bg-success">دیده شده</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5">
+                    <div class="dataTables_info" id="datatable_info" role="status" aria-live="polite">Showing 1 to 10 of 57 entries
 
-
-                     <tbody style="font-size: 10px; color:#4a53a4;">
-                        {% for notice in notifications %}
-                          <tr role="row" class="{% if forloop.counter0|divisibleby:2 %}even{% else %}odd{% endif %} fw-bold" {% if notice.unread %}style="font-weight: bold;"{% endif %}>
-                            <td>{{ notice.verb }}</td>
-                            <td class="sorting_1" >
-                              <a href="{% url 'account:notifications_detail' notice.pk %}">
-                                  {{ notice.description|linebreaksbr }}
-                              </a>
-                             </td>
-                             <td>{{ notice.timesince }} پیش</td>
-                             <td>
-                                {% if notice.unread %} 
-                                  <p class="text-danger">دیده نشده</p>
-                                {% else %} 
-                                  <p class="text-success">دیده شده</p>
-                                {% endif %}
-                             </td>
-                          </tr>
-                        {% endfor %}
-                     </tbody>
-                    </table>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-5">
-            <div class="dataTables_info" id="datatable_info" role="status" aria-live="polite">Showing 1 to 10 of 57 entries
-
+                    </div>
+                </div>
+                <div class="col-sm-7">
+                    <div class="dataTables_paginate paging_simple_numbers" id="datatable_paginate">
+                        <ul class="pagination">
+                            <li class="paginate_button previous disabled" id="datatable_previous">
+                                <a href="#" aria-controls="datatable" data-dt-idx="0" tabindex="0">Previous</a>
+                            </li>
+                            <li class="paginate_button active">
+                                <a href="#" aria-controls="datatable" data-dt-idx="1" tabindex="0">1</a>
+                            </li>
+                            <li class="paginate_button ">
+                                <a href="#" aria-controls="datatable" data-dt-idx="2" tabindex="0">2</a>
+                            </li>
+                            <li class="paginate_button ">
+                                <a href="#" aria-controls="datatable" data-dt-idx="3" tabindex="0">3</a>
+                            </li>
+                            <li class="paginate_button ">
+                                <a href="#" aria-controls="datatable" data-dt-idx="4" tabindex="0">4</a>
+                            </li>
+                            <li class="paginate_button ">
+                                <a href="#" aria-controls="datatable" data-dt-idx="5" tabindex="0">5</a>
+                            </li>
+                            <li class="paginate_button ">
+                                <a href="#" aria-controls="datatable" data-dt-idx="6" tabindex="0">6</a>
+                            </li>
+                            <li class="paginate_button next" id="datatable_next">
+                                <a href="#" aria-controls="datatable" data-dt-idx="7" tabindex="0">Next</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-sm-7">
-            <div class="dataTables_paginate paging_simple_numbers" id="datatable_paginate">
-                <ul class="pagination">
-                    <li class="paginate_button previous disabled" id="datatable_previous">
-                        <a href="#" aria-controls="datatable" data-dt-idx="0" tabindex="0">Previous</a>
-                    </li>
-                    <li class="paginate_button active">
-                        <a href="#" aria-controls="datatable" data-dt-idx="1" tabindex="0">1</a>
-                    </li>
-                    <li class="paginate_button ">
-                        <a href="#" aria-controls="datatable" data-dt-idx="2" tabindex="0">2</a>
-                    </li>
-                    <li class="paginate_button ">
-                        <a href="#" aria-controls="datatable" data-dt-idx="3" tabindex="0">3</a>
-                    </li>
-                    <li class="paginate_button ">
-                        <a href="#" aria-controls="datatable" data-dt-idx="4" tabindex="0">4</a>
-                    </li>
-                    <li class="paginate_button ">
-                        <a href="#" aria-controls="datatable" data-dt-idx="5" tabindex="0">5</a>
-                    </li>
-                    <li class="paginate_button ">
-                        <a href="#" aria-controls="datatable" data-dt-idx="6" tabindex="0">6</a>
-                    </li>
-                    <li class="paginate_button next" id="datatable_next">
-                        <a href="#" aria-controls="datatable" data-dt-idx="7" tabindex="0">Next</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
     </div>
-   </div>
-   {% else %}
-   <div style="text-align: center;  margin: 100px;">
-    <h3 class="name mx-auto ">اعلانی برای نمایش وجود ندارد</h3>
-   </div>
+</div>
+{% else %}
+<div style="text-align: center;  margin: 100px;">
+ <h3 class="name mx-auto ">اعلانی برای نمایش وجود ندارد</h3>
+</div>
 
         </div>
     </div>
