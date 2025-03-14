@@ -69,6 +69,18 @@
         color: #666;
         font-size: 0.875rem;
     }
+
+    .notification-row-read {
+        background-color: #f8f9fa;
+    }
+
+    .notification-row-unread {
+        background-color: #ffffff;
+    }
+
+    .notification-row-read td {
+        font-weight: 500;
+    }
 </style>
 
 
@@ -111,6 +123,9 @@
                             <thead>
                                 <tr>
                                     <th>نوع اعلان</th>
+                                    {% if request.user.is_staff %}
+                                        <th>کاربر اعمال کننده</th>
+                                    {% endif %}
                                     <th>عنوان اعلان</th>
                                     <th>زمان اعلان</th>
                                     <th>وضعیت</th>
@@ -118,34 +133,36 @@
                             </thead>
                             <tbody>
                                 {% for notice in notifications %}
-                                <tr>
+                                <tr class="{% if notice.unread %}notification-row-unread{% else %}notification-row-read{% endif %}">
                                     <td>
                                         <div class="avatar-info">
-                                            {% if request.user.is_staff %}
-                                                {% if notice.actor.customuserimages.all|length > 0 %}
-                                                    <img src="{{ notice.actor.customuserimages.first.image.url }}" alt="Avatar">
-                                                {% else %}
-                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 46px; height: 46px;">
-                                                        <span class="text-white">{{ notice.actor.first_name|make_list|first|upper }}{{ notice.actor.last_name|make_list|first|upper }}</span>
-                                                    </div>
-                                                {% endif %}
-                                                <div class="user-details">
-                                                    <span class="user-name">{{ notice.actor.get_full_name }}</span>
-                                                    <span class="user-title">{{ notice.verb }}</span>
-                                                </div>
-                                            {% else %}
-                                                <div class="user-details">
-                                                    <span class="user-title">{{ notice.verb }}</span>
-                                                </div>
-                                            {% endif %}
+                                            <div class="user-details">
+                                                <span class="user-title">{{ notice.verb }}</span>
+                                            </div>
                                         </div>
                                     </td>
+                                    {% if request.user.is_staff %}
                                     <td>
-                                        <a href="{% url 'account:notifications_detail' notice.pk %}" class="text-decoration-none text-dark">
+                                        <div class="avatar-info">
+                                            {% if notice.actor.customuserimages.all|length > 0 %}
+                                                <img src="{{ notice.actor.customuserimages.first.image.url }}" alt="Avatar">
+                                            {% else %}
+                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 46px; height: 46px;">
+                                                    <span class="text-white">{{ notice.actor.first_name|make_list|first|upper }}{{ notice.actor.last_name|make_list|first|upper }}</span>
+                                                </div>
+                                            {% endif %}
+                                            <div class="user-details">
+                                                <span class="user-name">{{ notice.actor.get_full_name }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        <a href="{% url 'account:notifications_detail' notice.pk %}" class="text-decoration-none {% if notice.unread %}text-muted{% else %}text-dark{% endif %}">
                                             {{ notice.description|linebreaksbr }}
                                         </a>
                                     </td>
-                                    <td>{{ notice.timesince }} پیش</td>
+                                    <td class="{% if notice.unread %}text-muted{% else %}text-dark{% endif %}">{{ notice.timesince }} پیش</td>
                                     <td>
                                         {% if notice.unread %}
                                             <span class="badge bg-danger">دیده نشده</span>

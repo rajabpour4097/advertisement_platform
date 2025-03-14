@@ -5,22 +5,106 @@
 {% block title %}مشاهده اعلان جدید{% endblock %}
 
 {% block content %}
+<style>
+    .avatar-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .avatar-info img {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .user-name {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .user-title {
+        color: #666;
+        font-size: 1.2rem;
+    }
+
+    .badge {
+        padding: 0.5em 1em;
+        border-radius: 20px;
+        font-weight: normal;
+    }
+    
+    .badge.bg-success {
+        background-color: #e8f5e9 !important;
+        color: #2e7d32;
+    }
+    
+    .badge.bg-danger {
+        background-color: #ffebee !important;
+        color: #c62828;
+    }
+</style>
 
 <div class="row">
-    <div class="col-md-6 col-xs-12 campaign-details">
+    <div class="col-md-12 col-xs-12">
         <div class="x_panel">
             <div class="x_title">
-                <h2 style="color: #028c32;">جزئیات اعلان</h2>
+                <h2>جزئیات اعلان</h2>
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
-                <p><strong class="campaign-strong">اعلان:</strong> {{ notification.verb }}  {{ notification.description|linebreaksbr }}</p>
-                <p><strong class="campaign-strong">زمان:</strong> {{ notification.timesince }} پیش</p>
+                <table class="table">
+                    <tr>
+                        <td style="width: 200px;">نوع اعلان</td>
+                        <td>
+                            <div class="avatar-info">
+                                <div class="user-details">
+                                    <span class="user-title">{{ notification.verb }}</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% if request.user.is_staff %}
+                    <tr>
+                        <td>کاربر اعمال کننده</td>
+                        <td>
+                            <div class="avatar-info">
+                                {% if notification.actor.customuserimages.all|length > 0 %}
+                                    <img src="{{ notification.actor.customuserimages.first.image.url }}" alt="Avatar">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 46px; height: 46px;">
+                                        <span class="text-white">{{ notification.actor.first_name|make_list|first|upper }}{{ notification.actor.last_name|make_list|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                                <div class="user-details">
+                                    <span class="user-name">{{ notification.actor.get_full_name }}</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td>عنوان اعلان</td>
+                        <td>{{ notification.description|linebreaksbr }}</td>
+                    </tr>
+                    <tr>
+                        <td>زمان اعلان</td>
+                        <td>{{ notification.timesince }} پیش</td>
+                    </tr>
+                </table>
+                
+                <div class="mt-4">
+                    <a href="{% url 'account:notifications_list' %}" class="btn btn-primary">بازگشت</a>
+                </div>
             </div>
-            <a href="{% url 'account:notifications_list' %}" class="btn btn-primary">بازگشت</a>
         </div>
     </div>
 </div>
-
 {% endblock %}
 
