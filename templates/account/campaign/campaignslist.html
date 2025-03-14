@@ -124,9 +124,20 @@
             </h2>
             <div class="clearfix"></div>
         </div>
+        
+        <!-- Search Box -->
+        <div class="x_content mb-3">
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" id="searchInput" class="form-control" placeholder="جستجو در کمپین‌ها..." style="border-radius: 20px; padding: 8px 15px;">
+                <span class="input-group-text bg-transparent border-0" style="margin-right: -40px;">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+            </div>
+        </div>
+
         <div class="x_content">
             <div class="table-responsive">
-                <table class="table">
+                <table class="table" id="campaignsTable">
                     <thead>
                         <tr>
                             {% if user.is_staff or user.user_type == 'dealer' %}
@@ -250,5 +261,30 @@
         </div>
     </div>
 </div>
+
+<!-- Add this JavaScript at the end of the file -->
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const searchText = this.value.toLowerCase();
+    const table = document.getElementById('campaignsTable');
+    const rows = table.getElementsByTagName('tr');
+
+    // Skip header row
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
+
+        for (let cell of cells) {
+            if (cell.textContent.toLowerCase().includes(searchText)) {
+                found = true;
+                break;
+            }
+        }
+
+        row.style.display = found ? '' : 'none';
+    }
+});
+</script>
 
 {% endblock %}
