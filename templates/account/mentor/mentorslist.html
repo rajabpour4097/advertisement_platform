@@ -198,14 +198,16 @@
                                 </a>
                             {% else %}
                                 {% if mentor.is_active %}
-                                <a href="{% url 'account:activementor' mentor.pk %}" class="btn btn-success btn-xs">
+                                <a href="" class="btn btn-success btn-xs">
                                     <i class="fa fa-user"></i> جزئیات مشاور
                                 </a>
                                 {% endif%}
                                 {% if not mentor.is_active %}
-                                    <span class="status-badge" style="background: #ffebee; color: #c62828;">
-                                        <i class="fa fa-plug"></i> منتظر تایید
-                                    </span>
+                                    <a href="{% url 'account:activementor' mentor.pk %}">
+                                        <span class="status-badge" style="background: #ffebee; color: #c62828;">
+                                            <i class="fa fa-plug"></i> منتظر تایید
+                                        </span>
+                                    </a>
                                 {% endif %}
                             {% endif %}
                         </div>
