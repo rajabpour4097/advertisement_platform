@@ -3,6 +3,7 @@ from account.models import RequestForMentor
 from advplatform.models import Campaign, CustomUser, Portfolio, Topic
 from django.utils import timezone
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.admin.models import LogEntry
 
 
 
@@ -83,6 +84,9 @@ class ContextsMixin():
         
         mentor_customer_count = CustomUser.objects.filter(customer_mentor=self.request.user)
         context['mentor_customer_count'] = mentor_customer_count.count()
+        
+        recent_actions = LogEntry.objects.all().order_by('-action_time')[:5]
+        context['recent_actions'] = recent_actions
         
         return context
 

@@ -138,42 +138,27 @@
                 <h2>فعالیت های اخیر</h2>
                 <div class="clearfix"></div>
             </div>
-            <div class="x_content">
+            <div class="x_content">‍
                 <div class="dashboard-widget-content">
 
                     <ul class="list-unstyled timeline widget">
-                        <li>
-                            <div class="block">
-                                <div class="block_content">
-                                    <h2 class="title">
-                                        <a>چه کسی نیاز به یک پنل مدیریت خوب دارد؟</a>
-                                    </h2>
-                                    <div class="byline">
-                                        <span>13 ساعت پیش</span> توسط <a>مرتضی کریمی</a>
+                        {% for action in recent_actions %}
+                            <li>
+                                <div class="block">
+                                    <div class="block_content">
+                                        <h2 class="title">
+                                            {{ action.action_time }}
+                                        </h2>
+                                        <div class="byline">
+                                            توسط <a>{{ action.user.username }}</a>
+                                        </div>
+                                        <p class="excerpt">
+                                            {{ action.object_repr }}
+                                        </p>
                                     </div>
-                                    <p class="excerpt">این یک متن نمونه برای بخش داشبورد پنل مدیریت پارسی
-                                        شده ی Gentelella می باشد که برای نمایش امکانات آن نوشته شده است و
-                                        هیچ معنا و مفهوم خاصی ندارد… <a>بیشتر&nbsp;بخوانید</a>
-                                    </p>
                                 </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="block">
-                                <div class="block_content">
-                                    <h2 class="title">
-                                        <a>چه کسی نیاز به یک پنل مدیریت خوب دارد؟</a>
-                                    </h2>
-                                    <div class="byline">
-                                        <span>13 ساعت پیش</span> توسط <a>مرتضی کریمی</a>
-                                    </div>
-                                    <p class="excerpt">این یک متن نمونه برای بخش داشبورد پنل مدیریت پارسی
-                                        شده ی Gentelella می باشد که برای نمایش امکانات آن نوشته شده است و
-                                        هیچ معنا و مفهوم خاصی ندارد… <a>بیشتر&nbsp;بخوانید</a>
-                                    </p>
-                                </div>
-                            </div>
-                        </li>
+                            </li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
