@@ -1,0 +1,43 @@
+    .avatar-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .avatar-info img {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .user-name {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .user-title {
+        color: #666;
+        font-size: 1.2rem;
+    }
+
+    .badge {
+        padding: 0.5em 1em;
+        border-radius: 20px;
+        font-weight: normal;
+    }
+    
+    .badge.bg-success {
+        background-color: #e8f5e9 !important;
+        color: #2e7d32;
+    }
+    
+    .badge.bg-danger {
+        background-color: #ffebee !important;
+        color: #c62828;
+    }

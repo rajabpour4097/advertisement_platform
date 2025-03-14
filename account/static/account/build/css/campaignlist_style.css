@@ -1,0 +1,117 @@
+    .avatar-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .avatar-info img {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .user-name {
+        font-weight: 300;
+        color: #333;
+    }
+    
+    .user-title {
+        color: #666;
+        font-size: 0.875rem;
+    }
+
+    .badge {
+        padding: 0.5em 1em;
+        border-radius: 20px;
+        font-weight: normal;
+    }
+    
+    .badge.bg-success {
+        background-color: #e8f5e9 !important;
+        color: #2e7d32;
+    }
+    
+    .badge.bg-danger {
+        background-color: #ffebee !important;
+        color: #c62828;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 1rem;
+    }
+
+    .table th {
+        background-color: #1045e145;
+        color: #0000007d;
+        font-weight: 500;
+        padding: 1rem;
+        white-space: nowrap;  /* Prevent text wrapping */
+        min-width: 120px;     /* Ensure minimum width */
+    }
+
+    /* Specific width for organizer name column */
+    .table th.organizer-column {
+        min-width: 150px;
+    }
+
+    /* Adjust the td to match */
+    .table td.organizer-column {
+        min-width: 150px;
+    }
+
+    .campaign-row-active {
+        background-color: #ffffff;
+    }
+
+    .campaign-row-inactive {
+        background-color: #f8f9fa;
+    }
+
+    .badge.bg-warning {
+        background-color: #fff3e0 !important;
+        color: #ef6c00;
+    }
+    
+    .badge.bg-info {
+        background-color: #e3f2fd !important;
+        color: #1976d2;
+    }
+    
+    .badge.bg-primary {
+        background-color: #e8eaf6 !important;
+        color: #3f51b5;
+    }
+    
+    .badge.bg-secondary {
+        background-color: #eceff1 !important;
+        color: #455a64;
+    }
+
+    .status-icon {
+        margin-right: 3px;
+        font-size: 0.7em;
+    }
+
+    .badge-with-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.7em;
+        padding: 0.35em 0.7em;
+    }
+
+    .action-buttons {
+        margin-top: 10px;
+    }
+
+    .action-buttons .btn-xs {
+        font-size: 0.7em;
+        padding: 0.3em 0.6em;
+    }

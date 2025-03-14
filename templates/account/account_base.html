@@ -33,7 +33,7 @@
     <link href="{% static 'account/build/css/my-style.css' %}" rel="stylesheet">
      <!-- Some Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">   
-     
+     {% block extra_head %}{% endblock %}
 </head>
 <!-- /header content -->
 {% if user.is_authenticated %}

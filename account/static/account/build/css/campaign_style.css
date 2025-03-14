@@ -1,0 +1,94 @@
+.form-group label {
+    margin-top: 10px;  
+    font-size: 1.0em;
+    color: #34495e;
+}
+
+.form-group .form-control {
+    margin-top: 5px;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.form-group .form-control:focus {
+    border-color: #028c32;
+    box-shadow: 0 0 5px rgba(2, 140, 50, 0.5);
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+.btn-success {
+    background-color: #028c32;
+    border-color: #028c32;
+}
+
+.btn-success:hover {
+    background-color: #026a24;
+    border-color: #026a24;
+}
+
+/* Topic checkbox styling */
+.topic-checkbox-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.topic-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px;
+}
+
+.topic-checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.topic-checkbox-item label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.topic-count {
+    font-size: 0.8em;
+    color: #666;
+    margin-right: 5px;
+}
+
+/* Customer field styling */
+.customer-field select {
+    height: 45px !important;
+    width: auto !important;
+    min-width: 200px;
+    max-width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.customer-field label {
+    display: block;
+    margin-bottom: 5px;
+    color: #34495e;
+    font-size: 1.0em;
+}
+
+/* Fix for RTL select */
+.customer-field select {
+    padding-right: 12px;
+    text-align: right;
+    direction: rtl;
+}

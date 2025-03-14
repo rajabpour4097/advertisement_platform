@@ -10,7 +10,7 @@ from django.utils.http import urlsafe_base64_decode
 from account.models import CampaignTransaction, EditingCampaign, RequestForMentor
 from .tokens import account_activation_token
 from django.core.mail import EmailMessage
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView
 from django.views.generic.edit import BaseUpdateView
 from account.forms import (
@@ -41,7 +41,7 @@ from account.mixins import (
                             PortfolioEditMixin,
                             StaffUserMixin
                             )
-from advplatform.models import Campaign, CustomUser, Portfolio, UsersImages
+from advplatform.models import Campaign, CustomUser, Portfolio, UsersImages, Topic
 from django.contrib.auth import logout
 from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
@@ -398,6 +398,10 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
             )
         else:
             context['image_formset'] = CampaignImageFormSet()
+        # Add topic count to each topic
+        context['form'].fields['topic'].queryset = Topic.objects.annotate(
+            campaign_count=Count('topics')
+        )
         return context
 
     def form_valid(self, form):
