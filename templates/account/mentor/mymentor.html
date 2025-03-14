@@ -11,6 +11,25 @@
         border-radius: 0;
 
       }
+
+    .ratings {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #ffc107;
+    }
+
+    .ratings .fa-star {
+        font-size: 14px;
+    }
+
+    .ratings .fa-star-o {
+        color: #ddd;
+    }
+
+    .ratings .fa-star-half-o {
+        color: #ffc107;
+    }
 </style>
 <div class="col-md-12 col-sm-12 col-xs-12">
     <div class="x_panel">
@@ -42,12 +61,17 @@
                 <div class="col-xs-12 bottom text-center">
                     <div class="col-xs-12 col-sm-6 emphasis">
                         <p class="ratings">
-                            <a>{{ user.customer_mentor.rank }}</a>
-                            <a href="#"><span class="fa fa-star"></span></a>
-                            <a href="#"><span class="fa fa-star"></span></a>
-                            <a href="#"><span class="fa fa-star"></span></a>
-                            <a href="#"><span class="fa fa-star-o"></span></a>
-                            <a href="#"><span class="fa fa-star-o"></span></a>
+                            {% for i in '12345' %}
+                                {% with i|add:"0" as num %}
+                                    {% if user.customer_mentor.rank >= num %}
+                                        <span class="fa fa-star"></span>
+                                    {% elif user.customer_mentor.rank >= num|add:"-0.5" %}
+                                        <span class="fa fa-star-half-o"></span>
+                                    {% else %}
+                                        <span class="fa fa-star-o"></span>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endfor %}
                         </p>
                     </div>
                     <div class="col-xs-12 col-sm-6 emphasis">
@@ -82,12 +106,17 @@
                 <div class="col-xs-12 bottom text-center">
                     <div class="col-xs-12 col-sm-6 emphasis">
                         <p class="ratings">
-                            <a>{{ user.customer_mentor.rank }}</a>
-                            <a href="#"><span class="fa fa-star"></span></a>
-                            <a href="#"><span class="fa fa-star"></span></a>
-                            <a href="#"><span class="fa fa-star"></span></a>
-                            <a href="#"><span class="fa fa-star-o"></span></a>
-                            <a href="#"><span class="fa fa-star-o"></span></a>
+                            {% for i in '12345' %}
+                                {% with i|add:"0" as num %}
+                                    {% if user.customer_mentor.rank >= num %}
+                                        <span class="fa fa-star"></span>
+                                    {% elif user.customer_mentor.rank >= num|add:"-0.5" %}
+                                        <span class="fa fa-star-half-o"></span>
+                                    {% else %}
+                                        <span class="fa fa-star-o"></span>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endfor %}
                         </p>
                     </div>
                     <div class="col-xs-12 col-sm-6 emphasis">

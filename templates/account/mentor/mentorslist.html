@@ -172,12 +172,11 @@
                     </h3>
                     <div class="info-list">
                         <div class="info-item">
-                            <i class="fas fa-users"></i>
+                            <i class="fa fa-users"></i>
                             <span>تعداد مشتریان: {{ mentor.mentored_customers.count }}</span>
                         </div>
                         <div class="info-item">
                             <div class="ratings">
-                                <span>{{ mentor.rank }}</span>
                                 {% for i in '12345' %}
                                     {% with i|add:"0" as num %}
                                         {% if mentor.rank >= num %}

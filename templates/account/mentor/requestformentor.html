@@ -138,6 +138,25 @@
         padding: 40px;
         color: #666;
     }
+
+    .ratings {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #ffc107;
+    }
+
+    .ratings .fa-star {
+        font-size: 14px;
+    }
+
+    .ratings .fa-star-o {
+        color: #ddd;
+    }
+
+    .ratings .fa-star-half-o {
+        color: #ffc107;
+    }
 </style>
 
 <div class="col-md-12">
@@ -189,20 +208,21 @@
                     </div>
 
                     {% if request.status == 'pending' %}
-                    <form action="{% url 'account:changestatusrequestformentor' request.pk %}" 
+                    <form action="{% url 'account:changestatusrequestformentor' request_id=request.pk %}" 
                           method="POST" 
-                          onsubmit="return setStatusValue(event)">
+                          class="status-form">
                         {% csrf_token %}
                         <input type="hidden" name="requested_user_id" value="{{ request.requested_user.id }}">
                         <input type="hidden" name="mentor_id" value="{{ request.mentor.id }}">
-                        <input type="hidden" name="status" id="status-input">
+                        <input type="hidden" name="status" class="status-input">
                         <div class="action-buttons">
-                            <button class="btn-action btn-primary" type="submit" data-status="approved">
+                            <button class="btn-action btn-primary" type="button" onclick="submitForm(this, 'approved')">
                                 <i class="fas fa-check"></i> تایید
                             </button>
-                            <button class="btn-action btn-danger" type="submit" data-status="rejected">
+                            <button class="btn-action btn-danger" type="button" onclick="submitForm(this, 'reject')">
                                 <i class="fas fa-times"></i> عدم تایید
                             </button>
+                            
                         </div>
                     </form>
                     {% endif %}
@@ -219,32 +239,36 @@
 </div>
 
 <script>
-    function setStatusValue(event) {
-        event.preventDefault();
-        const statusInput = document.getElementById('status-input');
-        statusInput.value = event.submitter.getAttribute("data-status");
-        event.target.submit();
-    }
+function submitForm(button, status) {
+    console.log('Submitting form with status:', status); // Debug log
+    const form = button.closest('form');
+    const statusInput = form.querySelector('.status-input');
+    console.log('Form found:', form); // Debug log
+    console.log('Status input found:', statusInput); // Debug log
+    statusInput.value = status.trim();
+    console.log('Status value set to:', statusInput.value); // Debug log
+    form.submit();
+}
 
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        const searchText = this.value.toLowerCase();
-        const table = document.getElementById('requestsTable');
-        const rows = table.getElementsByTagName('tr');
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const searchText = this.value.toLowerCase();
+    const table = document.getElementById('requestsTable');
+    const rows = table.getElementsByTagName('tr');
 
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const cells = row.getElementsByTagName('td');
-            let found = false;
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
 
-            for (let cell of cells) {
-                if (cell.textContent.toLowerCase().includes(searchText)) {
-                    found = true;
-                    break;
-                }
+        for (let cell of cells) {
+            if (cell.textContent.toLowerCase().includes(searchText)) {
+                found = true;
+                break;
             }
-
-            row.style.display = found ? '' : 'none';
         }
-    });
+
+        row.style.display = found ? '' : 'none';
+    }
+});
 </script>
 {% endblock %}
