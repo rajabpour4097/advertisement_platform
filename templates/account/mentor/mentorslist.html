@@ -1,90 +1,232 @@
 {% extends "account/account_base.html" %}
 {% load static %}
 
-{% load advplatform_tags %}
-
 {% block title %}لیست مشاورین{% endblock %}
 
 {% block content %}
 <style>
-    .profile_view .right img {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 50%;
-        background-color: #f8f8f8; /* رنگ پس‌زمینه برای تصاویر شفاف */
-    }   
-    .profile_view {
-        min-height: 250px;
+    .mentors-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        padding: 20px;
+    }
+
+    .mentor-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .mentor-image {
+        width: 100%;
+        height: 160px;
+        background: #f8f9fa;
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #eee;
+    }
+
+    .mentor-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .mentor-image i {
+        font-size: 48px;
+        color: #5e4bd8;
+        opacity: 0.5;
+    }
+
+    .mentor-details {
+        padding: 16px;
+    }
+
+    .mentor-title {
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .info-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .info-item i {
+        width: 16px;
+        color: #666;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .action-buttons {
+        margin-top: 16px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .expand-button {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: white;
+        border: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .search-container {
+        margin: 0 20px 20px;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 300px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+    }
+
+    .ratings {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #ffc107;
+    }
+
+    .ratings .fa-star {
+        font-size: 14px;
+    }
+
+    .ratings .fa-star-o {
+        color: #ddd;
     }
 </style>
-<div class="col-md-12 col-sm-12 col-xs-12">
+
+<div class="col-md-12">
     <div class="x_panel">
         <div class="x_title">
             <h2>لیست مشاورین</h2>
-            
             <div class="clearfix"></div>
         </div>
-      {% for mentor in mentors %}
-        {% if not request.user.customer_mentor == mentor %}
-          <div class="col-md-4 col-sm-4 col-xs-12 profile_details">
-              <div class="well profile_view">
-                  <div class="col-sm-12">
-                      <div class="left col-xs-7">
-                          {% if mentor.get_full_name %}
-                          <h2>{{ mentor.get_full_name }}</h2>
-                          {% else %}
-                              <h6>{{ mentor.email }}</h6>
-                          {% endif %}
-                          <br>
-                          <h6 class="text-primary">تعداد مشتریان: {{ mentor.mentored_customers.count}}</h6>
-                      </div>
-                      <div class="right col-xs-5 text-center">
-                          <img src="{% if mentor.customuserimages.first.image.url %}
-                                      {{ mentor.customuserimages.first.image.url }}
-                                      {% else %}
-                                      {% static 'account/build/images/img.jpg' %}{% endif %}" alt="..." class="img-circle img-responsive"> 
-                      </div>
-                  </div>
-                  <div class="col-xs-12 bottom text-center">
-                      <div class="col-xs-12 col-sm-6 emphasis">
-                          <p class="ratings">
-                              <a>{{ mentor.rank }}</a>
-                              <a href="#"><span class="fa fa-star"></span></a>
-                              <a href="#"><span class="fa fa-star"></span></a>
-                              <a href="#"><span class="fa fa-star"></span></a>
-                              <a href="#"><span class="fa fa-star-o"></span></a>
-                              <a href="#"><span class="fa fa-star-o"></span></a>
-                          </p>
-                      </div>
-                      <br>
-                      <div class="col-xs-12 col-sm-6 emphasis">
-                          {% if request.user.user_type == 'customer' %}
-                            <a href="{% url 'account:choosementor' mentor.pk %}">
-                                <button type="button" class="btn btn-primary btn-xs">
-                                    <i class="fa fa-user"> </i> انتخاب مشاور
-                                </button>
-                            </a>
-                          {% else %}
-                            <a href="{% url 'account:choosementor' mentor.pk %}">
-                                <button type="button" class="btn btn-success btn-xs">
-                                    <i class="fa fa-user"> </i> جزئیات مشاور
-                                </button>
-                            </a>
-                              {% if not mentor.is_active %}
-                                <i class="fa fa-plug text-danger"> </i>
-                                <a href="{% url 'account:activementor' mentor.pk %}" class="text-danger"> منتظر تایید</a>
-                              {% endif %}
-                          {% endif %}
-                      </div>
-                  </div>
-              </div>
-          </div>
-        {% endif %}
-      {% endfor %}
+
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="جستجو در مشاورین...">
+        </div>
+
+        <div class="mentors-grid">
+            {% for mentor in mentors %}
+            {% if not request.user.customer_mentor == mentor %}
+            <div class="mentor-card">
+                <div class="mentor-image">
+                    {% if mentor.customuserimages.first.image %}
+                        <img src="{{ mentor.customuserimages.first.image.url }}" alt="Mentor Image">
+                    {% else %}
+                        <i class="fas fa-user-tie"></i>
+                    {% endif %}
+                </div>
+                <div class="mentor-details">
+                    <h3 class="mentor-title">
+                        {% if mentor.get_full_name %}
+                            {{ mentor.get_full_name }}
+                        {% else %}
+                            {{ mentor.email }}
+                        {% endif %}
+                    </h3>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <i class="fas fa-users"></i>
+                            <span>تعداد مشتریان: {{ mentor.mentored_customers.count }}</span>
+                        </div>
+                        <div class="info-item">
+                            <div class="ratings">
+                                <span>{{ mentor.rank }}</span>
+                                {% for i in '12345' %}
+                                    {% with i|add:"0" as num %}
+                                        {% if mentor.rank >= num %}
+                                            <span class="fa fa-star"></span>
+                                        {% elif mentor.rank >= num|add:"-0.5" %}
+                                            <span class="fa fa-star-half-o"></span>
+                                        {% else %}
+                                            <span class="fa fa-star-o"></span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            {% if request.user.user_type == 'customer' %}
+                                <a href="{% url 'account:choosementor' mentor.pk %}" class="btn btn-primary btn-xs">
+                                    <i class="fa fa-user"></i> انتخاب مشاور
+                                </a>
+                            {% else %}
+                                {% if mentor.is_active %}
+                                <a href="{% url 'account:activementor' mentor.pk %}" class="btn btn-success btn-xs">
+                                    <i class="fa fa-user"></i> جزئیات مشاور
+                                </a>
+                                {% endif%}
+                                {% if not mentor.is_active %}
+                                    <span class="status-badge" style="background: #ffebee; color: #c62828;">
+                                        <i class="fa fa-plug"></i> منتظر تایید
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
     </div>
 </div>
+
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const searchText = this.value.toLowerCase();
+    const mentorCards = document.querySelectorAll('.mentor-card');
+
+    mentorCards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(searchText) ? '' : 'none';
+    });
+});
+</script>
 {% endblock %}
