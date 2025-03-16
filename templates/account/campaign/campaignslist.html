@@ -1,7 +1,8 @@
 {% extends "account/account_base.html" %}
 {% load static %}
-
 {% load advplatform_tags %}
+{% load account_tags %}
+
 
 {% block title %}لیست کمپین‌ ها{% endblock %}
 
@@ -13,6 +14,7 @@
 
 <div class="col-md-12 col-sm-12 col-xs-12">
     <div class="x_panel">
+        <!-- Panel Header -->
         <div class="x_title">
             <h2>
                 {% if user.is_staff %}لیست کمپین‌ها {% else %} لیست کمپین‌های شما{% endif %}
@@ -30,9 +32,11 @@
             </div>
         </div>
 
+        <!-- Table Content -->
         <div class="x_content">
             <div class="table-responsive">
                 <table class="table" id="campaignsTable">
+                    <!-- Table Header -->
                     <thead>
                         <tr>
                             {% if user.is_staff or user.user_type == 'dealer' %}
@@ -49,9 +53,11 @@
                         </tr>
                     </thead>
                     
+                    <!-- Table Body -->
                     <tbody>
                         {% for campaign in campaigns %}
                         <tr class="{% if campaign.is_active %}campaign-row-active{% else %}campaign-row-inactive{% endif %}">
+                            <!-- Organizer Column -->
                             {% if user.is_staff or user.user_type == 'dealer' %}
                             <td class="organizer-column">
                                 <div class="avatar-info">
@@ -61,16 +67,26 @@
                                 </div>
                             </td>
                             {% endif %}
+
+                            <!-- Campaign Topics -->
                             <td>{{ campaign.topic.all|join:", " }}</td>
+
+                            <!-- Campaign Description -->
                             <td>
-                                {% if user.is_staff or user.user_type == 'customer' %}
-                                <a href="{% url 'account:campaignedit' campaign.pk %}">{{ campaign.describe | truncatewords:10 }}</a>
+                                {% if user.is_staff or user.user_type == 'customer' and not campaign.is_active %}
+                                <a href="{% if user.is_staff %}{% url 'account:reviewcampaign' campaign.pk %} {% else %}{% url 'account:campaignedit' campaign.pk %}{% endif %}">
+                                    {{ campaign.describe | truncatewords:10 }}
+                                </a>
                                 {% else %}
                                 {{ campaign.describe | truncatewords:10 }}
                                 {% endif %}
                             </td>
+
+                            <!-- Campaign Prices -->
                             <td>{{ campaign.purposed_price | format_price }}</td>
                             <td>{{ campaign.get_gift_price | format_price }}</td>
+
+                            <!-- End Time -->
                             <td>
                                 {% if campaign.endtimedate %}
                                     {{ campaign.get_jalali_endtimedate_clean }}
@@ -81,6 +97,8 @@
                                     <br><small class="text-danger">{{ campaign.get_ended_campaign }}</small>
                                 {% endif %}
                             </td>
+
+                            <!-- Campaign Status -->
                             <td>
                                 {% if campaign.status == 'editing' %}
                                     <span class="badge bg-warning">در حال ویرایش</span>
@@ -92,10 +110,29 @@
                                     <span class="badge bg-success">تایید شده</span>
                                 {% elif campaign.status == 'progressing' %}
                                     <span class="badge bg-primary">در حال برگزاری</span>
+                                    {% if request.user.user_type == 'dealer' %}
+                                        <div class="mt-2">
+                                            {% if not campaign|is_participant:request.user %}
+                                                <button onclick="window.location.href='{% url 'account:campaignparticipate' campaign.pk %}'" 
+                                                        class="btn btn-outline-primary btn-sm rounded-pill">
+                                                    <i class="fa fa-handshake-o fa-sm"></i>
+                                                    <small>شرکت در کمپین</small>
+                                                </button>
+                                            {% else %}
+                                                <button onclick="window.location.href='{% url 'account:cancelcampaignparticipate' campaign.pk %}'" 
+                                                        class="btn btn-outline-danger btn-sm rounded-pill">
+                                                    <i class="fa fa-times fa-sm"></i>
+                                                    <small>لغو شرکت</small>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
                                 {% elif campaign.status == 'finished' %}
                                     <span class="badge bg-secondary">پایان یافته</span>
                                 {% endif %}
                             </td>
+
+                            <!-- Campaign Active Status -->
                             <td>
                                 {% if campaign.is_active %}
                                     <span class="badge bg-success badge-with-icon">
@@ -108,6 +145,8 @@
                                         غیرفعال
                                     </span>
                                 {% endif %}
+
+                                <!-- Staff Actions -->
                                 {% if user.is_staff %}
                                 <div class="action-buttons">
                                     <a class="btn btn-danger btn-xs" href="{% url 'account:campaignsdelete' campaign.pk %}">
@@ -134,18 +173,17 @@
                                 </div>
                                 {% endif %}
                             </td>
+
+                            <!-- Winner Column -->
                             <td>
-                                {% if campaign.winner %}
+                                {% if campaign.campaign_dealer %}
                                     <div class="avatar-info">
-                                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 46px; height: 46px;">
-                                            <span class="text-white">{{ campaign.winner.first_name|make_list|first|upper }}{{ campaign.winner.last_name|make_list|first|upper }}</span>
-                                        </div>
                                         <div class="user-details">
-                                            <span class="user-name">{{ campaign.winner.get_full_name }}</span>
+                                            <span class="winner-user-name">{{ campaign.campaign_dealer.get_full_name }}</span>
                                         </div>
                                     </div>
                                 {% else %}
-                                    <span class="text-muted">-</span>
+                                    <span class="text-muted">تعیین نشده</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -157,7 +195,7 @@
     </div>
 </div>
 
-<!-- Add this JavaScript at the end of the file -->
+<!-- Search Script -->
 <script>
 document.getElementById('searchInput').addEventListener('keyup', function() {
     const searchText = this.value.toLowerCase();
@@ -181,5 +219,4 @@ document.getElementById('searchInput').addEventListener('keyup', function() {
     }
 });
 </script>
-
 {% endblock %}

@@ -15,3 +15,7 @@ def jalali_timedate(value):
 @register.filter
 def add_class(value, arg):
     return value.as_widget(attrs={'class': arg})
+
+@register.filter
+def is_participant(campaign, user):
+    return campaign.list_of_participants.filter(id=user.id).exists()

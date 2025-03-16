@@ -1,5 +1,6 @@
 {% extends "account/account_base.html" %}
 {% load static %}
+{% load advplatform_tags %}
 {% load account_tags %}
 {% load crispy_forms_tags %}
 
@@ -50,8 +51,8 @@
                 <p><strong class="campaign-strong">کارفرما:</strong> {{ campaign.customer }}</p>
                 <p><strong class="campaign-strong">موضوعات:</strong> {{ campaign.topic.all|join:", " }}</p>
                 <p><strong class="campaign-strong">شرح کمپین:</strong> {{ campaign.describe }}</p>
-                <p><strong class="campaign-strong">قیمت پیشنهادی:</strong> {{ campaign.purposed_price }}</p>
-                <p><strong class="campaign-strong">مبلغ جایزه:</strong> {{ campaign.purposed_price }}</p>
+                <p><strong class="campaign-strong">قیمت پیشنهادی:</strong> {{ campaign.purposed_price | format_price }}</p>
+                <p><strong class="campaign-strong">مبلغ جایزه:</strong> {{ campaign.get_gift_price | format_price }}</p>
                 <p><strong class="campaign-strong">زمان شروع کمپین:</strong> {{ campaign.starttimedate | jalali_timedate }}</p>
                 <p><strong class="campaign-strong">زمان پایان کمپین:</strong> {{ campaign.endtimedate | jalali_timedate }}</p>
                 <p><strong class="campaign-strong">تعداد شرکت کننده:</strong> {{ campaign.get_participant_count }}</p>

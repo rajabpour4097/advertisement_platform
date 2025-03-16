@@ -20,7 +20,10 @@
         font-weight: 300;
         color: #333;
     }
-    
+    .winner-user-name {
+        font-weight: 300;
+        color: #ff1a75;
+    }
     .user-title {
         color: #666;
         font-size: 0.875rem;
@@ -114,4 +117,35 @@
     .action-buttons .btn-xs {
         font-size: 0.7em;
         padding: 0.3em 0.6em;
+    }
+
+    .btn-sm.rounded-pill {
+        padding: 0.3rem 0.97rem;    /* Increased from 0.275rem 0.88rem */
+        font-size: 0.91rem;         /* Increased from 0.825rem */
+        line-height: 1.4;           /* Increased from 1.3 */
+        border-radius: 50rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-outline-primary.rounded-pill:hover {
+        background-color: #007bff;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-outline-danger.rounded-pill:hover {
+        background-color: #dc3545;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-sm.rounded-pill i {
+        margin-left: 4.8px;         /* Increased from 4.4px */
+        font-size: 0.85rem;         /* Increased from 0.77rem */
+    }
+
+    .btn-sm.rounded-pill small {
+        font-weight: 500;
     }

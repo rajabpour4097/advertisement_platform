@@ -9,6 +9,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from account.models import CampaignTransaction, EditingCampaign, RequestForMentor
 from .tokens import account_activation_token
+from django.contrib.auth.models import Group
 from django.core.mail import EmailMessage
 from django.db.models import Q, Count
 from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView
@@ -47,6 +48,8 @@ from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
+from .utils.send_notification import notify_campaign_actions, notify_campaign_participation, notify_profile_update, notify_portfolio_actions
+
 
 
 
@@ -257,6 +260,8 @@ class PortfolioCreateView(LoginRequiredMixin, DealerUserMixin, CreateView):
             return self.form_invalid(form)
 
         self.object = form.save()
+        
+        notify_portfolio_actions(self.request.user, self.object, 'create', staff_users)
 
         image_formset.instance = self.object
         image_formset.save()
@@ -295,28 +300,29 @@ class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin,
         # Send notification after edit portfolio
         response = super().form_valid(form)
 
-        notify.send(
-                    self.request.user, 
-                    recipient=self.object.dealer, 
-                    timestamp=timezone.now(), 
-                    verb=f"ویرایش نمونه کار", 
-                    description=self.object.subject,
-                    target=self.object
-                    )
+        notify_portfolio_actions(self.request.user, self.object, 'edit', staff_users)
 
         return response
     
 
 class PortfolioDeleteView(LoginRequiredMixin, DealerUserMixin, PortfolioDeleteMixin, DeleteView):
-    
     model = Portfolio
     template_name = 'account/portfolio/portfolio_confirm_delete.html'
     success_url = reverse_lazy('account:portfolios')
-    
 
     def handle_no_permission(self):
         return render(self.request, '403.html', 
                           {'error_message': "شما به صفحه حذف این نمونه کار دسترسی ندارید"})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        self.object.delete()
+
+        # Send notification to dealer
+        notify_portfolio_actions(request.user, self.object, 'delete', staff_users)
+
+        return HttpResponseRedirect(success_url)
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
@@ -345,6 +351,8 @@ class ProfileView(LoginRequiredMixin, UpdateView):
                 user_images.first().delete()  # حذف تصویر قدیمی
             # ذخیره تصویر جدید
             UsersImages.objects.create(customer=self.request.user, image=profile_image)
+        
+        notify_profile_update(self.request.user, staff_users)
 
         return response
     
@@ -417,24 +425,7 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
         self.object = form.save()
         
         # Send notification to user created campaign
-        notify.send(
-                    self.request.user,
-                    recipient=form.instance.customer,
-                    verb="ایجاد کمپین جدید",
-                    description=f"کمپین جدید با عنوان '{self.object.get_describe_summrize()}' توسط شما ایجاد شد.",
-                    target=self.object, 
-                    timestamp=timezone.now(), 
-                    )
-        # Send notification to all staff users
-        for staff in staff_users:
-                notify.send(
-                    self.request.user, 
-                    recipient=staff, 
-                    verb="ایجاد کمپین جدید", 
-                    description=f"کمپین جدید با عنوان '{self.object.get_describe_summrize()}' توسط {self.request.user.get_full_name()} ایجاد شد.", 
-                    target=self.object, 
-                    timestamp=timezone.now()
-                )
+        notify_campaign_actions(self.request.user, self.object, 'create', staff_users)
         
         context = self.get_context_data()
         image_formset = context['image_formset']
@@ -457,11 +448,27 @@ class CampaignDeleteView(LoginRequiredMixin, StaffUserMixin, DeleteView):
     def handle_no_permission(self):
         return render(self.request, '403.html', 
                           {'error_message': "شما به صفحه حذف کمپین دسترسی ندارید"})
+    
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        
+        # Send notifications before deletion
+        notify_campaign_actions(request.user, self.object, 'delete', staff_users)
+        
+        # Delete the object
+        success_url = self.get_success_url()
+        self.object.delete()
+
+        return HttpResponseRedirect(success_url)
 
 
 class CampaignDeactivateView(StaffUserMixin, View):
     def post(self, request, *args, **kwargs):
         campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        
+        # Send notifications before status change
+        notify_campaign_actions(request.user, campaign, 'deactivate', staff_users)
+
         campaign.is_active = False
         campaign.save()
         return HttpResponseRedirect(reverse_lazy('account:campaigns'))
@@ -473,6 +480,10 @@ class CampaignDeactivateView(StaffUserMixin, View):
 class CampaignActivateView(StaffUserMixin, View):
     def post(self, request, *args, **kwargs):
         campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        
+        # Send notifications before status change
+        notify_campaign_actions(request.user, campaign, 'activate', staff_users)
+
         campaign.is_active = True
         campaign.save()
         return HttpResponseRedirect(reverse_lazy('account:campaigns'))
@@ -490,12 +501,16 @@ class CampaignCancelView(CancelUserMixin, View):
 
     def post(self, request, *args, **kwargs):
         campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        
+        # Send notifications before status change
+        notify_campaign_actions(request.user, campaign, 'cancel', staff_users)
+        
         campaign.status = 'cancel'
         campaign.save()
         return HttpResponseRedirect(reverse_lazy('account:campaigns'))
 
 
-class CampaignReviewView(StaffUserMixin, View):
+class CampaignReviewView(StaffUserMixin, View):  #This view is used for Staff
     template_name = "account/campaign/campaign_review.html"
     
     def dispatch(self, request, *args, **kwargs):
@@ -534,6 +549,14 @@ class CampaignReviewView(StaffUserMixin, View):
 
             campaign.status = "editing"
             campaign.save()
+            
+            # Send notifications for editing status
+            notify_campaign_actions(
+                user=request.user,
+                campaign=campaign,
+                action_type='editing',
+                staff_users=staff_users
+            )
 
             return redirect('account:campaigns')  
 
@@ -544,41 +567,14 @@ class CampaignReviewView(StaffUserMixin, View):
             campaign.is_active = True
             campaign.status = "progressing"
             
-            campaign_customer = campaign.customer
-            notification_message = f"کمپین '{campaign.get_describe_summrize()}'  شروع شده است."
-            notification_message2 = f"کمپین '{campaign.get_describe_summrize()}' توسط کاربر '{campaign_customer.get_full_name()}' شروع شده است."
-            
-            #Send notification to campaign created user
-            notify.send(
-                        request.user, 
-                        recipient=campaign_customer, 
-                        verb="برگزاری کمپین", 
-                        description=notification_message, 
-                        target=campaign, 
-                        timestamp=timezone.now()
-                        )
-            
-            # Send notification to all dealer users
-            for dealer in dealers:
-                notify.send(
-                            request.user, 
-                            recipient=dealer, 
-                            verb="برگزاری کمپین", 
-                            description=notification_message2, 
-                            target=campaign, 
-                            timestamp=timezone.now()
-                            )
-
-            # Send notification to all staff users
-            for staff in staff_users:
-                notify.send(
-                    request.user, 
-                    recipient=staff, 
-                    verb="برگزاری کمپین", 
-                    description=notification_message2, 
-                    target=campaign, 
-                    timestamp=timezone.now()
-                )
+            #Send notification
+            notify_campaign_actions(
+                user=request.user,
+                campaign=campaign,
+                action_type='progressing',
+                staff_users=staff_users,
+                dealers=dealers  # Pass dealers to notify them
+            )
                 
             campaign.save()  # ذخیره کمپین
 
@@ -593,7 +589,7 @@ class CampaignReviewView(StaffUserMixin, View):
         })
         
 
-class CampaignEditView(EditCampaignUserMixin, View):
+class CampaignEditView(EditCampaignUserMixin, View):  #This view is used for Customer
     template_name = "account/campaign/campaign_edit.html"
 
     def dispatch(self, request, *args, **kwargs):
@@ -639,6 +635,15 @@ class CampaignEditView(EditCampaignUserMixin, View):
         if form.is_valid():
             form.save()
             campaign.status = "reviewing"
+            
+            # Send notifications for editing status
+            notify_campaign_actions(
+                user=request.user,
+                campaign=campaign,
+                action_type='review',
+                staff_users=staff_users
+            )
+            
             campaign.save()
             return redirect('account:campaigns')
         
@@ -690,6 +695,14 @@ class CampaignParticipateView(DealerUserMixin, View):
 
             campaign.list_of_participants.add(request.user)
             campaign.save()
+            
+            # Send notifications
+            notify_campaign_participation(
+                user=request.user,
+                campaign=campaign,
+                action_type='participate',
+                staff_users=staff_users
+            )
 
             return redirect('account:campaigns')  
 
@@ -724,6 +737,15 @@ class CampaignCancelParticipateView(DealerUserMixin, View):
             if transaction:
                 transaction.delete()
             campaign.list_of_participants.remove(request.user)
+            
+            # Send notifications
+            notify_campaign_participation(
+                user=request.user,
+                campaign=campaign,
+                action_type='cancel',
+                staff_users=staff_users
+            )
+            
             messages.success(request, "شما با موفقیت از کمپین خارج شدید.")
         else:
             messages.warning(request, "شما در این کمپین عضو نبودید.")
@@ -738,6 +760,8 @@ class MentorUsersList(MentorUserMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         mentor = self.request.user
+        if mentor.groups.filter(name="supermentor").exists():
+            print('Mentor is Super Mentor')
         context['users'] = CustomUser.objects.filter(customer_mentor=mentor)
     
         return context
