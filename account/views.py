@@ -48,7 +48,7 @@ from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
-from .utils.send_notification import notify_campaign_actions, notify_campaign_participation, notify_profile_update, notify_portfolio_actions
+from .utils.send_notification import notify_campaign_actions, notify_campaign_participation, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
 
 
 
@@ -111,6 +111,7 @@ class Register(NotLoginedMixin, CreateView):
 
         user.username = user.email
         user.save()
+        notify_user_registration(user, staff_users)
 
         self.request.session['signup_success'] = True
         self.request.session['signup_message'] = message
@@ -171,10 +172,16 @@ def activate(request, uidb64, token):
 
 
 class PasswordChange(PasswordChangeView):
-    
     template_name = 'account/password_change_form.html'
     success_url = reverse_lazy('account:password_change_done')
     
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Send notification to user
+        notify_password_change(self.request.user)
+        
+        return response
+
 
 class PasswordChangeDone(PasswordChangeDoneView):
     
@@ -814,6 +821,7 @@ class MentorChooseView(CustomerUserMixin, CheckHaveRequestOrMentor, View):
             mentor=mentor
         )
         
+        notify_mentor_request(user, mentor, request_for_mentor, staff_users)
         return redirect('account:mymentor')
 
 
@@ -839,6 +847,9 @@ class ChangeStatusRequestForMentor(StaffUserMixin, View):
         if status =='reject': 
             request_for_mentor.status = status
             request_for_mentor.save()
+            notify_mentor_request_status(request_for_mentor, status, request.user, staff_users)
+
+            
         elif status == 'approved':
             requested_user = get_object_or_404(CustomUser, pk=requested_user_id)
             mentor = get_object_or_404(CustomUser, pk=mentor_id)
@@ -846,7 +857,8 @@ class ChangeStatusRequestForMentor(StaffUserMixin, View):
             request_for_mentor.save()
             requested_user.customer_mentor = mentor
             requested_user.save()
-            
+            notify_mentor_request_status(request_for_mentor, status, request.user, staff_users)
+
         
         return HttpResponseRedirect(reverse_lazy('account:listofrequestformentor'))
 
@@ -866,5 +878,7 @@ class NewMentorActivate(StaffUserMixin, View):
         mentor = get_object_or_404(CustomUser, pk=self.kwargs.get('pk'))
         mentor.is_active = True
         mentor.save()
+        notify_mentor_activation(request.user, mentor, staff_users)
+        
         return redirect('account:mentorslist')
         

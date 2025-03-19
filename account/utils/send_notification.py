@@ -225,4 +225,163 @@ def notify_campaign_participation(user, campaign, action_type, staff_users):
             verb=f"{other_verb_text} مجری در کمپین",
             description=f"مجری {user.get_full_name()} در کمپین '{campaign_desc}' {other_action_text}.",
             target=campaign
-        ) 
+        )
+
+def notify_mentor_request(user, mentor, request_for_mentor, staff_users):
+    """
+    Send notifications for mentor request actions
+    
+    Args:
+        user: The customer requesting the mentor
+        mentor: The mentor being requested
+        request_for_mentor: The RequestForMentor object
+        staff_users: QuerySet of staff users to notify
+    """
+    mentor_full_name = mentor.get_full_name()
+    
+    # Notify the customer (using second person)
+    send_notification(
+        sender=user,
+        recipient=user,
+        verb="درخواست منتور",
+        description=f"شما درخواست منتور برای {mentor_full_name} را ارسال کرده‌اید. لطفاً منتظر تایید مدیریت باشید.",
+        target=request_for_mentor
+    )
+    
+    # Notify staff users (using third person)
+    send_staff_notification(
+        sender=user,
+        staff_users=staff_users,
+        verb="درخواست منتور جدید",
+        description=f"{user.get_full_name()} درخواست منتور برای {mentor_full_name} ارسال کرده است.",
+        target=request_for_mentor
+    )
+
+def notify_mentor_request_status(request_for_mentor, status, staff_user, staff_users):
+    """
+    Send notifications for mentor request status changes
+    
+    Args:
+        request_for_mentor: The RequestForMentor object
+        status: Either 'reject' or 'approved'
+        staff_user: The staff user who changed the status
+        staff_users: QuerySet of staff users to notify
+    """
+    customer = request_for_mentor.requested_user
+    mentor = request_for_mentor.mentor
+    mentor_full_name = mentor.get_full_name()
+    
+    if status == 'reject':
+        # Notify the customer about rejection
+        send_notification(
+            sender=staff_user,
+            recipient=customer,
+            verb="رد درخواست منتور",
+            description=f"درخواست منتور شما برای {mentor_full_name} رد شد.",
+            target=request_for_mentor
+        )
+        
+        # Notify staff users
+        send_staff_notification(
+            sender=staff_user,
+            staff_users=staff_users,
+            verb="رد درخواست منتور",
+            description=f"درخواست منتور {customer.get_full_name()} برای {mentor_full_name} رد شد.",
+            target=request_for_mentor
+        )
+        
+    elif status == 'approved':
+        # Notify the customer about approval
+        send_notification(
+            sender=staff_user,
+            recipient=customer,
+            verb="تایید درخواست منتور",
+            description=f"درخواست منتور شما برای {mentor_full_name} تایید شد.",
+            target=request_for_mentor
+        )
+        
+        # Notify the mentor about being assigned
+        send_notification(
+            sender=staff_user,
+            recipient=mentor,
+            verb="تخصیص کاربر جدید",
+            description=f"{customer.get_full_name()} به عنوان کاربر جدید به شما تخصیص داده شد.",
+            target=request_for_mentor
+        )
+        
+        # Notify staff users
+        send_staff_notification(
+            sender=staff_user,
+            staff_users=staff_users,
+            verb="تایید درخواست منتور",
+            description=f"درخواست منتور {customer.get_full_name()} برای {mentor_full_name} تایید شد.",
+            target=request_for_mentor
+        )
+
+def notify_mentor_activation(staff_user, mentor, staff_users):
+    """
+    Send notifications for mentor activation
+    
+    Args:
+        staff_user: The staff user who activated the mentor
+        mentor: The mentor being activated
+        staff_users: QuerySet of staff users to notify
+    """
+    mentor_full_name = mentor.get_full_name()
+    
+    # Notify the mentor about activation
+    send_notification(
+        sender=staff_user,
+        recipient=mentor,
+        verb="فعال‌سازی حساب منتور",
+        description="حساب منتور شما فعال شد. اکنون می‌توانید به پنل خود دسترسی داشته باشید.",
+        target=mentor
+    )
+    
+    # Notify staff users
+    send_staff_notification(
+        sender=staff_user,
+        staff_users=staff_users,
+        verb="فعال‌سازی حساب منتور",
+        description=f"حساب منتور {mentor_full_name} فعال شد.",
+        target=mentor
+    )
+
+def notify_user_registration(user, staff_users):
+    """
+    Send notifications for new user registration
+    
+    Args:
+        user: The newly registered user
+        staff_users: QuerySet of staff users to notify
+    """
+    user_full_name = user.get_full_name()
+    user_type_persian = {
+        'customer': 'مشتری',
+        'dealer': 'مجری',
+        'mentor': 'منتور'
+    }.get(user.user_type, 'کاربر')
+    
+    # Notify staff users
+    send_staff_notification(
+        sender=user,
+        staff_users=staff_users,
+        verb="ثبت‌نام کاربر جدید",
+        description=f"{user_full_name} به عنوان {user_type_persian} جدید ثبت‌نام کرده است.",
+        target=user
+    )
+
+def notify_password_change(user):
+    """
+    Send notification for password change
+    
+    Args:
+        user: The user who changed their password
+    """
+    send_notification(
+        sender=user,
+        recipient=user,
+        verb="تغییر رمز عبور",
+        description="رمز عبور شما با موفقیت تغییر کرد.",
+        target=user
+    ) 
