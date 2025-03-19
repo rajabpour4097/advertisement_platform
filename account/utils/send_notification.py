@@ -63,8 +63,9 @@ def notify_portfolio_actions(user, portfolio, action_type, staff_users):
         'create': ('ایجاد', 'ایجاد کرده‌اید'),
         'edit': ('ویرایش', 'ویرایش کرده‌اید'),
         'delete': ('حذف', 'حذف کرده‌اید'),
-        'activate': ('فعال‌سازی', 'فعال شد'),
-        'deactivate': ('غیرفعال‌سازی', 'غیرفعال شد'),
+        'activate': ('فعال‌سازی', 'فعال کرده‌اید'),
+        'deactivate': ('غیرفعال‌سازی', 'غیرفعال کرده‌اید'),
+        'review': ('بررسی', 'در حال بررسی است')
     }
     
     other_actions = {
@@ -73,11 +74,12 @@ def notify_portfolio_actions(user, portfolio, action_type, staff_users):
         'delete': ('حذف', 'حذف شد'),
         'activate': ('فعال‌سازی', 'فعال شد'),
         'deactivate': ('غیرفعال‌سازی', 'غیرفعال شد'),
+        'review': ('بررسی', 'در حال بررسی است')
     }
     
     recipient_verb_text, recipient_action_text = recipient_actions[action_type]
     other_verb_text, other_action_text = other_actions[action_type]
-    portfolio_desc = portfolio.title
+    portfolio_desc = portfolio.subject if portfolio.subject else str(portfolio.id)  # Using subject field or ID as fallback
     
     # Notify portfolio owner (using recipient-specific message)
     if portfolio.dealer == user:  # If dealer is the actor
