@@ -21,11 +21,17 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgres://admin:secretpassword@db:5432/advertisement_db
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - GIT_REPO=your_git_repo_url
+      - GIT_BRANCH=main
     ports:
       - "8000:8000"
     volumes:
       - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:

@@ -1,15 +1,21 @@
-# choose the image
+# Base image
 FROM python:3.10
 
-# choose work directory
+# Install git and required packages
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set work directory
 WORKDIR /app
 
-# copy dependencies
+# Copy only requirements first for better caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# copy all files of project
-COPY . .
+# Add entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
-# run migrate and runserver
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+# Set entrypoint
+ENTRYPOINT ["/docker-entrypoint.sh"]
