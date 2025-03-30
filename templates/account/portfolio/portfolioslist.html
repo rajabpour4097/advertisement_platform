@@ -1,5 +1,6 @@
 {% extends "account/account_base.html" %}
 {% load static %}
+{% load account_tags %}
 
 {% block title %}لیست نمونه کارها{% endblock %}
 
@@ -162,6 +163,73 @@
     .col-md-12 {
         padding: 15px;
     }
+
+    .d-flex {
+        display: flex;
+    }
+
+    .gap-1 {
+        gap: 0.25rem;
+    }
+
+    .text-primary {
+        color: #0d6efd;
+    }
+
+    .bg-secondary {
+        background-color: #6c757d !important;
+        color: white;
+    }
+
+    .btn-group {
+        gap: 0.5rem;
+    }
+
+    .btn-light {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+    }
+
+    .form-select {
+        padding: 0.375rem 0.75rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+    }
+
+    .input-group {
+        position: relative;
+    }
+
+    .input-group-text {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        border: none;
+        z-index: 4;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #666;
+    }
+
+    /* Counter column width adjustment */
+    .table th:first-child,
+    .table td:first-child {
+        width: 5px;
+        min-width: 5px;
+        padding-right: 10px;
+        padding-left: 10px;
+        white-space: nowrap;
+    }
 </style>
 
 <div class="col-md-12 col-sm-12 col-xs-12">
@@ -172,14 +240,38 @@
             </h2>
             <div class="clearfix"></div>
         </div>
-
+{% if portfolios %}
         <!-- Search Box -->
         <div class="x_content mb-3">
-            <div class="input-group" style="max-width: 300px;">
-                <input type="text" id="searchInput" class="form-control" placeholder="جستجو در نمونه کارها..." style="border-radius: 20px; padding: 8px 15px;">
-                <span class="input-group-text bg-transparent border-0" style="margin-right: -40px;">
-                    <i class="fas fa-search text-muted"></i>
-                </span>
+            <div class="row align-items-center">
+                <!-- Search Box -->
+                <div class="col-md-3">
+                    <label>جستجو:</label>
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="جستجو در نمونه کارها...">
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-2">
+                    <label>وضعیت:</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">--</option>
+                        <option value="active">فعال</option>
+                        <option value="inactive">غیرفعال</option>
+                    </select>
+                </div>
+
+                <!-- Operations -->
+                <div class="col-md-5 text-end">
+                    <label style="color: #fff;"> .</label>
+                    <div class="btn-group">
+                        <a class="btn btn-primary" href="{% url 'account:portfoliocreate' %}">
+                            <i class="fas fa-plus"></i>
+                            ایجاد نمونه کار
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -188,55 +280,46 @@
                 <table class="table" id="portfoliosTable">
                     <thead>
                         <tr>
+                            <th>#</th>
                             {% if user.is_staff %}
                             <th class="dealer-column">نام منتشر کننده</th>
                             {% endif %}
                             <th>عنوان پروژه</th>
-                            <th>شرح پروژه</th>
-                            <th>موضوع پروژه</th>
-                            <th>زمان اتمام</th>
+                            <th>ثبت</th>
+                            <th>به‌روزرسانی</th>
                             <th>وضعیت</th>
+                            <th>عملیات</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for portfolio in portfolios %}
                         <tr class="{% if portfolio.is_active %}portfolio-row-active{% else %}portfolio-row-inactive{% endif %}">
+                            <td>{{ forloop.counter }}</td>
                             {% if user.is_staff %}
-                            <td class="dealer-column">
-                                <div class="avatar-info">
-                                    <div class="user-details">
-                                        <span class="user-name">
-                                            {% if portfolio.dealer.get_full_name %}
-                                                {{ portfolio.dealer.get_full_name }}
-                                            {% else %}
-                                                {{ portfolio.dealer.email }}
-                                            {% endif %}
-                                        </span>
-                                    </div>
-                                </div>
+                            <td class="dealer-column text-success">
+                                    {% if portfolio.dealer.get_full_name %}
+                                        {{ portfolio.dealer.get_full_name }}
+                                    {% else %}
+                                        {{ portfolio.dealer.email }}
+                                    {% endif %}
                             </td>
                             {% endif %}
-                            <td><a href="{% url 'account:portfolioedit' portfolio.pk %}">{{ portfolio.subject }}</a></td>
-                            <td>{{ portfolio.description | truncatewords:15 }}</td>
-                            <td>{{ portfolio.topic }}</td>
-                            <td>{{ portfolio.done_time }}</td>
+                            <td class="text-primary">{{ portfolio.subject }}</td>
+                            <td>{{ portfolio.done_time|jalali_date }}</td>
+                            <td>{{ portfolio.updated_at|jalali_date|default:"--" }}</td>
+                            
                             <td>
                                 {% if portfolio.is_active %}
-                                    <span class="badge bg-success badge-with-icon">
-                                        <i class="fas fa-check-circle"></i>
-                                        فعال
-                                    </span>
+                                    <span class="badge bg-success">فعال</span>
                                 {% else %}
-                                    <span class="badge bg-danger badge-with-icon">
-                                        <i class="fas fa-times-circle"></i>
-                                        غیرفعال
-                                    </span>
+                                    <span class="badge bg-danger">غیرفعال</span>
                                 {% endif %}
-                                <div class="action-buttons">
-                                    <a class="btn btn-danger btn-xs" href="{% url 'account:portfoliodelete' portfolio.pk %}">
-                                        <i class="fas fa-trash-alt"></i>
-                                        حذف
-                                    </a>
+                            </td>
+                           
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="{% url 'account:portfoliodelete' portfolio.pk %}" class="text-danger"><i class="fas fa-trash"  title="حذف"></i></a>
+                                    <a style="margin-right: 10px;" href="{% url 'account:portfolioedit' portfolio.pk %}" class="text-primary"><i class="fa fa-fw fa-pencil"  title="ویرایش"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -245,13 +328,31 @@
                 </table>
             </div>
         </div>
+    {% else %}
+        <div class="x_content">
+            <div class="alert alert-info" role="alert">
+                هیچ نمونه کاری ثبت نشده است.
+            </div>
+        </div>
+    {% endif %}
     </div>
 </div>
 
-<!-- Add this JavaScript at the end of the file -->
+<!-- Add this JavaScript for filters -->
 <script>
+// Existing search code
 document.getElementById('searchInput').addEventListener('keyup', function() {
-    const searchText = this.value.toLowerCase();
+    filterTable();
+});
+
+// Status filter
+document.getElementById('statusFilter').addEventListener('change', function() {
+    filterTable();
+});
+
+function filterTable() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
     const table = document.getElementById('portfoliosTable');
     const rows = table.getElementsByTagName('tr');
 
@@ -259,17 +360,29 @@ document.getElementById('searchInput').addEventListener('keyup', function() {
     for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         const cells = row.getElementsByTagName('td');
-        let found = false;
+        let matchesSearch = false;
+        let matchesStatus = true;
 
+        // Check search text
         for (let cell of cells) {
             if (cell.textContent.toLowerCase().includes(searchText)) {
-                found = true;
+                matchesSearch = true;
                 break;
             }
         }
 
-        row.style.display = found ? '' : 'none';
+        // Check status if filter is active
+        if (statusFilter) {
+            const statusCell = row.querySelector('.badge');
+            if (statusFilter === 'active' && !statusCell.classList.contains('bg-success')) {
+                matchesStatus = false;
+            } else if (statusFilter === 'inactive' && !statusCell.classList.contains('bg-danger')) {
+                matchesStatus = false;
+            }
+        }
+
+        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
     }
-});
+}
 </script>
 {% endblock %}
