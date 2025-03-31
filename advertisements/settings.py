@@ -116,6 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    'advplatform.forms.CustomAuthBackend',
     'django.contrib.auth.backends.ModelBackend',  # پشتیبانی از مدل کاربر
 ]
 

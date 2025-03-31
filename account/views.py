@@ -152,14 +152,14 @@ class VerifyOTP(View):
             del request.session['phone_number']
 
             messages.success(request, 'حساب کاربری شما با موفقیت فعال شد.')
-            return redirect('login')
+            return redirect('adv:login')
         else:
             messages.error(request, 'کد وارد شده نامعتبر است.')
             return render(request, self.template_name)
 
 @method_decorator(require_POST, name='dispatch')
 class ResendOTPView(View):
-    def post(self, request):
+    def post(self, request): 
         user_id = request.session.get('user_id')
         if not user_id:
 
