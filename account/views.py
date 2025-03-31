@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView, LoginView
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -49,6 +49,9 @@ from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
 from .utils.send_notification import notify_campaign_actions, notify_campaign_participation, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
+from .utils.send_sms import send_activation_sms, verify_otp
+from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 
 
 
@@ -95,45 +98,84 @@ class NotificationDetailView(LoginRequiredMixin, TemplateView):
 
 
 class Register(NotLoginedMixin, CreateView):
-    
     form_class = SignupForm
     template_name = 'registration/signup.html'
     
     def form_valid(self, form):
         user = form.save(commit=False)
-
-        if user.user_type == 'mentor':
-            user.is_active = False
-            message = "ثبت‌نام شما به عنوان مشاور انجام شد. لطفاً منتظر تأیید مدیریت باشید."
-        else:
-            user.is_active = True
-            message = "ثبت‌نام شما با موفقیت انجام شد! حالا می‌توانید وارد شوید."
-
+        user.is_active = False
         user.username = user.email
         user.save()
         notify_user_registration(user, staff_users)
 
-        self.request.session['signup_success'] = True
-        self.request.session['signup_message'] = message
-        
-        success_url = reverse('signup_success') + f"?message={message}"
-    
-        # current_site = get_current_site(self.request)
-        # mail_subject = 'فعالسازی حساب کاربری'
-        # message = render_to_string('registration/activate_account.html', {
-        #     'user': user,
-        #     'domain': current_site.domain,
-        #     'uid':urlsafe_base64_encode(force_bytes(user.pk)),
-        #     'token':account_activation_token.make_token(user),
-        # })
-        # to_email = form.cleaned_data.get('email')
-        # email = EmailMessage(
-        #             mail_subject, message, to=[to_email]
-        # )
-        # email.send()
-        # return HttpResponse('لینک فعالسازی برای ایمیل شما ارسال شد. <a href="/login">صفحه ورود</a>')
-        
-        return redirect(success_url)
+        if user.user_type != 'mentor':
+            # ارسال کد فعال‌سازی
+            response, otp, error = send_activation_sms(user)
+
+            if response:
+                # ذخیره اطلاعات موردنیاز در session
+                self.request.session['user_id'] = user.id
+                self.request.session['phone_number'] = user.phone_number
+                message = "کد تایید برای شماره موبایل شما ارسال شد."
+                return redirect('verify_otp')
+            else:
+                form.add_error(None, f"خطا در ارسال پیامک: {error}")
+                return self.form_invalid(form)
+
+
+class VerifyOTP(View):
+    template_name = 'registration/verify_otp.html'
+
+    def get(self, request):
+        if not request.session.get('user_id'):
+            messages.error(request, 'دسترسی نامعتبر')
+            return redirect('login')
+        return render(request, self.template_name)
+
+    def post(self, request):
+        otp = request.POST.get('otp')
+        phone_number = request.session.get('phone_number')
+        user_id = request.session.get('user_id')
+
+        if not all([otp, phone_number, user_id]):
+            messages.error(request, 'اطلاعات نامعتبر است.')
+            return redirect('login')
+
+        if verify_otp(phone_number, otp):
+            # فعال کردن کاربر
+            user = CustomUser.objects.get(id=user_id)
+            user.is_active = True
+            user.save()
+
+            # پاک کردن اطلاعات session
+            del request.session['user_id']
+            del request.session['phone_number']
+
+            messages.success(request, 'حساب کاربری شما با موفقیت فعال شد.')
+            return redirect('login')
+        else:
+            messages.error(request, 'کد وارد شده نامعتبر است.')
+            return render(request, self.template_name)
+
+@method_decorator(require_POST, name='dispatch')
+class ResendOTPView(View):
+    def post(self, request):
+        user_id = request.session.get('user_id')
+        if not user_id:
+
+            return JsonResponse({'success': False, 'error': 'کاربر نامعتبر'})
+
+        try:
+            user = CustomUser.objects.get(id=user_id)
+            response, otp, error = send_activation_sms(user)
+            
+            if response:
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'error': error})
+                
+        except CustomUser.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'کاربر یافت نشد'})
 
 
 class SignupSuccessView(TemplateView):
@@ -881,4 +923,7 @@ class NewMentorActivate(StaffUserMixin, View):
         notify_mentor_activation(request.user, mentor, staff_users)
         
         return redirect('account:mentorslist')
-        
+
+
+
+

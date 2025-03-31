@@ -165,6 +165,15 @@ EMAIL_HOST_USER = EMAIL_HOST_USER_NAME
 EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_KEY
 DEFAULT_FROM_EMAIL = "mohammad4097@gmail.com"
 
+
+# Melipayamak SMS Settings
+MELIPAYAMAK_USERNAME = MELIPAYAMAK_USER
+MELIPAYAMAK_PASSWORD = MELIPAYAMAK_PASS 
+MELIPAYAMAK_NUMBER = MELIPAYAMAK_NUM  # شماره اختصاصی ملی پیامک
+
+# Site URL for activation links
+SITE_URL = 'https://your-domain.com'  # آدرس سایت شما
+
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,

@@ -1,0 +1,127 @@
+{% extends "login_base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}
+تایید شماره موبایل
+{% endblock %}
+
+{% block customcontent %}
+<style>
+    #countdown {
+        color: #dc3545;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    
+    .resend-button {
+        display: none;
+    }
+    
+    .otp-input {
+        letter-spacing: 8px;
+        font-size: 1.5em;
+    }
+</style>
+
+<div class="container mt-8">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    تایید ثبت نام
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" id="otpForm">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>کد تایید دریافتی را وارد کنید:</label>
+                            <input type="text" name="otp" class="form-control text-center otp-input" 
+                                   maxlength="6" pattern="\d{6}" required>
+                            <small class="form-text text-info">
+                                کد 6 رقمی ارسال شده به موبایل خود را وارد کنید
+                            </small>
+                            <div class="mt-2">
+                                زمان باقی‌مانده: <span id="countdown"></span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="verifyButton">تایید</button>
+                        
+                        <button type="button" class="btn btn-outline-primary mt-3 resend-button" id="resendButton">
+                            ارسال مجدد کد
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const countdownElement = document.getElementById('countdown');
+    const resendButton = document.getElementById('resendButton');
+    const verifyButton = document.getElementById('verifyButton');
+    const otpForm = document.getElementById('otpForm');
+    
+    let timeLeft = 120; // زمان به ثانیه (2 دقیقه)
+    
+    function updateCountdown() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            countdownElement.textContent = 'کد منقضی شده است';
+            verifyButton.disabled = true;
+            resendButton.style.display = 'inline-block';
+        } else {
+            timeLeft--;
+        }
+    }
+    
+    let timer = setInterval(updateCountdown, 1000);
+    updateCountdown();
+    
+    resendButton.addEventListener('click', async function() {
+        try {
+            const response = await fetch('{% url "resend_otp" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // ریست کردن تایمر
+                timeLeft = 120;
+                timer = setInterval(updateCountdown, 1000);
+                verifyButton.disabled = false;
+                resendButton.style.display = 'none';
+                
+                // نمایش پیام موفقیت
+                alert('کد جدید ارسال شد');
+            } else {
+                alert(data.error || 'خطا در ارسال کد جدید');
+            }
+        } catch (error) {
+            alert('خطا در ارتباط با سرور');
+        }
+    });
+});
+</script>
+{% endblock %}

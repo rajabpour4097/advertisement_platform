@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from account.views import Register, SignupSuccessView, activate
+from account.views import Register, ResendOTPView, SignupSuccessView, VerifyOTP, activate
 
 
 
@@ -33,6 +33,8 @@ urlpatterns = [
     path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('signup/', Register.as_view(), name='signup'),
+    path('verify-register/', VerifyOTP.as_view(), name='verify_otp'),
+    path('resend-otp/', ResendOTPView.as_view(), name='resend_otp'),
     path('signup/success/', SignupSuccessView.as_view(), name='signup_success'),
     re_path(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z\-]+)/$', 
         activate, name='activate'),

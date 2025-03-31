@@ -3,9 +3,11 @@ from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
+from django.contrib import messages
 from advplatform.forms import CustomAuthenticationForm
 from advplatform.models import Campaign, CustomUser, Portfolio
 from django.views.generic import TemplateView
+from account.utils.send_sms import send_activation_sms
 
 
 
@@ -23,8 +25,32 @@ class CustomLoginView(LoginView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect('account:home')
-
         return super().dispatch(request, *args, **kwargs)
+    
+    def form_valid(self, form):
+        """Check if user is active before login"""
+        user = form.get_user()
+        
+        # اگر کاربر فعال نیست و مشاور هم نیست
+        if not user.is_active and user.user_type != 'mentor':
+            # ارسال مجدد کد تایید
+            response, otp, error = send_activation_sms(user)
+            if response:
+                # ذخیره اطلاعات در session
+                self.request.session['user_id'] = user.id
+                self.request.session['phone_number'] = user.phone_number
+                messages.warning(self.request, 'لطفا ابتدا شماره موبایل خود را تایید کنید.')
+                return redirect('verify_otp')
+            else:
+                messages.error(self.request, f'خطا در ارسال کد تایید: {error}')
+                return redirect('login')
+                
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        """If the form is invalid, render the invalid form."""
+        messages.error(self.request, 'نام کاربری یا رمز عبور اشتباه است.')
+        return self.render_to_response(self.get_context_data(form=form))
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
