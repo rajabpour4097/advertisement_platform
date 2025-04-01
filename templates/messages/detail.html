@@ -1,0 +1,60 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+
+{% block title %}جزئیات پیام{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <a href="{% url 'messages:compose' %}" class="btn btn-primary btn-block mb-3">
+                        <i class="fas fa-pen"></i> ارسال پیام جدید
+                    </a>
+                    <div class="list-group">
+                        <a href="{% url 'messages:inbox' %}" class="list-group-item">
+                            <i class="fas fa-inbox"></i> صندوق دریافت
+                        </a>
+                        <a href="{% url 'messages:sent' %}" class="list-group-item">
+                            <i class="fas fa-paper-plane"></i> پیام‌های ارسالی
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ message.subject }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="message-info mb-3">
+                        <strong>از:</strong> {{ message.sender.get_full_name }}
+                        <br>
+                        <strong>به:</strong> {{ message.receiver.get_full_name }}
+                        <br>
+                        <strong>تاریخ:</strong> {{ message.created_at|date:"Y/m/d H:i" }}
+                    </div>
+                    <div class="message-body">
+                        {{ message.body|linebreaks }}
+                    </div>
+                    <hr>
+                    {% if message.sender != request.user %}
+                    <a href="{% url 'messages:compose' %}?reply_to={{ message.pk }}" class="btn btn-primary">
+                        <i class="fas fa-reply"></i> پاسخ
+                    </a>
+                    {% endif %}
+                    <a href="{% if message.sender == request.user %}{% url 'messages:sent' %}{% else %}{% url 'messages:inbox' %}{% endif %}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> بازگشت
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -164,7 +164,7 @@ class CustomUser(AbstractUser):
     
     def get_field_count(self):
         return len([field for field in self._meta.get_fields() if field.concrete])
-    
+       
     
 class Campaign(models.Model):
     customer = models.ForeignKey(

@@ -39,5 +39,5 @@ urlpatterns = [
     re_path(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z\-]+)/$', 
         activate, name='activate'),
     # path('notifications/', include('notifications.urls', namespace='notifications')),
-    
+    path('messages/', include('internal_messages.urls', namespace='messages')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
