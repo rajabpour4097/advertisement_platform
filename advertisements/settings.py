@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'notifications',
+    'internal_messages',
         
 ]
 
@@ -74,6 +75,7 @@ TEMPLATES = [
                 'advplatform.context_processors.get_admin_groups',
                 'account.context_processors.user_null_field_percentage',
                 'account.context_processors.latest_notifications',
+                'internal_messages.context_processors.unread_messages',
             ],
         },
     },

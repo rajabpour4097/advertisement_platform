@@ -129,25 +129,38 @@
                             <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown"
                                aria-expanded="false">
                                 <i class="fa fa-envelope-o"></i>
-                                <span class="badge bg-green">3</span>
+                                <span class="badge bg-green">{{ unread_messages_count }}</span>
                             </a>
                             <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
-                            
+                                {% for message in latest_messages %}
                                 <li>
-                                        <a>
-                                     <span class="image"><img src="{% static 'account/build/images/img.jpg' %}" alt="Profile Image"/></span>
-                                    <span>
-                                        <span>مرتضی کریمی</span>
-                                        <span class="time">3 دقیقه پیش</span>
-                                    </span>
+                                    <a href="{% url 'messages:detail' message.pk %}">
+                                        <span class="image">
+                                            <img src="{% if message.sender.customuserimages.first.image.url %}
+                                                    {{ message.sender.customuserimages.first.image.url }}
+                                                    {% else %}
+                                                    {% static 'account/build/images/user.png' %}{% endif %}" 
+                                                 alt="Profile Image"/>
+                                        </span>
+                                        <span>
+                                            <span>{{ message.sender.get_full_name }}</span>
+                                            <span class="time">{{ message.created_at|timesince }}</span>
+                                        </span>
                                         <span class="message">
-                                        فیلمای فستیوال فیلمایی که اجرا شده یا راجع به لحظات مرده ایه که فیلمسازا میسازن. آنها جایی بودند که....
+                                            {{ message.subject }} - {{ message.body|truncatechars:50 }}
                                         </span>
                                     </a>
                                 </li>
+                                {% empty %}
+                                <li>
+                                    <div class="text-center p-3">
+                                        <span>پیام جدیدی ندارید</span>
+                                    </div>
+                                </li>
+                                {% endfor %}
                                 <li>
                                     <div class="text-center">
-                                        <a>
+                                        <a href="{% url 'messages:inbox' %}">
                                             <strong>مشاهده تمام پیام ها</strong>
                                             <i class="fa fa-angle-right"></i>
                                         </a>

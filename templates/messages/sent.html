@@ -1,0 +1,70 @@
+{% extends "messages/inbox.html" %}
+
+{% block title %}پیام‌های ارسالی{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <a href="{% url 'messages:compose' %}" class="btn btn-primary btn-block mb-3">
+                        <i class="fas fa-pen"></i> ارسال پیام جدید
+                    </a>
+                    <div class="list-group">
+                        <a href="{% url 'messages:inbox' %}" class="list-group-item">
+                            <i class="fas fa-inbox"></i> صندوق دریافت
+                        </a>
+                        <a href="{% url 'messages:sent' %}" class="list-group-item active">
+                            <i class="fas fa-paper-plane"></i> پیام‌های ارسالی
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>گیرنده</th>
+                                <th>موضوع</th>
+                                <th>تاریخ</th>
+                                <th>وضعیت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for message in messages %}
+                            <tr>
+                                <td>{{ message.receiver.get_full_name }}</td>
+                                <td>
+                                    <a href="{% url 'messages:detail' message.pk %}">
+                                        {{ message.subject }}
+                                    </a>
+                                </td>
+                                <td>{{ message.created_at|date:"Y/m/d H:i" }}</td>
+                                <td>
+                                    {% if message.is_read %}
+                                        <span class="badge bg-success">خوانده شده</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">خوانده نشده</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">پیامی وجود ندارد</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
