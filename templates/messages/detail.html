@@ -1,60 +1,118 @@
 {% extends "account/account_base.html" %}
 {% load static %}
 
-{% block title %}جزئیات پیام{% endblock %}
+{% block title %}{{ message.subject }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <a href="{% url 'messages:compose' %}" class="btn btn-primary btn-block mb-3">
-                        <i class="fas fa-pen"></i> ارسال پیام جدید
-                    </a>
-                    <div class="list-group">
-                        <a href="{% url 'messages:inbox' %}" class="list-group-item">
-                            <i class="fas fa-inbox"></i> صندوق دریافت
-                        </a>
-                        <a href="{% url 'messages:sent' %}" class="list-group-item">
-                            <i class="fas fa-paper-plane"></i> پیام‌های ارسالی
-                        </a>
-                    </div>
-                </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>مشاهده پیام</h2>
+            <div class="nav navbar-right panel_toolbox">
+                {% if message.sender != request.user %}
+                <a href="{% url 'messages:compose' %}?reply_to={{ message.pk }}" class="btn btn-primary btn-sm">
+                    <i class="fa fa-reply"></i> پاسخ
+                </a>
+                {% endif %}
+                <button class="btn btn-danger btn-sm btn-delete-message" data-message-id="{{ message.pk }}">
+                    <i class="fa fa-trash"></i> حذف
+                </button>
             </div>
+            <div class="clearfix"></div>
         </div>
 
-        <!-- Main content -->
-        <div class="col-md-9">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">{{ message.subject }}</h3>
+        <div class="x_content">
+            <!-- نوار منو -->
+            <div class="mail_tabs mb-4">
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                        <a href="{% url 'messages:inbox' %}" class="nav-link">صندوق دریافت</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'messages:sent' %}" class="nav-link">ارسال شده</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">هرزنامه</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">حذف شده</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- جزئیات پیام -->
+            <div class="message-details">
+                <div class="message-header">
+                    <h3>{{ message.subject }}</h3>
+                    <div class="message-meta">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p><strong>از:</strong> {{ message.sender.get_full_name }}</p>
+                                <p><strong>به:</strong> {{ message.receiver.get_full_name }}</p>
+                            </div>
+                            <div class="col-md-4 text-left">
+                                <p class="text-muted">{{ message.created_at|date:"Y/m/d H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="message-info mb-3">
-                        <strong>از:</strong> {{ message.sender.get_full_name }}
-                        <br>
-                        <strong>به:</strong> {{ message.receiver.get_full_name }}
-                        <br>
-                        <strong>تاریخ:</strong> {{ message.created_at|date:"Y/m/d H:i" }}
-                    </div>
-                    <div class="message-body">
-                        {{ message.body|linebreaks }}
-                    </div>
-                    <hr>
-                    {% if message.sender != request.user %}
-                    <a href="{% url 'messages:compose' %}?reply_to={{ message.pk }}" class="btn btn-primary">
-                        <i class="fas fa-reply"></i> پاسخ
-                    </a>
-                    {% endif %}
-                    <a href="{% if message.sender == request.user %}{% url 'messages:sent' %}{% else %}{% url 'messages:inbox' %}{% endif %}" 
-                       class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> بازگشت
-                    </a>
+                <hr>
+                <div class="message-content">
+                    {{ message.body|linebreaks }}
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mail_tabs .nav-link { padding: 10px 15px; }
+    .message-details {
+        background: #fff;
+        padding: 20px;
+        border-radius: 4px;
+    }
+    .message-header {
+        margin-bottom: 20px;
+    }
+    .message-meta {
+        color: #666;
+        margin: 10px 0;
+    }
+    .message-content {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('.btn-delete-message').click(function(e) {
+        e.preventDefault();
+        if (confirm('آیا از حذف این پیام اطمینان دارید؟')) {
+            $.ajax({
+                url: '{% url "messages:delete" message.pk %}',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        window.location.href = '{% url "messages:inbox" %}';
+                    } else {
+                        alert(response.message || 'خطا در حذف پیام');
+                    }
+                },
+                error: function() {
+                    alert('خطا در حذف پیام');
+                }
+            });
+        }
+    });
+});
+</script>
 {% endblock %} 

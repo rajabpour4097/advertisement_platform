@@ -6,6 +6,9 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from .models import Message
 from .forms import MessageForm
+from django.http import JsonResponse
+from django.views.generic.edit import DeleteView
+from django.views.generic import View
 
 class InboxView(LoginRequiredMixin, ListView):
     model = Message
@@ -68,3 +71,22 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
             self.object.is_read = True
             self.object.save()
         return response
+
+class MessageDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        try:
+            message = Message.objects.get(pk=pk)
+            # بررسی دسترسی کاربر
+            if message.sender == request.user or message.receiver == request.user:
+                message.delete()
+                return JsonResponse({'status': 'success'})
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'شما اجازه حذف این پیام را ندارید'
+                })
+        except Message.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'پیام یافت نشد'
+            })

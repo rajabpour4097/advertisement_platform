@@ -8,4 +8,5 @@ urlpatterns = [
     path('sent/', views.SentView.as_view(), name='sent'),
     path('compose/', views.ComposeView.as_view(), name='compose'),
     path('detail/<int:pk>/', views.MessageDetailView.as_view(), name='detail'),
+    path('delete/<int:pk>/', views.MessageDeleteView.as_view(), name='delete'),
 ]
