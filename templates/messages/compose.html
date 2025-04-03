@@ -2,72 +2,106 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
-{% block extra_head %}
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-{% endblock %}
-
 {% block title %}ارسال پیام جدید{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <a href="{% url 'messages:compose' %}" class="btn btn-primary btn-block mb-3">
-                        <i class="fas fa-pen"></i> ارسال پیام جدید
-                    </a>
-                    <div class="list-group">
-                        <a href="{% url 'messages:inbox' %}" class="list-group-item">
-                            <i class="fas fa-inbox"></i> صندوق دریافت
-                        </a>
-                        <a href="{% url 'messages:sent' %}" class="list-group-item">
-                            <i class="fas fa-paper-plane"></i> پیام‌های ارسالی
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>ارسال پیام جدید</h2>
+            <div class="clearfix"></div>
         </div>
 
-        <!-- Main content -->
-        <div class="col-md-9">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">ارسال پیام جدید</h3>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> ارسال پیام
-                        </button>
-                    </form>
-                </div>
+        <div class="x_content">
+            <!-- نوار منو -->
+            <div class="mail_tabs mb-4">
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                        <a href="{% url 'messages:inbox' %}" class="nav-link">صندوق دریافت</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'messages:sent' %}" class="nav-link">ارسال شده</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">هرزنامه</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">حذف شده</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- فرم ارسال پیام -->
+            <div class="compose-mail">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="compose-mail-box">
+                        <div class="form-group">
+                            {{ form.receiver|as_crispy_field }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.subject|as_crispy_field }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.body|as_crispy_field }}
+                        </div>
+                        <div class="compose-mail-actions">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fa fa-paper-plane"></i> ارسال پیام
+                            </button>
+                            <a href="{% url 'messages:inbox' %}" class="btn btn-secondary">
+                                <i class="fa fa-times"></i> انصراف
+                            </a>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .mail_tabs .nav-link { padding: 10px 15px; }
+    .compose-mail-box { 
+        background: #fff;
+        padding: 20px;
+        border-radius: 4px;
+    }
+    .compose-mail-actions {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+    .select2-container--default .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ddd;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+</style>
+{% endblock %}
+
 {% block extra_js %}
-<!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // فعال‌سازی Select2 برای فیلد گیرنده
-        $('#id_receiver').select2({
-            dir: 'rtl',
-            placeholder: 'انتخاب گیرنده',
-            allowClear: true,
-            language: {
-                noResults: function() {
-                    return "نتیجه‌ای یافت نشد";
-                }
+$(document).ready(function() {
+    $('#id_receiver').select2({
+        dir: 'rtl',
+        placeholder: 'انتخاب گیرنده',
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "نتیجه‌ای یافت نشد";
             }
-        });
+        }
     });
+});
 </script>
 {% endblock %} 

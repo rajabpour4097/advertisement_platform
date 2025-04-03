@@ -1,70 +1,112 @@
-{% extends "messages/inbox.html" %}
+{% extends "account/account_base.html" %}
+{% load static %}
 
 {% block title %}پیام‌های ارسالی{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <a href="{% url 'messages:compose' %}" class="btn btn-primary btn-block mb-3">
-                        <i class="fas fa-pen"></i> ارسال پیام جدید
-                    </a>
-                    <div class="list-group">
-                        <a href="{% url 'messages:inbox' %}" class="list-group-item">
-                            <i class="fas fa-inbox"></i> صندوق دریافت
-                        </a>
-                        <a href="{% url 'messages:sent' %}" class="list-group-item active">
-                            <i class="fas fa-paper-plane"></i> پیام‌های ارسالی
-                        </a>
-                    </div>
-                </div>
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>پیام‌های ارسالی</h2>
+            <div class="nav navbar-right panel_toolbox">
+                <a href="{% url 'messages:compose' %}" class="btn btn-success btn-sm">
+                    <i class="fa fa-plus"></i> ارسال پیام جدید
+                </a>
+                <button class="btn btn-danger btn-sm">
+                    <i class="fa fa-trash"></i> حذف
+                </button>
             </div>
+            <div class="clearfix"></div>
         </div>
 
-        <!-- Main content -->
-        <div class="col-md-9">
-            <div class="card">
-                <div class="card-body">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>گیرنده</th>
-                                <th>موضوع</th>
-                                <th>تاریخ</th>
-                                <th>وضعیت</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for message in messages %}
-                            <tr>
-                                <td>{{ message.receiver.get_full_name }}</td>
-                                <td>
-                                    <a href="{% url 'messages:detail' message.pk %}">
+        <div class="x_content">
+            <!-- نوار منو -->
+            <div class="mail_tabs mb-4">
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                        <a href="{% url 'messages:inbox' %}" class="nav-link">صندوق دریافت</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'messages:sent' %}" class="nav-link active">ارسال شده</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">هرزنامه</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">حذف شده</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- جدول پیام‌ها -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <tbody>
+                        {% for message in messages %}
+                        <tr>
+                            <td class="mail-select">
+                                <div class="checkbox">
+                                    <input type="checkbox" class="flat" name="selected_messages" value="{{ message.id }}">
+                                </div>
+                            </td>
+                            <td class="mail-star">
+                                <a href="#"><i class="fa fa-star{% if not message.is_starred %}-o{% endif %} text-warning"></i></a>
+                            </td>
+                            <td class="mail-sender">{{ message.receiver.get_full_name }}</td>
+                            <td class="mail-subject">
+                                <a href="{% url 'messages:detail' message.pk %}" class="text-dark">
+                                    {% if message.subject %}
                                         {{ message.subject }}
-                                    </a>
-                                </td>
-                                <td>{{ message.created_at|date:"Y/m/d H:i" }}</td>
-                                <td>
-                                    {% if message.is_read %}
-                                        <span class="badge bg-success">خوانده شده</span>
                                     {% else %}
-                                        <span class="badge bg-secondary">خوانده نشده</span>
+                                        (بدون موضوع)
                                     {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center">پیامی وجود ندارد</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                    - <span class="text-muted">{{ message.body|truncatechars:50 }}</span>
+                                </a>
+                            </td>
+                            <td class="mail-attachment">
+                                {% if message.has_attachment %}
+                                <i class="fa fa-paperclip"></i>
+                                {% endif %}
+                            </td>
+                            <td class="mail-date text-muted">{{ message.created_at|date:"d M" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <p class="text-muted">پیامی وجود ندارد</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mail_tabs .nav-link { padding: 10px 15px; }
+    .mail-select { width: 40px; }
+    .mail-star { width: 40px; }
+    .mail-sender { width: 200px; }
+    .mail-attachment { width: 40px; }
+    .mail-date { width: 100px; }
+    .table td { padding: 12px 8px; vertical-align: middle; }
+    .checkbox { margin: 0; }
+    .mail-subject a { text-decoration: none; }
+    .mail-subject a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('input.flat').iCheck({
+        checkboxClass: 'icheckbox_flat-green',
+        radioClass: 'iradio_flat-green'
+    });
+});
+</script>
 {% endblock %}

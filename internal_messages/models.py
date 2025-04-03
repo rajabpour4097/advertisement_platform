@@ -19,6 +19,10 @@ class Message(models.Model):
     body = models.TextField(verbose_name='متن پیام')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ارسال')
     is_read = models.BooleanField(default=False, verbose_name='خوانده شده')
+    is_starred = models.BooleanField(default=False, verbose_name='ستاره‌دار')
+    is_deleted = models.BooleanField(default=False, verbose_name='حذف شده')
+    is_spam = models.BooleanField(default=False, verbose_name='هرزنامه')
+    has_attachment = models.BooleanField(default=False, verbose_name='دارای پیوست')
     
     class Meta:
         ordering = ['-created_at']
