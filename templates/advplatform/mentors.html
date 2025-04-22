@@ -31,10 +31,11 @@
             <div class="slick-slide-in">
               <div class="st-member st-style1 st-zoom">
                 <div class="st-member-img">
-                  <img src="{% if mentor.customuserimages.first.image.url %}
-                            {{ mentor.customuserimages.first.image.url }}
-                            {% else %}
-                            {% static 'advplatform/assets/img/noimage.jpg' %}{% endif %}" alt="member4" class="st-zoom-in">
+                  {% if mentor.customuserimages.first.image.url %}
+                    <img src="{{ mentor.customuserimages.first.image.url }}" alt="">
+                  {% else %}
+                    <img src="{% static 'account/build/images/user.png' %}" alt="">
+                  {% endif %}
                 </div>
                 <div class="st-member-meta">
                   <div class="st-member-meta-in">
