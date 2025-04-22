@@ -39,11 +39,12 @@
       {% for portfolio in portfolios %}
       <div class="portfoliocol">
         <div class="portfolioimg-box">
-          <img src="{% if portfolio.portfolioimages.first.image.url %}
-                    {{ portfolio.portfolioimages.first.image.url }}
-                    {% else %}
-                    {% static 'advplatform/assets/img/noimage.jpg' %}
-                    {% endif %}" alt="{{ portfolio.subject }}">
+          
+          {% if portfolio.portfolioimages.first.image.url %}
+           <img src="{{ portfolio.portfolioimages.first.image.url }}" alt="">
+          {% else %}
+           <img src="{% static 'advplatform/assets/img/noimage.jpg' %}" alt="">
+          {% endif %}          
           
           <div class="portfolio-title">{{ portfolio.subject }}</div>
       </div>

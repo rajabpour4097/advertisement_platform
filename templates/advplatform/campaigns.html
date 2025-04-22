@@ -43,11 +43,12 @@
       {% for campaign in campaigns %}
       <div class="portfoliocol">
         <div class="portfolioimg-box">
-          <img src="{% if campaign.campaignsimages.first.image.url %}
-                    {{ campaign.campaignsimages.first.image.url }}
-                    {% else %}
-                    {% static 'advplatform/assets/img/noimage.jpg' %}
-                    {% endif %}">
+          
+          {% if campaign.campaignsimages.first.image.url %}
+            <img src="{{ campaign.campaignsimages.first.image.url }}" alt="">
+          {% else %}
+           <img src="{% static 'advplatform/assets/img/noimage.jpg' %}" alt="">
+          {% endif %}
           
           <div class="portfolio-title">برگزارکننده: {{ campaign.customer.get_full_name }}</div>
         </div>

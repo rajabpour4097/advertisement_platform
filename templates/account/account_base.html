@@ -54,10 +54,11 @@
                 <!-- menu profile quick info -->
                 <div class="profile clearfix">
                     <div class="profile_pic">
-                        <img src="{% if user.customuserimages.first.image.url %}
-                        {{ user.customuserimages.first.image.url }}
-                         {% else %}
-                          {% static 'account/build/images/user.png' %}{% endif %}" alt="..." class="img-circle profile_img">
+                        {% if user.customuserimages.first.image.url %}
+                            <img src="{{ user.customuserimages.first.image.url }}" alt="" class="img-circle profile_img">
+                        {% else %}
+                            <img src="{% static 'account/build/images/user.png' %}" alt="" class="img-circle profile_img">
+                        {% endif %}
                     </div>
                     <div class="profile_info">
                         <span>خوش آمدید,</span>
@@ -104,14 +105,17 @@
                         <li class="">
                             <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown"
                                aria-expanded="false">
-                                <img src="{% if user.customuserimages.first.image.url %}
-                                          {{ user.customuserimages.first.image.url }}
-                                          {% else %}
-                                          {% static 'account/build/images/user.png' %}{% endif %}" alt="">
-                                           {% if user.get_full_name %}
-                                           {{ user.get_full_name }} 
+                                           {% if user.customuserimages.first.image.url %}
+                                                <img src="{{ user.customuserimages.first.image.url }}" alt="">
                                            {% else %}
-                                           {{ user.username }}{% endif %} 
+                                                <img src="{% static 'account/build/images/user.png' %}" alt="">
+                                           {% endif %}
+
+                                           {% if user.get_full_name %}
+                                                {{ user.get_full_name }} 
+                                           {% else %}
+                                                {{ user.username }}
+                                           {% endif %} 
                                 <span class=" fa fa-angle-down"></span>
                             </a>
                             <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -136,11 +140,11 @@
                                 <li>
                                     <a href="{% url 'messages:detail' message.pk %}">
                                         <span class="image">
-                                            <img src="{% if message.sender.customuserimages.first.image.url %}
-                                                    {{ message.sender.customuserimages.first.image.url }}
-                                                    {% else %}
-                                                    {% static 'account/build/images/user.png' %}{% endif %}" 
-                                                 alt="Profile Image"/>
+                                            {% if message.sender.customuserimages.first.image.url %}
+                                                <img src="{{ message.sender.customuserimages.first.image.url }}" alt="Profile Image">
+                                            {% else %}
+                                                <img src="{% static 'account/build/images/user.png' %}" alt="Profile Image">
+                                            {% endif %}
                                         </span>
                                         <span>
                                             <span>{{ message.sender.get_full_name }}</span>
