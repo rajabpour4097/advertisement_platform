@@ -5584,3 +5584,19 @@ html.st-night-mode {
     text-align: center;
     white-space: nowrap;
 }
+
+@media screen and (max-width: 768px) {
+  .st-nav-list .menu-item-has-children > .sub-menu {
+    display: none;
+    }
+
+  .st-nav-list .menu-item-has-children.open > .sub-menu {
+    display: block;
+    }
+
+  .menu-item-has-children > a::after {
+    content: "▼";
+    margin-right: 5px;
+    font-size: 12px;
+    }
+  }

@@ -58,7 +58,8 @@
                 {% if user.is_authenticated %}
                   <li><a href=" {% url 'account:home' %}" class="st-smooth-move">حساب کاربری</a></li>
                 {% else %}
-                  <li><a href="" class="st-smooth-move">حساب کاربری</a>
+                  <li class="menu-item-has-children">
+                    <a href="" class="st-smooth-move">حساب کاربری</a>
                     <ul>
                       <li class="menu-item-has-children"><a href="{% url 'adv:login' %}">ورود</a></li>
                       <li class="menu-item-has-children"><a href="{% url 'signup' %}">ثبت نام</a></li>

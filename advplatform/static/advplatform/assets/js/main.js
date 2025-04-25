@@ -619,7 +619,19 @@
 
 
 
-    
+ document.addEventListener("DOMContentLoaded", function () {
+      const menuParents = document.querySelectorAll('.menu-item-has-children > a');
+
+      menuParents.forEach(function (parentLink) {
+        parentLink.addEventListener('click', function (e) {
+         const submenu = this.nextElementSibling;
+          if (submenu && submenu.classList.contains('sub-menu')) {
+           e.preventDefault(); // جلوگیری از ریدایرکت
+           submenu.classList.toggle('open'); // نمایش یا پنهان کردن زیرمنو
+            }
+        });
+      });
+    });
 
 
     
