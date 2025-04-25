@@ -61,9 +61,10 @@
                   <li class="menu-item-has-children">
                     <a href="" class="st-smooth-move">حساب کاربری</a>
                     <ul class="sub-menu">
-                      <li class="menu-item-has-children"><a href="{% url 'adv:login' %}">ورود</a></li>
-                      <li class="menu-item-has-children"><a href="{% url 'signup' %}">ثبت نام</a></li>
+                      <li><a href="{% url 'adv:login' %}">ورود</a></li>
+                      <li><a href="{% url 'signup' %}">ثبت نام</a></li>
                     </ul>
+                  </li>
                 {% endif %}
                 <li><a href="{% url 'adv:campaigns' %}" class="st-smooth-move">کمپین های در حال برگزاری</a></li>
                 <li><a href="{% url 'adv:aboutus' %}" class="st-smooth-move">درباره ما</a></li>
