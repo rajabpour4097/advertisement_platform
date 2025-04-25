@@ -1,7 +1,7 @@
 {% extends "account/account_base.html" %}
 {% load static %}
 
-{% block title %}لیست مشاورین{% endblock %}
+{% block title %}لیست پشتیبانان{% endblock %}
 
 {% block content %}
 <style>
@@ -143,12 +143,12 @@
 <div class="col-md-12">
     <div class="x_panel">
         <div class="x_title">
-            <h2>لیست مشاورین</h2>
+            <h2>لیست پشتیبانان</h2>
             <div class="clearfix"></div>
         </div>
 
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="جستجو در مشاورین...">
+            <input type="text" id="searchInput" class="search-input" placeholder="جستجو در پشتیبانان...">
         </div>
 
         <div class="mentors-grid">
@@ -193,12 +193,12 @@
                         <div class="action-buttons">
                             {% if request.user.user_type == 'customer' %}
                                 <a href="{% url 'account:choosementor' mentor.pk %}" class="btn btn-primary btn-xs">
-                                    <i class="fa fa-user"></i> انتخاب مشاور
+                                    <i class="fa fa-user"></i> انتخاب پشتیبان
                                 </a>
                             {% else %}
                                 {% if mentor.is_active %}
                                 <a href="" class="btn btn-success btn-xs">
-                                    <i class="fa fa-user"></i> جزئیات مشاور
+                                    <i class="fa fa-user"></i> جزئیات پشتیبان
                                 </a>
                                 {% endif%}
                                 {% if not mentor.is_active %}

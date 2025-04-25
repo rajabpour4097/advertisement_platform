@@ -51,7 +51,8 @@ class CustomUserAdmin(UserAdmin):
             'birth_date', 'field_of_activity',
             'user_type','cutomer_type','dealer_type',
             'rank','bussines_value',
-             'speciality_field', 'customer_mentor'
+             'speciality_field', 'customer_mentor',
+             'is_am'
             )}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
     )

@@ -138,6 +138,7 @@ class CustomUser(AbstractUser):
                                         related_name='mentored_customers',
                                         verbose_name='مشاور'  
                                         ) # for Customer
+    is_am = models.BooleanField(default=False, verbose_name='مدیر تبلیغات')
 
     # استفاده از CustomUserManager برای مدیریت کاربران
     objects = CustomUserManager()

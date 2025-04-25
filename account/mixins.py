@@ -137,19 +137,32 @@ class CampaignUserMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_staff or\
             self.request.user.user_type == 'dealer' or\
-                self.request.user.user_type == 'customer'
+                self.request.user.user_type == 'customer' or\
+                    self.request.user.is_am
                 
 
 class CreateCampaignUserMixin(UserPassesTestMixin):
     
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.user_type == 'customer'
+        return self.request.user.is_staff or self.request.user.user_type == 'customer' or self.request.user.is_am
 
 
 class StaffUserMixin(UserPassesTestMixin):
     
     def test_func(self):
         return self.request.user.is_staff
+
+
+class AMUserMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.is_am
+
+
+class ManagerUserMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.is_am
     
   
 class CancelUserMixin(UserPassesTestMixin):
@@ -166,7 +179,7 @@ class EditCampaignUserMixin(UserPassesTestMixin):
     def test_func(self):
         campaign_id = self.kwargs.get('pk')
         campaign = Campaign.objects.filter(pk=campaign_id).first()
-        return self.request.user.is_staff or\
+        return self.request.user.is_staff or self.request.user.is_am or\
             self.request.user.user_type == 'customer' and self.request.user == campaign.customer
 
 
@@ -197,3 +210,12 @@ class CheckHaveRequestOrMentor():
                           )
 
         return super().dispatch(request, *args, **kwargs)
+    
+
+class AdvertisementsManagerMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.user_type == 'AM'
+    
+    
+    

@@ -28,6 +28,7 @@ from account.forms import (
                             StartCampaignForm
                             )
 from account.mixins import (
+                            AMUserMixin,
                             CampaignUserMixin,
                             CheckHaveRequestOrMentor,
                             ContextsMixin,
@@ -36,6 +37,7 @@ from account.mixins import (
                             CustomerUserMixin,
                             DealerUserMixin,
                             EditCampaignUserMixin,
+                            ManagerUserMixin,
                             MentorUserMixin,
                             NotLoginedMixin, 
                             PortfolioDeleteMixin, 
@@ -67,6 +69,7 @@ TODO:
 
 staff_users = CustomUser.objects.filter(is_staff=True)
 dealers = CustomUser.objects.filter(user_type='dealer')
+am_users = CustomUser.objects.filter(is_am=True)
 
 
 class NotificationsView(LoginRequiredMixin, TemplateView):
@@ -416,7 +419,7 @@ class CampaignListView(LoginRequiredMixin, CampaignUserMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.user.is_staff:
+        if self.request.user.is_staff or self.request.user.is_am:
             context['campaigns'] = Campaign.objects.all()
         elif self.request.user.user_type == 'dealer':
             dealer = self.request.user
@@ -474,7 +477,7 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
         self.object = form.save()
         
         # Send notification to user created campaign
-        notify_campaign_actions(self.request.user, self.object, 'create', staff_users)
+        notify_campaign_actions(self.request.user, self.object, 'create', staff_users, am_users)
         
         context = self.get_context_data()
         image_formset = context['image_formset']
@@ -487,7 +490,7 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
         return super().form_valid(form)
 
 
-class CampaignDeleteView(LoginRequiredMixin, StaffUserMixin, DeleteView):
+class CampaignDeleteView(LoginRequiredMixin, ManagerUserMixin, DeleteView):
     
     model = Campaign
     template_name = 'account/campaign/campaign_delete_confirm.html'
@@ -502,7 +505,7 @@ class CampaignDeleteView(LoginRequiredMixin, StaffUserMixin, DeleteView):
         self.object = self.get_object()
         
         # Send notifications before deletion
-        notify_campaign_actions(request.user, self.object, 'delete', staff_users)
+        notify_campaign_actions(request.user, self.object, 'delete', staff_users, am_users)
         
         # Delete the object
         success_url = self.get_success_url()
@@ -511,12 +514,12 @@ class CampaignDeleteView(LoginRequiredMixin, StaffUserMixin, DeleteView):
         return HttpResponseRedirect(success_url)
 
 
-class CampaignDeactivateView(StaffUserMixin, View):
+class CampaignDeactivateView(ManagerUserMixin, View):
     def post(self, request, *args, **kwargs):
         campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
         
         # Send notifications before status change
-        notify_campaign_actions(request.user, campaign, 'deactivate', staff_users)
+        notify_campaign_actions(request.user, campaign, 'deactivate', staff_users, am_users)
 
         campaign.is_active = False
         campaign.save()
@@ -526,12 +529,12 @@ class CampaignDeactivateView(StaffUserMixin, View):
         return JsonResponse({'error': 'Method Not Allowed'}, status=405)
     
 
-class CampaignActivateView(StaffUserMixin, View):
+class CampaignActivateView(ManagerUserMixin, View):
     def post(self, request, *args, **kwargs):
         campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
         
         # Send notifications before status change
-        notify_campaign_actions(request.user, campaign, 'activate', staff_users)
+        notify_campaign_actions(request.user, campaign, 'activate', staff_users, am_users)
 
         campaign.is_active = True
         campaign.save()
@@ -552,14 +555,14 @@ class CampaignCancelView(CancelUserMixin, View):
         campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
         
         # Send notifications before status change
-        notify_campaign_actions(request.user, campaign, 'cancel', staff_users)
+        notify_campaign_actions(request.user, campaign, 'cancel', staff_users, am_users)
         
         campaign.status = 'cancel'
         campaign.save()
         return HttpResponseRedirect(reverse_lazy('account:campaigns'))
 
 
-class CampaignReviewView(StaffUserMixin, View):  #This view is used for Staff
+class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
     template_name = "account/campaign/campaign_review.html"
     
     def dispatch(self, request, *args, **kwargs):
@@ -604,7 +607,8 @@ class CampaignReviewView(StaffUserMixin, View):  #This view is used for Staff
                 user=request.user,
                 campaign=campaign,
                 action_type='editing',
-                staff_users=staff_users
+                staff_users=staff_users,
+                am_users=am_users
             )
 
             return redirect('account:campaigns')  
@@ -622,6 +626,7 @@ class CampaignReviewView(StaffUserMixin, View):  #This view is used for Staff
                 campaign=campaign,
                 action_type='progressing',
                 staff_users=staff_users,
+                am_users=am_users,
                 dealers=dealers  # Pass dealers to notify them
             )
                 
@@ -649,7 +654,7 @@ class CampaignEditView(EditCampaignUserMixin, View):  #This view is used for Cus
                                'back_url': "account:campaigns"},
                           )
 
-        if campaign.status == "reviewing" and not request.user.is_staff:
+        if campaign.status == "reviewing" and not request.user.is_staff or not request.user.is_am:
             return render(self.request, '403.html', 
                           {'error_message': "فقط مدیران اجازه بررسی این کمپین را دارند.",
                                'back_url': "account:campaigns"},
@@ -690,7 +695,8 @@ class CampaignEditView(EditCampaignUserMixin, View):  #This view is used for Cus
                 user=request.user,
                 campaign=campaign,
                 action_type='review',
-                staff_users=staff_users
+                staff_users=staff_users,
+                am_users=am_users
             )
             
             campaign.save()
@@ -750,7 +756,8 @@ class CampaignParticipateView(DealerUserMixin, View):
                 user=request.user,
                 campaign=campaign,
                 action_type='participate',
-                staff_users=staff_users
+                staff_users=staff_users,
+                am_users=am_users
             )
 
             return redirect('account:campaigns')  
@@ -792,7 +799,8 @@ class CampaignCancelParticipateView(DealerUserMixin, View):
                 user=request.user,
                 campaign=campaign,
                 action_type='cancel',
-                staff_users=staff_users
+                staff_users=staff_users,
+                am_users=am_users
             )
             
             messages.success(request, "شما با موفقیت از کمپین خارج شدید.")

@@ -31,6 +31,20 @@ def send_staff_notification(sender, staff_users, verb, description, target=None)
             timestamp=timezone.now(),
         )
 
+def send_am_notification(sender, am_users, verb, description, target=None):
+    """
+    Send notifications to all AM users
+    """
+    for am in am_users:
+        notify.send(
+            sender=sender,
+            recipient=am,
+            verb=verb,
+            description=description,
+            target=target,
+            timestamp=timezone.now(),
+        )
+        
 def notify_profile_update(user, staff_users):
     """
     Send notifications for profile updates with proper Persian grammar
@@ -104,7 +118,7 @@ def notify_portfolio_actions(user, portfolio, action_type, staff_users):
         target=portfolio if action_type != 'delete' else None
     )
 
-def notify_campaign_actions(user, campaign, action_type, staff_users, dealers=None):
+def notify_campaign_actions(user, campaign, action_type, staff_users, am_users, dealers=None):
     """
     Send notifications for campaign actions with proper Persian grammar
     """
@@ -162,6 +176,13 @@ def notify_campaign_actions(user, campaign, action_type, staff_users, dealers=No
         description=f"کمپین '{campaign_desc}' توسط {user.get_full_name()} {other_action_text}.",
         target=campaign if action_type != 'delete' else None
     )
+    send_am_notification(
+        sender=user,
+        am_users=am_users,
+        verb=f"{other_verb_text} کمپین",
+        description=f"کمپین '{campaign_desc}' توسط {user.get_full_name()} {other_action_text}.",
+        target=campaign if action_type != 'delete' else None
+    )
 
     # Notify dealers if provided
     if dealers:
@@ -174,7 +195,7 @@ def notify_campaign_actions(user, campaign, action_type, staff_users, dealers=No
                 target=campaign
             )
 
-def notify_campaign_participation(user, campaign, action_type, staff_users):
+def notify_campaign_participation(user, campaign, action_type, staff_users, am_users):
     """
     Send notifications for campaign participation actions
     
@@ -212,6 +233,13 @@ def notify_campaign_participation(user, campaign, action_type, staff_users):
     send_staff_notification(
         sender=user,
         staff_users=staff_users,
+        verb=f"{other_verb_text} مجری در کمپین",
+        description=f"مجری {user.get_full_name()} در کمپین '{campaign_desc}' {other_action_text}.",
+        target=campaign
+    )
+    send_am_notification(
+        sender=user,
+        am_users=am_users,
         verb=f"{other_verb_text} مجری در کمپین",
         description=f"مجری {user.get_full_name()} در کمپین '{campaign_desc}' {other_action_text}.",
         target=campaign

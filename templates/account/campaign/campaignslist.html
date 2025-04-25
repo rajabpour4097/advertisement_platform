@@ -17,7 +17,7 @@
         <!-- Panel Header -->
         <div class="x_title">
             <h2>
-                {% if user.is_staff %}لیست کمپین‌ها {% else %} لیست کمپین‌های شما{% endif %}
+                {% if user.is_staff or user.is_am %}لیست کمپین‌ها {% else %} لیست کمپین‌های شما{% endif %}
             </h2>
             <div class="clearfix"></div>
         </div>
@@ -39,7 +39,7 @@
                     <!-- Table Header -->
                     <thead>
                         <tr>
-                            {% if user.is_staff or user.user_type == 'dealer' %}
+                            {% if user.is_staff or user.user_type == 'dealer' or user.is_am %}
                             <th class="organizer-column">برگزارکننده</th>
                             {% endif %}
                             <th>موضوعات کمپین‌</th>
@@ -58,14 +58,14 @@
                         {% for campaign in campaigns %}
                         <tr class="{% if campaign.is_active %}campaign-row-active{% else %}campaign-row-inactive{% endif %}">
                             <!-- Organizer Column -->
-                            {% if user.is_staff or user.user_type == 'dealer' %}
-                            <td class="organizer-column">
-                                <div class="avatar-info">
-                                    <div class="user-details">
-                                        <span class="user-name">{{ campaign.customer.get_full_name }}</span>
+                            {% if user.is_staff or user.user_type == 'dealer' or user.is_am %}
+                                <td class="organizer-column">
+                                    <div class="avatar-info">
+                                        <div class="user-details">
+                                            <span class="user-name">{{ campaign.customer.get_full_name }}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
+                                </td>
                             {% endif %}
 
                             <!-- Campaign Topics -->
@@ -73,8 +73,8 @@
 
                             <!-- Campaign Description -->
                             <td>
-                                {% if user.is_staff or user.user_type == 'customer' and not campaign.is_active %}
-                                <a href="{% if user.is_staff %}{% url 'account:reviewcampaign' campaign.pk %} {% else %}{% url 'account:campaignedit' campaign.pk %}{% endif %}">
+                                {% if user.is_staff or user.user_type == 'customer' or user.is_am and not campaign.is_active %}
+                                <a href="{% if user.is_staff or user.is_am %}{% url 'account:reviewcampaign' campaign.pk %} {% else %}{% url 'account:campaignedit' campaign.pk %}{% endif %}">
                                     {{ campaign.describe | truncatewords:10 }}
                                 </a>
                                 {% else %}
@@ -147,7 +147,7 @@
                                 {% endif %}
 
                                 <!-- Staff Actions -->
-                                {% if user.is_staff %}
+                                {% if user.is_staff or user.is_am  %}
                                 <div class="action-buttons">
                                     <a class="btn btn-danger btn-xs" href="{% url 'account:campaignsdelete' campaign.pk %}">
                                         <i class="fas fa-trash-alt"></i>
