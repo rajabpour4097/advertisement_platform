@@ -5599,3 +5599,16 @@ html.st-night-mode {
     font-size: 12px;
     }
   }
+
+
+  /* فقط برای آیتم‌هایی که واقعا زیرمنو دارند */
+.menu-item-has-children > a::after {
+  content: "+";
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+/* مانع از نمایش آیکون برای آیتم‌های داخلی */
+.sub-menu .menu-item-has-children > a::after {
+  content: "";
+}
