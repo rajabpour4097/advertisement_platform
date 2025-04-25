@@ -70,7 +70,7 @@
             </div>
         {% endif %}
     
-        {% if user.is_staff %}
+        {% if user.is_staff  or user.is_am %}
           <div class="row">
             <div class="form-group col-md-4 mb-0">
               {{ form.dealer|as_crispy_field }}

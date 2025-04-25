@@ -22,7 +22,7 @@
             {# Render customer field if it exists #}
             {% if form.customer %}
                 <div class="form-group customer-field">
-                    {% if user.is_staff %}
+                    {% if user.is_staff or user.is_am %}
                     <label for="{{ form.customer.id_for_label }}">مشتری:</label>
                     {% endif%}
                     {{ form.customer }}

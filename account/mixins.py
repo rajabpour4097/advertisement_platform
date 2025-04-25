@@ -33,7 +33,7 @@ class FieldMixin():
 class DealerUserMixin(UserPassesTestMixin):
     
     def test_func(self):
-        return self.request.user.is_staff or self.request.user.user_type == 'dealer'
+        return self.request.user.is_staff or self.request.user.user_type == 'dealer' or self.request.user.is_am
 
 
 class ContextsMixin():
@@ -96,7 +96,7 @@ class PortfolioEditMixin():
     def dispatch(self, request, *args, **kwargs):
         url_pk = self.kwargs.get('pk')
         
-        if not request.user.is_staff:
+        if not request.user.is_staff and not request.user.is_am:
             if not Portfolio.objects.filter(pk=url_pk, dealer=self.request.user).exists():
                 return render(self.request, '403.html', 
                               {'error_message': "شما به این نمونه کار دسترسی ندارید",
@@ -108,7 +108,7 @@ class PortfolioEditMixin():
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         url_pk = self.kwargs.get('pk')
-        if self.request.user.is_staff:
+        if self.request.user.is_staff or self.request.user.is_am:
             portfolio = get_object_or_404(Portfolio, pk=url_pk)
         else:    
             portfolio = get_object_or_404(Portfolio, pk=url_pk, dealer=self.request.user)
@@ -122,7 +122,7 @@ class PortfolioDeleteMixin():
     def dispatch(self, request, *args, **kwargs):
         url_pk = self.kwargs.get('pk')
         
-        if not request.user.is_staff:
+        if not request.user.is_staff and not request.user.is_am:
             if not Portfolio.objects.filter(pk=url_pk, dealer=self.request.user).exists():
                 return render(self.request, '403.html', 
                               {'error_message': "شما به این نمونه کار دسترسی ندارید",

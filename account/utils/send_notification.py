@@ -68,7 +68,7 @@ def notify_profile_update(user, staff_users):
         target=user
     )
 
-def notify_portfolio_actions(user, portfolio, action_type, staff_users):
+def notify_portfolio_actions(user, portfolio, action_type, staff_users, am_users):
     """
     Send notifications for portfolio actions with proper Persian grammar
     """
@@ -117,7 +117,14 @@ def notify_portfolio_actions(user, portfolio, action_type, staff_users):
         description=f"نمونه‌کار '{portfolio_desc}' توسط {user.get_full_name()} {other_action_text}.",
         target=portfolio if action_type != 'delete' else None
     )
-
+    send_am_notification(
+        sender=user,
+        am_users=am_users,
+        verb=f"{other_verb_text} نمونه‌کار",
+        description=f"نمونه‌کار '{portfolio_desc}' توسط {user.get_full_name()} {other_action_text}.",
+        target=portfolio if action_type != 'delete' else None
+    )
+    
 def notify_campaign_actions(user, campaign, action_type, staff_users, am_users, dealers=None):
     """
     Send notifications for campaign actions with proper Persian grammar

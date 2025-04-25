@@ -236,7 +236,7 @@
     <div class="x_panel">
         <div class="x_title">
             <h2>
-                {% if user.is_staff %}لیست نمونه کارها {% else %} لیست نمونه کارهای شما{% endif %}
+                {% if user.is_staff or user.is_am %}لیست نمونه کارها {% else %} لیست نمونه کارهای شما{% endif %}
             </h2>
             <div class="clearfix"></div>
         </div>
@@ -281,7 +281,7 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            {% if user.is_staff %}
+                            {% if user.is_staff or user.is_am %}
                             <th class="dealer-column">نام منتشر کننده</th>
                             {% endif %}
                             <th>عنوان پروژه</th>
@@ -295,7 +295,7 @@
                         {% for portfolio in portfolios %}
                         <tr class="{% if portfolio.is_active %}portfolio-row-active{% else %}portfolio-row-inactive{% endif %}">
                             <td>{{ forloop.counter }}</td>
-                            {% if user.is_staff %}
+                            {% if user.is_staff or user.is_am %}
                             <td class="dealer-column text-success">
                                     {% if portfolio.dealer.get_full_name %}
                                         {{ portfolio.dealer.get_full_name }}

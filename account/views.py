@@ -254,7 +254,7 @@ class PortfolioListView(LoginRequiredMixin, DealerUserMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.user.is_staff:
+        if self.request.user.is_staff or self.request.user.is_am:
             context['portfolios'] = Portfolio.objects.all()
         else:
             context['portfolios'] = Portfolio.objects.filter(dealer=self.request.user)
@@ -292,7 +292,7 @@ class PortfolioCreateView(LoginRequiredMixin, DealerUserMixin, CreateView):
     def form_valid(self, form):
         if self.request.user.user_type == 'dealer':
             form.instance.dealer = self.request.user 
-        elif self.request.user.is_staff and not form.instance.dealer:
+        elif self.request.user.is_staff or self.request.user.is_am and not form.instance.dealer:
             form.instance.dealer = self.request.user
 
         if not form.instance.dealer:
@@ -313,7 +313,7 @@ class PortfolioCreateView(LoginRequiredMixin, DealerUserMixin, CreateView):
 
         self.object = form.save()
         
-        notify_portfolio_actions(self.request.user, self.object, 'create', staff_users)
+        notify_portfolio_actions(self.request.user, self.object, 'create', staff_users, am_users)
 
         image_formset.instance = self.object
         image_formset.save()
@@ -352,7 +352,7 @@ class PortfolioEditView(LoginRequiredMixin, DealerUserMixin, PortfolioEditMixin,
         # Send notification after edit portfolio
         response = super().form_valid(form)
 
-        notify_portfolio_actions(self.request.user, self.object, 'edit', staff_users)
+        notify_portfolio_actions(self.request.user, self.object, 'edit', staff_users, am_users)
 
         return response
     
@@ -372,7 +372,7 @@ class PortfolioDeleteView(LoginRequiredMixin, DealerUserMixin, PortfolioDeleteMi
         self.object.delete()
 
         # Send notification to dealer
-        notify_portfolio_actions(request.user, self.object, 'delete', staff_users)
+        notify_portfolio_actions(request.user, self.object, 'delete', staff_users, am_users)
 
         return HttpResponseRedirect(success_url)
 
