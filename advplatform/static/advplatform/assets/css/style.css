@@ -5595,7 +5595,6 @@ html.st-night-mode {
     }
 
   .menu-item-has-children > a::after {
-    content: "▼";
     margin-right: 5px;
     font-size: 12px;
     }
