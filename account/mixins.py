@@ -81,10 +81,7 @@ class ContextsMixin():
         
         dealer_campaigns_count = Campaign.objects.filter(list_of_participants__id=self.request.user.id)
         context['dealer_campaigns_count'] = dealer_campaigns_count.count()
-        
-        mentor_customer_count = CustomUser.objects.filter(customer_mentor=self.request.user)
-        context['mentor_customer_count'] = mentor_customer_count.count()
-        
+      
         recent_actions = LogEntry.objects.all().order_by('-action_time')[:5]
         context['recent_actions'] = recent_actions
         
