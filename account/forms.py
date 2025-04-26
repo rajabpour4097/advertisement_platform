@@ -28,7 +28,6 @@ class ProfileForm(forms.ModelForm):
             self.fields['username'].disabled = True
             self.fields['email'].disabled = True
             self.fields['user_type'].disabled = True
-            self.fields['customer_mentor'].disabled = True
             self.fields['is_active'].disabled = True
             self.fields['rank'].disabled = True
         if user.user_type != 'dealer' and user.user_type != 'mentor' or user.is_staff:
@@ -51,7 +50,6 @@ class ProfileForm(forms.ModelForm):
                 'dealer_type',#/ for Dealer
                 'rank',#/  for Dealer and Mentor
                 'bussines_value',# /for Customer
-                'customer_mentor',# /for Customer
                 'is_active',#/
             ]
     

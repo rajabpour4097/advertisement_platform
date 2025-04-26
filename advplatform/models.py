@@ -129,15 +129,6 @@ class CustomUser(AbstractUser):
                                          verbose_name='تخصص'
                                          ) # for Dealer
     modified_time = models.DateTimeField(auto_now=True, verbose_name='آخرین تغییر پروفایل')
-    customer_mentor = models.ForeignKey(
-                                        'self', 
-                                        on_delete=models.SET_NULL,  # اگر کاربر حذف شد، مقدار این فیلد null شود
-                                        null=True,
-                                        blank=True,
-                                        limit_choices_to={'user_type': 'mentor'}, 
-                                        related_name='mentored_customers',
-                                        verbose_name='مشاور'  
-                                        ) # for Customer
     is_am = models.BooleanField(default=False, verbose_name='مدیر تبلیغات')
 
     # استفاده از CustomUserManager برای مدیریت کاربران

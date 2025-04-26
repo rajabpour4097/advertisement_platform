@@ -814,15 +814,6 @@ class MentorUsersList(MentorUserMixin, TemplateView):
     
     template_name = 'account/mentor/mentoruserslist.html'
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        mentor = self.request.user
-        if mentor.groups.filter(name="supermentor").exists():
-            print('Mentor is Super Mentor')
-        context['users'] = CustomUser.objects.filter(customer_mentor=mentor)
-    
-        return context
-
 
 class MyMentor(CustomerUserMixin, TemplateView):
     
@@ -905,7 +896,6 @@ class ChangeStatusRequestForMentor(StaffUserMixin, View):
             mentor = get_object_or_404(CustomUser, pk=mentor_id)
             request_for_mentor.status = status
             request_for_mentor.save()
-            requested_user.customer_mentor = mentor
             requested_user.save()
             notify_mentor_request_status(request_for_mentor, status, request.user, staff_users)
 
