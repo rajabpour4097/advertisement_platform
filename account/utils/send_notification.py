@@ -44,7 +44,20 @@ def send_am_notification(sender, am_users, verb, description, target=None):
             target=target,
             timestamp=timezone.now(),
         )
-        
+
+def send_notification_customer(sender, recipient, verb, description, target=None):
+    """
+    Send notifications to the customer
+    """
+    notify.send(
+        sender=sender,
+        recipient=recipient,
+        verb=verb,
+        description=description,
+        target=target,
+        timestamp=timezone.now(),
+    )
+
 def notify_profile_update(user, staff_users):
     """
     Send notifications for profile updates with proper Persian grammar
@@ -262,6 +275,44 @@ def notify_campaign_participation(user, campaign, action_type, staff_users, am_u
             target=campaign
         )
 
+def notify_campaign_mentor_assignment(campaign, mentor, staff_users, am_users, request_user):
+    """
+    Send notifications for campaign mentor assignment
+    """
+    campaign_desc = campaign.get_describe_summrize()
+    
+    send_notification(
+        sender=campaign.customer,
+        recipient=mentor,
+        verb="انتخاب پیشتیبان",
+        description=f"شما به عنوان پیشتیبان برای کمپین '{campaign_desc}' انتخاب شده‌اید.",
+        target=campaign
+    )   
+    
+    send_staff_notification(
+        sender=campaign.customer,
+        staff_users=staff_users,
+        verb="انتخاب پیشتیبان",
+        description=f"{campaign.assigned_mentor.get_full_name()} به عنوان پیشتیبان برای کمپین '{campaign_desc}' توسط {request_user.get_full_name()}  انتخاب شده‌است.",
+        target=campaign
+    )
+    
+    send_am_notification(
+        sender=campaign.customer,
+        am_users=am_users,
+        verb="انتخاب پیشتیبان",
+        description=f"{campaign.assigned_mentor.get_full_name()} به عنوان پیشتیبان برای کمپین '{campaign_desc}' توسط {request_user.get_full_name()}  انتخاب شده‌است.",
+        target=campaign
+    )
+    
+    send_notification_customer(
+        sender=am_users.first(),
+        recipient=campaign.customer,
+        verb="انتخاب پیشتیبان",
+        description=f"پیشتیبان {mentor.get_full_name()} برای کمپین '{campaign_desc}' انتخاب شده‌است.",
+        target=campaign
+    )
+
 def notify_mentor_request(user, mentor, request_for_mentor, staff_users):
     """
     Send notifications for mentor request actions
@@ -420,3 +471,4 @@ def notify_password_change(user):
         description="رمز عبور شما با موفقیت تغییر کرد.",
         target=user
     ) 
+

@@ -51,7 +51,7 @@ from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
-from .utils.send_notification import notify_campaign_actions, notify_campaign_participation, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
+from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
 from .utils.send_sms import send_activation_sms, verify_otp
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
@@ -641,6 +641,13 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
             campaign.assigned_mentor = form3.cleaned_data['assigned_mentor']
             campaign.is_active = False
             campaign.status = "reviewing"
+            notify_campaign_mentor_assignment(
+                campaign,
+                campaign.assigned_mentor,
+                staff_users, 
+                am_users, 
+                request_user=request.user
+                )
             campaign.save()
             return redirect('account:campaigns')
 
