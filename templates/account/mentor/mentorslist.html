@@ -153,7 +153,6 @@
 
         <div class="mentors-grid">
             {% for mentor in mentors %}
-            {% if not request.user.customer_mentor == mentor %}
             <div class="mentor-card">
                 <div class="mentor-image">
                     {% if mentor.customuserimages.first.image %}
@@ -213,7 +212,6 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
             {% endfor %}
         </div>
     </div>

@@ -58,13 +58,9 @@
                  </ul>
              </li>
              {% endif %}
-             {% if user.user_type == 'customer'%}
-             <li><a href="{% url 'account:mymentor' %}"><i class="fa fa-group"></i> پشتیبان شما</a></li>
-             {% endif %}
-             {% if user.is_staff %}
+             {% if user.is_staff  or user.is_am%}
              <li><a><i class="fa fa-group"></i> پشتیبانان<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
-                    <li><a href="{% url 'account:listofrequestformentor' %}"><i class="fa fa-list"></i>لیست درخواست پشتیبان</a></li>
                     <li><a href="{% url 'account:mentorslist' %}"><i class="fa fa-edit"></i>لیست پشتیبانان</a></li>
                 </ul>
             </li>
@@ -73,7 +69,7 @@
              <li><a href="{% url 'account:mentoruserslist' %}"><i class="fa fa-group"></i> لیست کاربران شما</a></li>
              <li><a href="#"><i class="fa fa-list-ul"></i> لیست درخواست پشتیبان</a></li>
              {% endif %}
-             <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope"></i> صندوق پیام</a></li>
+             <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope"></i> مدیریت پیام</a></li>
            
          </ul>
      </div>

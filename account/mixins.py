@@ -200,23 +200,6 @@ class CustomerUserMixin(UserPassesTestMixin):
         return self.request.user.user_type == 'customer'
 
 
-class CheckHaveRequestOrMentor():
-    def dispatch(self, request, *args, **kwargs):
-        if RequestForMentor.objects.filter(requested_user=request.user, status='pending').exists():
-            return render(self.request, '403.html', 
-                          {'error_message': "شما در حال حاضر یک درخواست در حال بررسی دارید.",
-                           'back_url': "account:mymentor"},
-                          )
-
-        if request.user.customer_mentor:
-            return render(self.request, '403.html', 
-                          {'error_message': "شما در حال حاضر مشاور دارید.",
-                           'back_url': "account:mymentor"},
-                          )
-
-        return super().dispatch(request, *args, **kwargs)
-    
-
 class AdvertisementsManagerMixin(UserPassesTestMixin):
     
     def test_func(self):

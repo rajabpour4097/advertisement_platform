@@ -29,9 +29,7 @@ from account.forms import (
                             StartCampaignForm
                             )
 from account.mixins import (
-                            AMUserMixin,
                             CampaignUserMixin,
-                            CheckHaveRequestOrMentor,
                             ContextsMixin,
                             CreateCampaignUserMixin,
                             CancelUserMixin,
@@ -876,22 +874,21 @@ class MyMentor(CustomerUserMixin, TemplateView):
         return context
 
    
-class MentorsList(CreateCampaignUserMixin, CheckHaveRequestOrMentor, TemplateView):
+class MentorsList(ManagerUserMixin, TemplateView):
     
     template_name = 'account/mentor/mentorslist.html'
  
     def get_context_data(self, **kwargs):
         print(self.request.user.is_staff)
         context = super().get_context_data(**kwargs)
-        if self.request.user.is_staff:
+        
+        if self.request.user.is_staff or self.request.user.is_am:
             context['mentors'] = CustomUser.objects.filter(user_type='mentor')
-        else:    
-            context['mentors'] = CustomUser.objects.filter(user_type='mentor', is_active=True)
-    
+            
         return context
     
 
-class MentorChooseView(CustomerUserMixin, CheckHaveRequestOrMentor, View):
+class MentorChooseView(CustomerUserMixin, View):
     
     template_name = "account/mentor/mentor_choose_confirm.html"  
     
@@ -952,7 +949,7 @@ class ChangeStatusRequestForMentor(StaffUserMixin, View):
         return JsonResponse({'error': 'Method Not Allowed'}, status=405)
     
 
-class NewMentorActivate(StaffUserMixin, View):
+class NewMentorActivate(ManagerUserMixin, View):
     
     template_name = "account/activatenewmentor.html"  
     
