@@ -477,9 +477,6 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
 
         self.object = form.save()
         
-        # Send notification to user created campaign
-        notify_campaign_actions(self.request.user, self.object, 'create', staff_users, am_users)
-        
         context = self.get_context_data()
         image_formset = context['image_formset']
         if image_formset.is_valid():
@@ -488,7 +485,38 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
         else:
             return self.form_invalid(form)
 
-        return super().form_valid(form)
+        # به جای redirect مستقیم به لیست کمپین‌ها، به صفحه تأیید پشتیبان هدایت می‌کنیم
+        return redirect('account:confirm_mentor', pk=self.object.pk)
+
+
+class CampaignConfirmMentorView(LoginRequiredMixin, View):
+    template_name = 'account/campaign/confirm_mentor.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=kwargs.get('pk'))
+        
+        # اگر کمپین قبلاً تأیید شده باشد (needs_mentor مقدار دارد)
+        if campaign.needs_mentor is not None:
+            messages.error(request, "این کمپین قبلاً تأیید شده است.")
+            return redirect('account:campaigns')
+            
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, pk):
+        campaign = get_object_or_404(Campaign, pk=pk)
+        return render(request, self.template_name, {'campaign': campaign})
+
+    def post(self, request, pk):
+        campaign = get_object_or_404(Campaign, pk=pk)
+        needs_mentor = request.POST.get('needs_mentor') == 'yes'
+        
+        campaign.needs_mentor = needs_mentor
+        campaign.save()
+
+        # ارسال اعلان
+        notify_campaign_actions(request.user, campaign, 'create', staff_users, am_users)
+
+        return redirect('account:campaigns')
 
 
 class CampaignDeleteView(LoginRequiredMixin, ManagerUserMixin, DeleteView):

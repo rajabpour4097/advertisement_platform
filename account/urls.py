@@ -28,6 +28,7 @@ from account.views import (
     PortfolioEditView, 
     PortfolioListView,
     ProfileView,
+    CampaignConfirmMentorView,
     )
 from advplatform.views import custom_404_view
 
@@ -49,7 +50,8 @@ urlpatterns = [
     path('portfolios/edit/<int:pk>', PortfolioEditView.as_view(), name='portfolioedit'), 
     path('portfolios/delete/<int:pk>', PortfolioDeleteView.as_view(), name='portfoliodelete'), 
     path('campaigns/', CampaignListView.as_view(), name='campaigns'), 
-    path('campaigns/create', CampaignCreateView.as_view(), name='campaigncreate'),
+    path('campaigns/create/', CampaignCreateView.as_view(), name='campaigncreate'),
+    path('campaigns/confirm-mentor/<int:pk>', CampaignConfirmMentorView.as_view(), name='confirm_mentor'),
     path('campaigns/delete/<int:pk>', CampaignDeleteView.as_view(), name='campaignsdelete'), 
     path('campaigns/deactive/<int:pk>', CampaignDeactivateView.as_view(), name='deactivecampaign'), 
     path('campaigns/active/<int:pk>', CampaignActivateView.as_view(), name='activecampaign'), 

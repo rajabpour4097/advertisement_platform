@@ -195,7 +195,7 @@ class Campaign(models.Model):
       )
     
     is_active = models.BooleanField(default=False, verbose_name='وضعیت کمپین')
-    needs_mentor = models.BooleanField(default=False, verbose_name='نیاز به مشاور')
+    needs_mentor = models.BooleanField(null=True, blank=True, verbose_name='نیاز به مشاور')
     assigned_mentor = models.ForeignKey(
         CustomUser, 
         on_delete=models.SET_NULL,
