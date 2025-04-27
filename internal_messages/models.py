@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from advplatform.models import CustomUser
+from advplatform.models import Campaign, CustomUser
 
 class Message(models.Model):
     sender = models.ForeignKey(
@@ -32,24 +32,34 @@ class Message(models.Model):
     def __str__(self):
         return f'از {self.sender} به {self.receiver}: {self.subject}'
 
+    #Message allowed receivers policies
     @staticmethod
     def get_allowed_receivers(user):
+        
+        campaign_users = Campaign.objects.filter(assigned_mentor=user)
+        user_campaigns = Campaign.objects.filter(customer=user)
+        
         """دریافت لیست کاربران مجاز برای ارسال پیام"""
         if user.is_staff:
+            return CustomUser.objects.all().exclude(id=user.id)
+        
+        if user.is_am:
             return CustomUser.objects.all().exclude(id=user.id)
         
         if user.user_type == 'customer':
             # مشاور مربوطه و مدیران سیستم
             return CustomUser.objects.filter(
-                models.Q(id=user.customer_mentor.id) |
-                models.Q(is_staff=True)
+                models.Q(is_staff=True) |
+                models.Q(is_am=True) |
+                models.Q(id__in=user_campaigns.values_list('assigned_mentor', flat=True))
             ).exclude(id=user.id)
             
         if user.user_type == 'mentor':
             # مشتریان مربوطه و مدیران سیستم
             return CustomUser.objects.filter(
-                models.Q(customer_mentor=user) |
-                models.Q(is_staff=True)
+                models.Q(is_staff=True) |
+                models.Q(is_am=True) |
+                models.Q(id__in=campaign_users.values_list('customer', flat=True))
             ).exclude(id=user.id)
             
         if user.user_type == 'dealer':
