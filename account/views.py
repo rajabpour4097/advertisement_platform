@@ -15,6 +15,7 @@ from django.db.models import Q, Count
 from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView
 from django.views.generic.edit import BaseUpdateView
 from account.forms import (
+                            AssignMentorForm,
                             CampaignCreateForm,
                             CampaignImageFormSet,
                             EditCampaignForm,
@@ -579,10 +580,12 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
         editings = campaign.editings.all() 
         form1 = ReviewCampaignForm()
         form2 = StartCampaignForm()
+        form3 = AssignMentorForm()
         return render(request, self.template_name, {
             'campaign': campaign,
             'form1': form1,
             'form2': form2,
+            'form3': form3,
             'editings': editings, 
         })
     
@@ -590,7 +593,8 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
         campaign = get_object_or_404(Campaign, id=pk)
         form1 = ReviewCampaignForm(request.POST)
         form2 = StartCampaignForm(request.POST)
-
+        form3 = AssignMentorForm(request.POST)
+        form_type = request.POST.get('form_type')
         editing_campaign = None  # مقداردهی اولیه برای جلوگیری از خطا
 
         if form1.is_valid():
@@ -613,7 +617,7 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
 
             return redirect('account:campaigns')  
 
-        elif form2.is_valid():
+        elif form_type == 'start' and form2.is_valid():
         # فقط starttimedate و endtimedate از فرم گرفته شوند
             campaign.starttimedate = form2.cleaned_data['starttimedate']
             campaign.endtimedate = form2.cleaned_data['endtimedate']
@@ -629,9 +633,15 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
                 am_users=am_users,
                 dealers=dealers  # Pass dealers to notify them
             )
-                
             campaign.save()  # ذخیره کمپین
 
+            return redirect('account:campaigns')
+        
+        elif form_type == 'mentor' and form3.is_valid():
+            campaign.assigned_mentor = form3.cleaned_data['assigned_mentor']
+            campaign.is_active = False
+            campaign.status = "reviewing"
+            campaign.save()
             return redirect('account:campaigns')
 
         editings = campaign.editings.all()
@@ -639,6 +649,7 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
             'campaign': campaign,
             'form1': form1,
             'form2': form2,
+            'form3': form3,
             'editings': editings,
         })
         

@@ -195,6 +195,16 @@ class Campaign(models.Model):
       )
     
     is_active = models.BooleanField(default=False, verbose_name='وضعیت کمپین')
+    needs_mentor = models.BooleanField(default=False, verbose_name='نیاز به مشاور')
+    assigned_mentor = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.SET_NULL,
+        null=True, 
+        blank=True,
+        limit_choices_to={'user_type': 'mentor', 'is_active': True},
+        related_name='assigned_campaigns',
+        verbose_name='مشاور اختصاص داده شده'
+        )
     class Meta:
         verbose_name = 'کمپین'
         verbose_name_plural = 'کمپین ها'

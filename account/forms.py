@@ -173,6 +173,23 @@ class StartCampaignForm(forms.ModelForm):
         fields = ['starttimedate', 'endtimedate']
         
 
+class AssignMentorForm(forms.ModelForm):
+    assigned_mentor = forms.ModelChoiceField(
+        queryset=CustomUser.objects.filter(
+            user_type='mentor',
+            is_active=True
+        ).order_by('first_name', 'last_name'),
+        label='انتخاب پیشتیبان',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label='لطفاً یک پیشتیبان انتخاب کنید',
+        required=True
+    )
+
+    class Meta:
+        model = Campaign
+        fields = ['assigned_mentor']
+
+
 class EditCampaignForm(forms.ModelForm):
     class Meta:
         model = Campaign

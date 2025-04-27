@@ -44,23 +44,84 @@
     </div>
 </div>
 
+<div class="row">
+    <!-- برای دیباگ -->
+    {% if campaign.needs_mentor %}
+        <!-- needs_mentor is True -->
+    {% else %}
+        <!-- needs_mentor is False -->
+    {% endif %}
 
-<!-- بخش تایید و شروع کمپین -->
-<div class="col-md-6 col-xs-12 campaign-form center-block">
-    <div class="x_panel">
-        <div class="x_title">
-            <h2 style="color:rgb(3, 38, 195);">تایید و شروع کمپین</h2>
-            <div class="clearfix"></div>
+    {% if not campaign.assigned_mentor %}
+        <!-- assigned_mentor is None -->
+    {% else %}
+        <!-- assigned_mentor exists -->
+    {% endif %}
+
+    <!-- بخش اختصاص پیشتیبان -->
+    {% if campaign.needs_mentor %}
+    <div class="col-md-6 col-xs-12 campaign-form center-block">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color:rgb(3, 38, 195);">اختصاص پیشتیبان</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                {% if campaign.assigned_mentor %}
+                    <p class="text-success">
+                        پیشتیبان اختصاص داده شده به این کمپین: 
+                        
+                        <div class="profile_pic">
+                            <strong style="color:rgb(3, 69, 156);">{{ campaign.assigned_mentor.get_full_name }}</strong>
+                            {% if campaign.assigned_mentor.customuserimages.first.image.url %}
+                                <img src="{{ campaign.assigned_mentor.customuserimages.first.image.url }}" alt="" class="img-circle profile_img" style="width: 50px; height: 50px;">
+                            {% else %}
+                                <img src="{% static 'account/build/images/user.png' %}" alt="" class="img-circle profile_img" style="width: 50px; height: 50px;">
+                            {% endif %}
+                        </div>
+                    </p>
+                {% else %}
+                    <p class="text-danger">
+                        در حال حاظر به این کاربر برای این کمپین پیشتیبانی اختصاص داده نشده است.
+                    </p>
+                {% endif %}
+            </div>
+            <div class="x_content">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="mentor">
+                    <div class="form-group">
+                        {{ form3.assigned_mentor.label_tag }}
+                        {{ form3.assigned_mentor }}
+                        {% if form3.assigned_mentor.errors %}
+                            <div class="alert alert-danger">
+                                {{ form3.assigned_mentor.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-warning">اختصاص پیشتیبان</button>
+                </form>
+            </div>
         </div>
-        <form method="post" enctype="multipart/form-data" novalidate>
-            {% csrf_token %}
-            {{ form2|crispy }}
-            
-            <br>
-            <button type="submit" class="btn btn-warning">تایید و شروع کمپین</button>
-        </form>
+    </div>
+    {% endif %}
+    <!-- بخش تایید و شروع کمپین -->
+    <div class="col-md-6 col-xs-12 campaign-form center-block">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color:rgb(3, 38, 195);">تایید و شروع کمپین</h2>
+                <div class="clearfix"></div>
+            </div>
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="start">
+                {{ form2|crispy }}
+                <br>
+                <button type="submit" class="btn btn-warning">تایید و شروع کمپین</button>
+            </form>
+        </div>
     </div>
 </div>
-
 {% endblock %}
 
