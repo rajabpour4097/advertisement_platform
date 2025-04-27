@@ -158,6 +158,14 @@ class AMUserMixin(UserPassesTestMixin):
 
 class ManagerUserMixin(UserPassesTestMixin):
     
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff and not request.user.is_am:
+            return render(self.request, '403.html', 
+                          {'error_message': "شما به این صفحه دسترسی ندارید",
+                           'back_url': "account:campaigns"},
+                          )
+        return super().dispatch(request, *args, **kwargs)
+    
     def test_func(self):
         return self.request.user.is_staff or self.request.user.is_am
     
