@@ -56,6 +56,7 @@ class Topic(models.Model):
         )
     created_time = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
+    icon = models.ImageField(upload_to='topics/', null=True, blank=True, verbose_name='آیکون')
     
     class Meta:
         verbose_name = 'موضوع'

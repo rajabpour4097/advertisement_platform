@@ -125,6 +125,14 @@ class PortfolioEditForm(forms.ModelForm):
 
 class CampaignCreateForm(forms.ModelForm):
     
+    purposed_price = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'id': 'id_purposed_price',  # اطمینان از وجود ID
+            'placeholder': 'مثلاً 10.000.000 تومان'
+        })
+    )
+    
     class Meta:
         model = Campaign
         fields = [
@@ -139,14 +147,50 @@ class CampaignCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['customer'].widget.attrs.update({'class': 'form-control'})
         self.fields['topic'].widget.attrs.update({'class': 'form-control'})
-        self.fields['describe'].widget.attrs.update({'class': 'form-control'})
-        self.fields['purposed_price'].widget.attrs.update({'class': 'form-control'})
+        self.fields['describe'].widget.attrs.update({'class': 'form-control',
+                                                     'placeholder': 'شرح کمپین باید بیشتر از 100 کاراکتر باشد'
+                                                     })
         
         if not user.is_staff and user.user_type == 'customer':
             self.fields['customer'].initial = user
             self.fields['customer'].widget = forms.HiddenInput()
+            
+    def clean_purposed_price(self):
+        data = self.cleaned_data['purposed_price']
+        topics = self.cleaned_data.get('topic')  # QuerySet از Topicها
+
+        cleaned = (
+            str(data)
+            .replace(',', '')
+            .replace('تومان', '')
+            .replace(' ', '')
+            .strip()
+        )
+
+        try:
+            price = int(cleaned)
+        except ValueError:
+            raise forms.ValidationError("قیمت وارد شده معتبر نیست.")
+
+        # حداقل قیمت‌ها بر اساس نام موضوع
+        min_prices = {
+            'رسانه های دیجیتال': 8000000,
+            'رسانه های چاپی': 15000000,
+            'تبلیغات محیطی': 50000000,
+        }
+
+        # بررسی تمام موضوعات انتخاب شده
+        for topic in topics:
+            min_price = min_prices.get(topic.name)
+            if min_price and price < min_price:
+                raise forms.ValidationError(
+                    f"حداقل قیمت برای موضوع '{topic.name}' مبلغ {min_price:,} تومان است."
+                )
+
+        return price
 
 
+   
 CampaignImageFormSet = inlineformset_factory(
     Campaign, 
     CampaignImages, 

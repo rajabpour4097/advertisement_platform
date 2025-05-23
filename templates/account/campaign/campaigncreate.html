@@ -40,15 +40,15 @@
                 <div class="topic-checkbox-list">
                     {% for topic in form.fields.topic.queryset %}
                     <div class="topic-checkbox-item">
-                        <input type="checkbox" 
+                        <input type="radio" 
                                name="topic" 
                                value="{{ topic.id }}" 
                                id="topic_{{ topic.id }}"
                                {% if topic.id in form.topic.value %}checked{% endif %}>
                         <label for="topic_{{ topic.id }}">
                             {{ topic.name }}
-                            <span class="topic-count">({{ topic.campaign_count }})</span>
                         </label>
+                        <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
                     </div>
                     {% endfor %}
                 </div>
@@ -99,16 +99,32 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        let totalForms = document.querySelector("#id_campaignsimages-TOTAL_FORMS");  
-        let formContainer = document.querySelector("#image-form-container");  
-        let firstForm = formContainer.querySelector(".image-form");  
-        let addButton = document.querySelector("#add-image-form");  
+    document.addEventListener("DOMContentLoaded", function () {
+        // AutoNumeric برای فیلد قیمت پیشنهادی
+        const priceInput = document.querySelector('input[name="{{ form.purposed_price.name }}"]');
+        if (priceInput) {
+            new AutoNumeric(priceInput, {
+                currencySymbol: ' تومان',
+                currencySymbolPlacement: 's',
+                digitGroupSeparator: ',',
+                decimalCharacter: '.',
+                decimalPlaces: 0,
+                minimumValue: '0',
+                modifyValueOnWheel: false
+            });
+        }
 
-        addButton.addEventListener("click", function() {
+        // افزودن داینامیک تصاویر کمپین
+        let totalForms = document.querySelector("#id_campaignsimages-TOTAL_FORMS");
+        let formContainer = document.querySelector("#image-form-container");
+        let firstForm = formContainer.querySelector(".image-form");
+        let addButton = document.querySelector("#add-image-form");
+
+        addButton.addEventListener("click", function () {
             let formCount = parseInt(totalForms.value);
-            let newForm = firstForm.cloneNode(true);  
+            let newForm = firstForm.cloneNode(true);
 
             newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
             newForm.querySelectorAll("input").forEach(input => input.value = "");
@@ -117,6 +133,6 @@
             totalForms.value = formCount + 1;
         });
     });
-</script> 
+</script>
 {% endblock %}
 
