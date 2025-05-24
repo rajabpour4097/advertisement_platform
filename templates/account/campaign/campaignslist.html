@@ -87,17 +87,21 @@
                             <td>{{ campaign.purposed_price | format_price }}</td>
                             <td>{{ campaign.get_gift_price | format_price }}</td>
                             <td>
-                                {% if campaign.assigned_mentor %}
-                                    <span class="text-success">
-                                        {{ campaign.assigned_mentor.get_full_name }}
-                                    </span>
-                                    {% if campaign.status == 'reviewing' or campaign.status == 'editing' %}
-                                        <a href="{% url 'messages:compose' %}"><i class="fa fa-envelope fa-sm"></i></a>
+                                {% if request.user.user_type != 'dealer' %}
+                                    {% if campaign.assigned_mentor %}
+                                        <span class="text-success">
+                                            {{ campaign.assigned_mentor.get_full_name }}
+                                        </span>
+                                        {% if campaign.status == 'reviewing' or campaign.status == 'editing' %}
+                                            <a href="{% url 'messages:compose' %}"><i class="fa fa-envelope fa-sm"></i></a>
+                                        {% endif %}
+                                    {% elif campaign.needs_mentor and not campaign.assigned_mentor %}
+                                        <span class="text-primary" style="font-size: 10px;">پشتیبان تعیین نشده است</span>
+                                    {% else %}
+                                        <span class="text-danger" style="font-size: 10px;">نیاز به پشتیبان ندارد</span>
                                     {% endif %}
-                                {% elif campaign.needs_mentor and not campaign.assigned_mentor %}
-                                    <span class="text-primary" style="font-size: 10px;">پشتیبان تعیین نشده است</span>
                                 {% else %}
-                                    <span class="text-danger" style="font-size: 10px;">نیاز به پشتیبان ندارد</span>
+                                    <span class="text-danger" style="font-size: 10px;">غیر قابل مشاهده</span>
                                 {% endif %}
                             </td>
 
