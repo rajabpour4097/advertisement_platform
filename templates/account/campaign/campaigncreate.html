@@ -8,96 +8,179 @@
 {% endblock %}
 
 {% block content %}
-
-
-<div class="col-md-6 col-xs-12 form-group" style="scale:95%;">
-    <div class="x_panel">
-        <div class="x_title">
-            <h2 style="color: #028c32;">ایجاد کمپین‌ جدید</h2>
-            <div class="clearfix"></div>
-        </div>
-        <form method="post" enctype="multipart/form-data novalidate" >
-            {% csrf_token %}
-            
-            {# Render customer field if it exists #}
-            {% if form.customer %}
-                <div class="form-group customer-field">
-                    {% if user.is_staff or user.is_am %}
-                    <label for="{{ form.customer.id_for_label }}">مشتری:</label>
-                    {% endif%}
-                    {{ form.customer }}
-                    {% if form.customer.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.customer.errors }}
+<div class="container-fluid" style="scale:90%;">
+    <div class="row">
+        <!-- فرم اصلی -->
+        <div class="col-md-7 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 style="color: #028c32;">ایجاد کمپین‌ جدید</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <form method="post" enctype="multipart/form-data novalidate" >
+                    {% csrf_token %}
+                    
+                    {# Render customer field if it exists #}
+                    {% if form.customer %}
+                        <div class="form-group customer-field">
+                            {% if user.is_staff or user.is_am %}
+                            <label for="{{ form.customer.id_for_label }}">مشتری:</label>
+                            {% endif%}
+                            {{ form.customer }}
+                            {% if form.customer.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.customer.errors }}
+                                </div>
+                            {% endif %}
                         </div>
                     {% endif %}
+
+                    {# Custom topic checkbox rendering #}
+                    <div class="form-group">
+                        <label for="id_topic">موضوعات کمپین:</label>
+                        <div class="topic-checkbox-list">
+                            {% for topic in form.fields.topic.queryset %}
+                            <div class="topic-checkbox-item">
+                                <input type="radio" 
+                                       name="topic" 
+                                       value="{{ topic.id }}" 
+                                       id="topic_{{ topic.id }}"
+                                       {% if topic.id in form.topic.value %}checked{% endif %}>
+                                <label for="topic_{{ topic.id }}">
+                                    {{ topic.name }}
+                                </label>
+                                <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.topic.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.topic.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_topic">شرح کمپین:</label>{# Render describe field #}
+                        {{ form.describe }}
+                        {% if form.describe.errors %}
+                            <div class="invalid-feedback d-block text-danger">
+                                {{ form.describe.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {# Render purposed_price field #}
+                    <div class="form-group">
+                        <label for="id_topic">قیمت پیشنهادی:</label>{# Render describe field #}
+                        {{ form.purposed_price }}
+                        {% if form.purposed_price.errors %}
+                            <div class="invalid-feedback d-block text-danger">
+                                {{ form.purposed_price.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Campaign images #}
+                    {{ image_formset.management_form }}
+                    <div id="image-form-container">
+                        {% for image_form in image_formset %}
+                            <div class="image-form">
+                                {{ image_form|crispy }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="rules_accepted" name="rules_accepted" required>
+                            <label class="custom-control-label" for="rules_accepted">
+                                قوانین و مقررات را مطالعه کرده و می‌پذیرم
+                            </label>
+                        </div>
+                    </div>
+
+                    <br><br>
+
+                    <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
+                    <button type="submit" class="btn btn-success">ایجاد کمپین</button>
+                
+            </div>
+        </div>
+
+        <!-- قوانین و مقررات -->
+        <div class="col-md-5 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 style="color: #028c32;">قوانین و مقررات</h2>
+                    <div class="clearfix"></div>
                 </div>
-            {% endif %}
-
-            {# Custom topic checkbox rendering #}
-            <div class="form-group">
-                <label for="id_topic">موضوعات کمپین:</label>
-                <div class="topic-checkbox-list">
-                    {% for topic in form.fields.topic.queryset %}
-                    <div class="topic-checkbox-item">
-                        <input type="radio" 
-                               name="topic" 
-                               value="{{ topic.id }}" 
-                               id="topic_{{ topic.id }}"
-                               {% if topic.id in form.topic.value %}checked{% endif %}>
-                        <label for="topic_{{ topic.id }}">
-                            {{ topic.name }}
-                        </label>
-                        <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
+                <div class="x_content">
+                    <div class="rules-container">
+                        <ul class="rules-list">
+                            <li>لطفا توضیحات کمپین را به صورت کامل وارد نمایید.</li>
+                            <li>قیمت پیشنهادی باید منطقی و متناسب با خدمات درخواستی باشد.</li>
+                            <li>تصاویر آپلود شده باید با کیفیت و مرتبط با موضوع کمپین باشند.</li>
+                            <!-- سایر قوانین را اینجا اضافه کنید -->
+                        </ul>
                     </div>
-                    {% endfor %}
                 </div>
-                {% if form.topic.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.topic.errors }}
-                    </div>
-                {% endif %}
             </div>
-
-            <div class="form-group">
-                <label for="id_topic">شرح کمپین:</label>{# Render describe field #}
-                {{ form.describe }}
-                {% if form.describe.errors %}
-                    <div class="invalid-feedback d-block text-danger">
-                        {{ form.describe.errors }}
-                    </div>
-                {% endif %}
-            </div>
-            {# Render purposed_price field #}
-            <div class="form-group">
-                <label for="id_topic">قیمت پیشنهادی:</label>{# Render describe field #}
-                {{ form.purposed_price }}
-                {% if form.purposed_price.errors %}
-                    <div class="invalid-feedback d-block text-danger">
-                        {{ form.purposed_price.errors }}
-                    </div>
-                {% endif %}
-            </div>
-
-            {# Campaign images #}
-            {{ image_formset.management_form }}
-            <div id="image-form-container">
-                {% for image_form in image_formset %}
-                    <div class="image-form">
-                        {{ image_form|crispy }}
-                    </div>
-                {% endfor %}
-            </div>
-
-            <button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
-
-            <br><br>
-
-            <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
-            <button type="submit" class="btn btn-success">ایجاد کمپین</button>
-        </form>
+        </div>
+    </form>
     </div>
 </div>
+
+<style>
+    /* استایل‌های جدید */
+    .x_panel {
+        margin-bottom: 20px;
+        border: 1px solid #e6e9ed;
+        border-radius: 5px;
+        padding: 15px;
+    }
+
+    .rules-container {
+        padding: 15px;
+    }
+
+    .rules-list {
+        padding-right: 20px;
+        line-height: 1.8;
+    }
+
+    /* استایل‌های ریسپانسیو */
+    @media (max-width: 768px) {
+        .col-md-6 {
+            padding: 0 10px;
+        }
+        
+        .x_panel {
+            margin: 10px 0;
+        }
+        
+        form {
+            padding: 10px;
+        }
+    }
+
+    /* اصلاح مشکل بیرون زدگی فرم */
+    .form-group {
+        margin-bottom: 15px;
+        width: 100%;
+    }
+
+    .topic-checkbox-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .topic-checkbox-item {
+        flex: 0 0 calc(50% - 5px);
+    }
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
 <script>
