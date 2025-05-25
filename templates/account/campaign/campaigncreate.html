@@ -94,7 +94,7 @@
 
                     <div class="form-group">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="rules_accepted" name="rules_accepted" required>
+                            <input type="checkbox" class="custom-control-input" id="rules_accepted" name="rules_accepted" >
                             <label class="custom-control-label" for="rules_accepted">
                                 قوانین و مقررات را مطالعه کرده و می‌پذیرم
                             </label>
@@ -198,6 +198,87 @@
                 modifyValueOnWheel: false
             });
         }
+
+        // چک کردن تیک قوانین و مقررات و انتخاب موضوع
+        const form = document.querySelector('form');
+        const rulesCheckbox = document.getElementById('rules_accepted');
+        const topicRadios = document.querySelectorAll('input[name="topic"]');
+        
+        form.addEventListener('submit', function(e) {
+            let isTopicSelected = false;
+            
+            // بررسی انتخاب موضوع
+            topicRadios.forEach(radio => {
+                if (radio.checked) {
+                    isTopicSelected = true;
+                }
+            });
+            
+            if (!isTopicSelected) {
+                e.preventDefault();
+                const modalHtml = `
+                    <div class="modal fade" id="topicModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">توجه</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    لطفاً یک موضوع برای کمپین انتخاب کنید
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">متوجه شدم</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                $('#topicModal').modal('show');
+                
+                $('#topicModal').on('hidden.bs.modal', function () {
+                    $(this).remove();
+                });
+                return;
+            }
+            
+            // بررسی تیک قوانین
+            if (!rulesCheckbox.checked) {
+                e.preventDefault();
+                
+                const modalHtml = `
+                    <div class="modal fade" id="rulesModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">توجه</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body text-danger">
+                                    برای ایجاد کمپین جدید باید قوانین را تایید کنید
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">متوجه شدم</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                $('#rulesModal').modal('show');
+                
+                $('#rulesModal').on('hidden.bs.modal', function () {
+                    $(this).remove();
+                });
+            }
+        });
 
         // افزودن داینامیک تصاویر کمپین
         let totalForms = document.querySelector("#id_campaignsimages-TOTAL_FORMS");
