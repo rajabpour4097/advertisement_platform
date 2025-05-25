@@ -692,22 +692,33 @@ class CampaignEditView(EditCampaignUserMixin, View):  #This view is used for Cus
 
     def dispatch(self, request, *args, **kwargs):
         campaign = get_object_or_404(Campaign, id=kwargs['pk'])
+        
+        # اگر کمپین فعال باشد، اجازه ویرایش نیست
         if campaign.is_active:
             return render(self.request, '403.html', 
                           {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
-                               'back_url': "account:campaigns"},
+                           'back_url': "account:campaigns"},
                           )
 
-        if campaign.status == "reviewing" and not request.user.is_staff or not request.user.is_am:
+        # اگر کمپین در حالت reviewing باشد و کاربر مدیر نباشد
+        if campaign.status == "reviewing" and not (request.user.is_staff or request.user.is_am):
             return render(self.request, '403.html', 
                           {'error_message': "فقط مدیران اجازه بررسی این کمپین را دارند.",
-                               'back_url': "account:campaigns"},
+                           'back_url': "account:campaigns"},
                           )
 
+        # اگر کمپین در حالت editing باشد و کاربر نه مدیر باشد و نه صاحب کمپین
+        if campaign.status == "editing" and not (request.user.is_staff or request.user.is_am or request.user == campaign.customer):
+            return render(self.request, '403.html', 
+                          {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
+                           'back_url': "account:campaigns"},
+                          )
+
+        # اگر کمپین نه در حالت editing باشد و نه در حالت reviewing
         if campaign.status not in ["editing", "reviewing"]:
             return render(self.request, '403.html', 
                           {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
-                               'back_url': "account:campaigns"},
+                           'back_url': "account:campaigns"},
                           )
         
         return super().dispatch(request, *args, **kwargs)

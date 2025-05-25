@@ -38,7 +38,9 @@
             <div class="x_content">
                 <p><strong class="campaign-strong">کارفرما:</strong> {{ campaign.customer }}</p>
                 
-                <p><strong class="campaign-strong">موضوع کمپین:</strong> {{ campaign.topic.all|join:", " }} <img src="{{ campaign.topic.first.icon.url }}" style="width: 30px; height: 30px;"></p>
+                <p><strong class="campaign-strong">موضوع کمپین:</strong> {{ campaign.topic.all|join:", " }} 
+                    <img src="{{ campaign.topic.first.icon.url }}" style="width: 30px; height: 30px;">
+                </p>
                 <p><strong class="campaign-strong">شرح کمپین:</strong> {{ campaign.describe }}</p>
                 <p><strong class="campaign-strong">قیمت پیشنهادی:</strong> {{ campaign.purposed_price | format_price }}</p>
                 <p><strong class="campaign-strong">وضعیت:</strong> {{ campaign.get_status_display }}</p>

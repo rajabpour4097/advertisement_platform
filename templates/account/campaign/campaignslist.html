@@ -74,12 +74,12 @@
 
                             <!-- Campaign Description -->
                             <td>
-                                {% if user.is_staff or user.user_type == 'customer' or user.is_am and not campaign.is_active %}
-                                <a href="{% if user.is_staff or user.is_am %}{% url 'account:reviewcampaign' campaign.pk %} {% else %}{% url 'account:campaignedit' campaign.pk %}{% endif %}">
-                                    {{ campaign.describe | truncatewords:10 }}
-                                </a>
+                                {% if user.is_staff or user.is_am %}
+                                    <a href="{% url 'account:campaignedit' campaign.pk %}">
+                                        {{ campaign.describe | truncatewords:10 }}
+                                    </a>
                                 {% else %}
-                                {{ campaign.describe | truncatewords:10 }}
+                                    {{ campaign.describe | truncatewords:10 }}
                                 {% endif %}
                             </td>
 
@@ -120,9 +120,21 @@
                             <!-- Campaign Status -->
                             <td>
                                 {% if campaign.status == 'editing' %}
-                                    <span class="badge bg-warning">در حال ویرایش</span>
+                                    {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
+                                        <a href="{% url 'account:campaignedit' campaign.pk %}">
+                                            <span class="badge bg-warning">در حال ویرایش</span>
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-warning">در حال ویرایش</span>
+                                    {% endif %}
                                 {% elif campaign.status == 'reviewing' %}
-                                    <span class="badge bg-info">در حال بررسی</span>
+                                    {% if request.user.is_staff or request.user.is_am %}
+                                        <a href="{% url 'account:reviewcampaign' campaign.pk %}">
+                                            <span class="badge bg-info">در حال بررسی</span>
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-info">در حال بررسی</span>
+                                    {% endif %}
                                 {% elif campaign.status == 'rejected' %}
                                     <span class="badge bg-danger">رد شده</span>
                                 {% elif campaign.status == 'approved' %}
