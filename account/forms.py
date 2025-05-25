@@ -172,16 +172,9 @@ class CampaignCreateForm(forms.ModelForm):
         except ValueError:
             raise forms.ValidationError("قیمت وارد شده معتبر نیست.")
 
-        # حداقل قیمت‌ها بر اساس نام موضوع
-        min_prices = {
-            'رسانه های دیجیتال': 8000000,
-            'رسانه های چاپی': 15000000,
-            'تبلیغات محیطی': 50000000,
-        }
-
         # بررسی تمام موضوعات انتخاب شده
         for topic in topics:
-            min_price = min_prices.get(topic.name)
+            min_price = topic.min_price
             if min_price and price < min_price:
                 raise forms.ValidationError(
                     f"حداقل قیمت برای موضوع '{topic.name}' مبلغ {min_price:,} تومان است."
@@ -235,13 +228,19 @@ class AssignMentorForm(forms.ModelForm):
 
 
 class EditCampaignForm(forms.ModelForm):
+    purposed_price = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'id': 'id_purposed_price',
+            'placeholder': 'مثلاً 10.000.000 تومان'
+        })
+    )
+
     class Meta:
         model = Campaign
         fields = ['topic', 'describe', 'purposed_price']
         widgets = {
             'describe': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            # 'starttimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            # 'endtimedate': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
         
     def __init__(self, *args, **kwargs):
@@ -251,7 +250,47 @@ class EditCampaignForm(forms.ModelForm):
         if user.user_type == 'customer':
             self.fields.pop('starttimedate', None)
             self.fields.pop('endtimedate', None)
-            
+
+        # تنظیم مقدار اولیه topic
+        if self.instance and self.instance.topic.all():
+            first_topic = self.instance.topic.first()
+            if first_topic:
+                self.initial['topic'] = first_topic.id
+
+        # تبدیل قیمت به فرمت مناسب برای نمایش
+        if self.instance and self.instance.purposed_price:
+            self.initial['purposed_price'] = f"{self.instance.purposed_price:,} تومان"
+  
+    def clean_purposed_price(self):
+        topics = self.cleaned_data.get('topic')
+        if not topics:
+            raise forms.ValidationError("لطفاً یک موضوع انتخاب کنید.")
+        
+        data = self.cleaned_data['purposed_price']
+        
+        cleaned = (
+            str(data)
+            .replace(',', '')
+            .replace('تومان', '')
+            .replace(' ', '')
+            .strip()
+        )
+
+        try:
+            price = int(cleaned)
+        except ValueError:
+            raise forms.ValidationError("قیمت وارد شده معتبر نیست.")
+        # بررسی تمام موضوعات انتخاب شده
+        for topic in topics:
+            min_price = topic.min_price
+            if min_price and price < min_price:
+                raise forms.ValidationError(
+                    f"حداقل قیمت برای موضوع '{topic.name}' مبلغ {min_price:,} تومان است."
+                )
+
+        return price
+
+
 
 class ParticipateCampaignForm(forms.ModelForm):
     class Meta:

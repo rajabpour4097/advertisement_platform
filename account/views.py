@@ -687,62 +687,32 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
         })
         
 
-class CampaignEditView(EditCampaignUserMixin, View):  #This view is used for Customer
+class CampaignEditView(EditCampaignUserMixin, View):
     template_name = "account/campaign/campaign_edit.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        campaign = get_object_or_404(Campaign, id=kwargs['pk'])
-        
-        # اگر کمپین فعال باشد، اجازه ویرایش نیست
-        if campaign.is_active:
-            return render(self.request, '403.html', 
-                          {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
-                           'back_url': "account:campaigns"},
-                          )
-
-        # اگر کمپین در حالت reviewing باشد و کاربر مدیر نباشد
-        if campaign.status == "reviewing" and not (request.user.is_staff or request.user.is_am):
-            return render(self.request, '403.html', 
-                          {'error_message': "فقط مدیران اجازه بررسی این کمپین را دارند.",
-                           'back_url': "account:campaigns"},
-                          )
-
-        # اگر کمپین در حالت editing باشد و کاربر نه مدیر باشد و نه صاحب کمپین
-        if campaign.status == "editing" and not (request.user.is_staff or request.user.is_am or request.user == campaign.customer):
-            return render(self.request, '403.html', 
-                          {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
-                           'back_url': "account:campaigns"},
-                          )
-
-        # اگر کمپین نه در حالت editing باشد و نه در حالت reviewing
-        if campaign.status not in ["editing", "reviewing"]:
-            return render(self.request, '403.html', 
-                          {'error_message': "شما اجازه ویرایش این کمپین را ندارید.",
-                           'back_url': "account:campaigns"},
-                          )
-        
-        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, pk):
         campaign = get_object_or_404(Campaign, id=pk)
-        
         editing_campaign = EditingCampaign.objects.filter(campaign=campaign).all()
-        
         form = EditCampaignForm(instance=campaign, user=request.user)
+        
+        # Add image formset
+        image_formset = CampaignImageFormSet(instance=campaign)
 
         return render(request, self.template_name, {
             'campaign': campaign,
             'form': form,
             'editing_campaign': editing_campaign,
+            'image_formset': image_formset,
         })
 
     def post(self, request, pk):
         campaign = get_object_or_404(Campaign, id=pk)
-        
-        form = EditCampaignForm(request.POST, instance=campaign, user=request.user)
+        form = EditCampaignForm(request.POST, request.FILES, instance=campaign, user=request.user)
+        image_formset = CampaignImageFormSet(request.POST, request.FILES, instance=campaign)
 
-        if form.is_valid():
+        if form.is_valid() and image_formset.is_valid():
             form.save()
+            image_formset.save()
             campaign.status = "reviewing"
             
             # Send notifications for editing status
@@ -757,11 +727,12 @@ class CampaignEditView(EditCampaignUserMixin, View):  #This view is used for Cus
             campaign.save()
             return redirect('account:campaigns')
         
-        editing_campaign = get_object_or_404(EditingCampaign, campaign=campaign)
+        editing_campaign = EditingCampaign.objects.filter(campaign=campaign).all()
         return render(request, self.template_name, {
             'campaign': campaign,
             'form': form,
             'editing_campaign': editing_campaign,
+            'image_formset': image_formset,
         })
 
 

@@ -4,6 +4,10 @@
 
 {% block title %}ویرایش کمپین{% endblock %}
 
+{% block extra_head %}
+<link href="{% static 'account/build/css/campaign_style.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 
 <div class="row">
@@ -13,13 +17,76 @@
         <div class="x_panel">
             <div class="x_title">
                 <h2 style="color: #028c32;">ویرایش کمپین</h2>
+                
                 <div class="clearfix"></div>
             </div>
+            {% if request.user.is_staff or request.user.is_am %}
+                    <h4>مشتری: {{ campaign.customer.get_full_name|default:campaign.customer.email }}</h4>
+                {% endif %}
             <form method="post" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
-                {{ form|crispy }}
+
+                {# Custom topic checkbox rendering #}
+                <div class="form-group">
+                    <label for="id_topic">موضوعات کمپین:</label>
+                    <div class="topic-checkbox-list">
+                        {% for topic in form.fields.topic.queryset %}
+                        <div class="topic-checkbox-item">
+                            <input type="radio" 
+                                   name="topic" 
+                                   value="{{ topic.id }}" 
+                                   id="topic_{{ topic.id }}"
+                                   {% if topic.id == form.initial.topic %}checked{% endif %}>
+                            <label for="topic_{{ topic.id }}">
+                                {{ topic.name }}
+                            </label>
+                            <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if form.topic.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.topic.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_describe">شرح کمپین:</label>
+                    {{ form.describe }}
+                    {% if form.describe.errors %}
+                        <div class="invalid-feedback d-block text-danger">
+                            {{ form.describe.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_purposed_price">قیمت پیشنهادی:</label>
+                    {{ form.purposed_price }}
+                    {% if form.purposed_price.errors %}
+                        <div class="invalid-feedback d-block text-danger">
+                            {{ form.purposed_price.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Campaign images #}
+                {{ image_formset.management_form }}
+                <div id="image-form-container">
+                    {% for image_form in image_formset %}
+                        <div class="image-form">
+                            {{ image_form|crispy }}
+                            {% if image_form.instance.image %}
+                                <img src="{{ image_form.instance.image.url }}" style="max-width: 200px; margin: 10px 0;">
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
                 
-                <br>
+                <br><br>
                 <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
                 <button type="submit" class="btn btn-success">ذخیره تغییرات</button>
             </form>
@@ -65,5 +132,52 @@
         </div>
     </div>   
 </div>
+
+<style>
+    // ... existing styles ...
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // AutoNumeric برای فیلد قیمت پیشنهادی
+        const priceInput = document.querySelector('input[name="purposed_price"]');
+        if (priceInput) {
+            new AutoNumeric(priceInput, {
+                currencySymbol: ' تومان',
+                currencySymbolPlacement: 's',
+                digitGroupSeparator: ',',
+                decimalCharacter: '.',
+                decimalPlaces: 0,
+                minimumValue: '0',
+                modifyValueOnWheel: false
+            });
+
+            // تنظیم مقدار اولیه
+            if (priceInput.value) {
+                const numericInstance = AutoNumeric.getAutoNumericElement(priceInput);
+                numericInstance.set(priceInput.value);
+            }
+        }
+
+        // افزودن داینامیک تصاویر کمپین
+        let totalForms = document.querySelector("#id_campaignsimages-TOTAL_FORMS");
+        let formContainer = document.querySelector("#image-form-container");
+        let firstForm = formContainer.querySelector(".image-form");
+        let addButton = document.querySelector("#add-image-form");
+
+        addButton.addEventListener("click", function () {
+            let formCount = parseInt(totalForms.value);
+            let newForm = firstForm.cloneNode(true);
+
+            newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
+            newForm.querySelectorAll("input").forEach(input => input.value = "");
+            newForm.querySelector("img")?.remove(); // حذف تصویر از فرم جدید
+
+            formContainer.appendChild(newForm);
+            totalForms.value = formCount + 1;
+        });
+    });
+</script>
 
 {% endblock %}
