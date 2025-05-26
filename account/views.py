@@ -12,7 +12,7 @@ from .tokens import account_activation_token
 from django.contrib.auth.models import Group
 from django.core.mail import EmailMessage
 from django.db.models import Q, Count
-from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView
+from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView, ListView
 from django.views.generic.edit import BaseUpdateView
 from account.forms import (
                             AssignMentorForm,
@@ -53,6 +53,7 @@ from .utils.send_notification import notify_campaign_actions, notify_campaign_me
 from .utils.send_sms import send_activation_sms, verify_otp
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
+from django.core.paginator import Paginator
 
 
 
@@ -834,6 +835,16 @@ class CampaignCancelParticipateView(DealerUserMixin, View):
             messages.warning(request, "شما در این کمپین عضو نبودید.")
 
         return HttpResponseRedirect(reverse_lazy('account:campaigns'))
+
+
+class RunningCampaignParticipatedListView(ManagerUserMixin, ListView):
+    template_name = 'account/campaign/running_campaign_participated_list.html'
+    context_object_name = 'proposals'
+    paginate_by = 8
+
+    def get_queryset(self):
+        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        return campaign.running_campaign.filter(campaign=campaign).order_by('-created_at')
 
 
 class MentorUsersList(MentorUserMixin, TemplateView):

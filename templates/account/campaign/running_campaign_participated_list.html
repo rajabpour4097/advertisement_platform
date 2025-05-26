@@ -1,0 +1,172 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load advplatform_tags %}
+{% load account_tags %}
+
+{% block title %}لیست شرکت‌کنندگان کمپین{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'account/build/css/campaign_style.css' %}" rel="stylesheet">
+<style>
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+    .status-delayed { background-color: #fff3cd; color: #856404; }
+    .status-ready { background-color: #d4edda; color: #155724; }
+    .status-cancelled { background-color: #f8d7da; color: #721c24; }
+    .price-column { text-align: left; direction: ltr; }
+    
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+    .card-body {
+        padding: 10px 0;
+    }
+    .card-footer {
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="x_panel">
+    <div class="x_title">
+        <h2>لیست شرکت‌کنندگان کمپین</h2>
+        <div class="nav navbar-right">
+            <a href="{% url 'account:campaigns' %}" class="btn btn-primary">
+                <i class="fa fa-arrow-left"></i> بازگشت
+            </a>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="x_content">
+        <!-- Search and Filter Section -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" placeholder="جستجو..." id="searchInput">
+            </div>
+            <div class="col-md-2">
+                <select class="form-control" id="resultsPerPage">
+                    <option value="8">8</option>
+                    <option value="16">16</option>
+                    <option value="32">32</option>
+                </select>
+            </div>
+        </div>
+        <hr style="border-top: 1px solid #ddd;">
+        <!-- Grid View -->
+        <div class="grid-container">
+            {% for proposal in proposals %}
+            <div class="card">
+                <div class="card-header">
+                    {% if proposal.dealer.customuserimages.first.image.url %}
+                        <img src="{{ proposal.dealer.customuserimages.first.image.url }}" style="width: 50px; height: 50px; border-radius: 50%;">
+                    {% else %}
+                        <img src="{% static 'account/build/images/user.png' %}" style="width: 50px; height: 50px; border-radius: 50%;">
+                    {% endif %}
+                    <h5>{{ proposal.dealer.get_full_name }}</h5>
+                    <small class="text-muted">{{ proposal.created_at| jalali_timedate }}</small>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>توضیحات:</strong>
+                        <p>{{ proposal.proposals|truncatechars:100 }}</p>
+                    </div>
+                    <div class="mb-2">
+                        <strong>قیمت پیشنهادی:</strong>
+                        <span class="price-column">{{ proposal.proposal_price|format_price }}</span>
+                    </div>
+                    
+                    <div>
+                        <span class="status-badge {% if proposal.status == 'delayed' %}status-delayed{% elif proposal.status == 'ready' %}status-ready{% elif proposal.status == 'cancelled' %}status-cancelled{% endif %}">
+                            {{ proposal.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-info w-100" onclick="showDetails('{{ proposal.id }}')">
+                        <i class="fa fa-eye"></i> جزئیات
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if proposals.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ proposals.previous_page_number }}">قبلی</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                صفحه {{ proposals.number }} از {{ proposals.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if proposals.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ proposals.next_page_number }}">بعدی</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // جستجو در کارت‌ها
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchText = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.card');
+        
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(searchText) ? '' : 'none';
+        });
+    });
+
+    // تغییر تعداد نتایج در صفحه
+    document.getElementById('resultsPerPage').addEventListener('change', function() {
+        let searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('per_page', this.value);
+        window.location.search = searchParams.toString();
+    });
+
+    function showDetails(proposalId) {
+        // پیاده‌سازی نمایش جزئیات
+        console.log('Showing details for proposal:', proposalId);
+    }
+</script>
+{% endblock %}
+
+{% endblock %} 

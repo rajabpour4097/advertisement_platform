@@ -145,6 +145,11 @@
                                             {% get_campaign_participants_count campaign as participants_count %}
                                             <span class="badge {% if participants_count > 0 %}bg-success{% else %}bg-secondary{% endif %}" style="margin-top: 5px;">
                                             {{ participants_count|format_participants_count }}
+                                            {% if participants_count > 0 %}
+                                                <a href="{% url 'account:runningcampaignparticipated' campaign.pk %}">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                            {% endif %}
                                             </span>
                                         {% endif%}
                                     </span>
