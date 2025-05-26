@@ -332,11 +332,43 @@ class EditCampaignForm(forms.ModelForm):
 
 
 class ParticipateCampaignForm(forms.ModelForm):
+    proposal_price = forms.CharField(
+        label='قیمت پیشنهادی',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'id': 'id_proposal_price',
+            'placeholder': 'مثلاً 10.000.000 تومان',
+            'required': True,
+        })
+    )
     class Meta:
         model = CampaignTransaction
         fields = ['proposals', 'proposal_price']
         widgets = {
             'proposals': forms.Textarea(
-                attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'طرح خود را ارائه کنید...'}
+                attrs={'class': 'form-control',
+                       'style': 'margin-bottom: 10px;',
+                       'rows': 6, 
+                       'placeholder': 'طرح خود را ارائه کنید...', 
+                       'required': True}
                 ),
             }
+        
+    def clean_proposal_price(self):
+        data = self.cleaned_data['proposal_price']
+        
+        cleaned = (
+            str(data)
+            .replace(',', '')
+            .replace('تومان', '')
+            .replace(' ', '')
+            .strip()
+        )
+
+        try:
+            price = int(cleaned)
+        except ValueError:
+            raise forms.ValidationError("قیمت وارد شده معتبر نیست.")
+
+        return price
+
