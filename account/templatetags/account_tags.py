@@ -26,3 +26,21 @@ def add_class(value, arg):
 @register.filter
 def is_participant(campaign, user):
     return campaign.list_of_participants.filter(id=user.id).exists()
+
+@register.simple_tag
+def get_campaign_participants_count(campaign):
+    """
+    Returns the number of participants for a campaign
+    """
+    if campaign.status == 'progressing':
+        return campaign.list_of_participants.count()
+    return 0
+
+@register.filter
+def format_participants_count(count):
+    """
+    Formats the participants count with proper Persian text
+    """
+    if count == 0:
+        return "بدون شرکت‌کننده"
+    return f"{count:,} شرکت‌کننده"

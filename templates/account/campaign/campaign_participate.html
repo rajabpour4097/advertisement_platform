@@ -55,7 +55,8 @@
                 <p><strong class="campaign-strong">مبلغ جایزه:</strong> {{ campaign.get_gift_price | format_price }}</p>
                 <p><strong class="campaign-strong">زمان شروع کمپین:</strong> {{ campaign.starttimedate | jalali_timedate }}</p>
                 <p><strong class="campaign-strong">زمان پایان کمپین:</strong> {{ campaign.endtimedate | jalali_timedate }}</p>
-                <p><strong class="campaign-strong">تعداد شرکت کننده:</strong> {{ campaign.get_participant_count }}</p>
+                <p><strong class="campaign-strong">تعداد شرکت کننده:</strong> {% get_campaign_participants_count campaign as participants_count %}
+                                                                                {{ participants_count|format_participants_count }}</p>
                 <small class="text-primary">
                     <strong>زمان شمار:</strong> 
                     <div class="countdown" data-deadline="{{ campaign.get_countdown_datetime }}">

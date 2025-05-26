@@ -4,6 +4,8 @@ from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, 
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from account.models import CampaignTransaction, EditingCampaign
+from django.utils import timezone
+import jdatetime
 
 
 
@@ -205,10 +207,47 @@ class ReviewCampaignForm(forms.ModelForm):
 
 
 class StartCampaignForm(forms.ModelForm):
+    starttimedate = forms.DateTimeField(
+        required=True,
+        error_messages={
+            'required': 'لطفاً تاریخ شروع را وارد کنید.',
+        }
+    )
+    endtimedate = forms.DateTimeField(
+        required=True,
+        error_messages={
+            'required': 'لطفاً تاریخ پایان را وارد کنید.',
+        }
+    )
+
     class Meta:
         model = Campaign
         fields = ['starttimedate', 'endtimedate']
+        widgets = {
+            'starttimedate': forms.DateTimeInput(attrs={'class': 'form-control'}),
+            'endtimedate': forms.DateTimeInput(attrs={'class': 'form-control'})
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        starttimedate = cleaned_data.get('starttimedate')
+        endtimedate = cleaned_data.get('endtimedate')
+
+        if not starttimedate:
+            raise forms.ValidationError("لطفاً تاریخ شروع را وارد کنید.")
         
+        if not endtimedate:
+            raise forms.ValidationError("لطفاً تاریخ پایان را وارد کنید.")
+
+        if starttimedate and endtimedate:
+            if starttimedate > endtimedate:
+                raise forms.ValidationError("تاریخ شروع نمی‌تواند بعد از تاریخ پایان باشد.")
+            
+            if starttimedate < timezone.now():
+                raise forms.ValidationError("تاریخ شروع نمی‌تواند قبل از زمان فعلی باشد.")
+
+        return cleaned_data
+
 
 class AssignMentorForm(forms.ModelForm):
     assigned_mentor = forms.ModelChoiceField(

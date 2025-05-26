@@ -141,8 +141,15 @@
                                     <span class="badge bg-success">تایید شده</span>
                                 {% elif campaign.status == 'progressing' %}
                                     <span class="badge bg-primary">در حال برگزاری</span>
+                                        {% if request.user.is_staff or request.user.is_am %}
+                                            {% get_campaign_participants_count campaign as participants_count %}
+                                            <span class="badge {% if participants_count > 0 %}bg-success{% else %}bg-secondary{% endif %}" style="margin-top: 5px;">
+                                            {{ participants_count|format_participants_count }}
+                                            </span>
+                                        {% endif%}
+                                    </span>
                                     {% if request.user.user_type == 'dealer' %}
-                                        <div class="mt-2">
+                                        <div class="mt-2" style="margin-top: 5px;">
                                             {% if not campaign|is_participant:request.user %}
                                                 <button onclick="window.location.href='{% url 'account:campaignparticipate' campaign.pk %}'" 
                                                         class="btn btn-outline-primary btn-sm rounded-pill">

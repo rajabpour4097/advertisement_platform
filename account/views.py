@@ -757,12 +757,12 @@ class CampaignParticipateView(DealerUserMixin, View):
 
     def get(self, request, pk):
         campaign = get_object_or_404(Campaign, id=pk)
-        proposal = campaign.running_campaign.filter(campaign=campaign) 
+        # proposal = campaign.running_campaign.filter(campaign=campaign) 
         form = ParticipateCampaignForm()
         return render(request, self.template_name, {
             'campaign': campaign,
             'form': form,
-            'proposal': proposal, 
+            # 'proposal': proposal, 
         })
     
     def post(self, request, pk):
