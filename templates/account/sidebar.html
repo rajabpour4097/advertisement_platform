@@ -5,11 +5,11 @@
  <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
      <div class="menu_section">
          <ul class="nav side-menu">
-             <li><a href="{% url 'adv:home' %}"><i class="fa fa-external-link"></i> صفحه اصلی سایت</a></li>
-             <li><a href="{% url 'account:home' %}"><i class="fa fa-home"></i> داشبورد</a></li>
+             <li><a href="{% url 'adv:home' %}"><i class="fa fa-external-link" style="color: #34aeeb;"></i> صفحه اصلی سایت</a></li>
+             <li><a href="{% url 'account:home' %}"><i class="fa fa-home" style="color: #43eb34;"></i> داشبورد</a></li>
              <hr style="scale:90%;">
              {% if user.is_staff%}
-             <li><a><i class="fa fa-laptop"></i>مدیریت سایت<span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-laptop" style="color: Yellow;"></i>مدیریت سایت<span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
                      <li><a href="#users"><i class="fa fa-user"></i>لیست کاربران </a></li>
                      <li><a href="form_advanced.html"><i class="fa fa-users"></i>گروه های کاربری</a></li>
@@ -36,7 +36,7 @@
              {% endif %}
            {% if user.user_type == 'customer' or user.is_staff or user.is_am %}
              
-             <li><a><i class="fa fa-tachometer"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-tachometer" style="color: green;"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
                      <li><a href="{% url 'account:campaigns' %}"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
                      <li><a href="{% url 'account:campaigncreate' %}"><i class="fa fa-edit"></i>ایجاد کمپین‌ جدید</a></li>
@@ -44,14 +44,14 @@
              </li>
              {% endif %}
              {% if user.user_type == 'dealer' %}
-             <li><a><i class="fa fa-tachometer"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-tachometer" style="color: green;"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <li><a href="{% url 'account:campaigns' %}"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
                 </ul>
              </li>
              {% endif %}
              {% if user.user_type == 'dealer' or user.is_staff or user.is_am %}
-             <li><a><i class="fa fa-archive"></i> نمونه کارها <span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-archive" style="color: Tomato;"></i> نمونه کارها <span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
                      <li><a href="{% url 'account:portfolios' %}"><i class="fa fa-list"></i>لیست نمونه کارها</a></li>
                      <li><a href="{% url 'account:portfoliocreate' %}"><i class="fa fa-edit"></i>ایجاد نمونه کار جدید</a></li>
@@ -59,7 +59,7 @@
              </li>
              {% endif %}
              {% if user.is_staff  or user.is_am%}
-             <li><a><i class="fa fa-group"></i> پشتیبانان<span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-group" style="color: #690de0;"></i> پشتیبانان<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <li><a href="{% url 'account:mentorslist' %}"><i class="fa fa-edit"></i>لیست پشتیبانان</a></li>
                 </ul>
@@ -69,8 +69,12 @@
              <li><a href="{% url 'account:mentoruserslist' %}"><i class="fa fa-group"></i> لیست کاربران شما</a></li>
              <li><a href="#"><i class="fa fa-list-ul"></i> لیست درخواست پشتیبان</a></li>
              {% endif %}
-             <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope"></i> مدیریت پیام</a></li>
-           
+             <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: Dodgerblue;"></i> مدیریت پیام</a></li>
+             <li><a><i class="fa fa-wallet" style="color: Mediumslateblue;"></i> مالی<span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                    <li><a href="#"><i class="fa fa-edit"></i>کیف پول</a></li>
+                </ul>
+            </li>
          </ul>
      </div>
 
