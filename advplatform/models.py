@@ -125,8 +125,10 @@ class CustomUser(AbstractUser):
     rank = models.SmallIntegerField(default=2, blank=True, null=True, verbose_name='رتبه')# for Dealer and Mentor
     bussines_value = models.BigIntegerField(null=True, blank=True, verbose_name='ارزش کسب و کار')# for Customer
     speciality_field = models.ManyToManyField(
-                                         SpecialityCategory, 
-                                         null=True, blank=True, 
+                                         Topic, 
+                                         null=True, 
+                                         blank=True, 
+                                         related_name='speciality_field',
                                          verbose_name='تخصص'
                                          ) # for Dealer
     modified_time = models.DateTimeField(auto_now=True, verbose_name='آخرین تغییر پروفایل')
