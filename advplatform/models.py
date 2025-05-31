@@ -124,9 +124,8 @@ class CustomUser(AbstractUser):
                                    )  # Influencer, Private Designer, Corporate
     rank = models.SmallIntegerField(default=2, blank=True, null=True, verbose_name='رتبه')# for Dealer and Mentor
     bussines_value = models.BigIntegerField(null=True, blank=True, verbose_name='ارزش کسب و کار')# for Customer
-    speciality_field = models.ForeignKey(
-                                         'SpecialityCategory', 
-                                         on_delete=models.PROTECT, 
+    speciality_field = models.ManyToManyField(
+                                         SpecialityCategory, 
                                          null=True, blank=True, 
                                          verbose_name='تخصص'
                                          ) # for Dealer

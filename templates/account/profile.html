@@ -132,14 +132,6 @@
         
         {% if user.user_type == 'dealer' or user.user_type == 'mentor' and form.rank or form.speciality_field %}
        
-          {% if user.user_type == 'dealer' %}
-            <div class="col-md-12 col-sm-10 col-xs-12" style="margin-top: 20px;">
-              <div class="form-group col-md-6 mb-0">
-               {{ form.dealer_type|as_crispy_field }}
-              </div>
-            </div>
-            <br>
-          {% endif %}
           <div class="col-md-12 col-sm-10 col-xs-12" style="margin-top: 20px;">
             <div class="form-group col-md-6 mb-0">
              {{ form.speciality_field|as_crispy_field }}

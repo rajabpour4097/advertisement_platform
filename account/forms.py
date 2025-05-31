@@ -32,7 +32,6 @@ class ProfileForm(forms.ModelForm):
             self.fields['user_type'].disabled = True
             self.fields['is_active'].disabled = True
             self.fields['rank'].disabled = True
-        if user.user_type != 'dealer' and user.user_type != 'mentor' or user.is_staff:
             del self.fields['speciality_field']
             
     
