@@ -133,12 +133,6 @@
         {% if user.user_type == 'dealer' or user.user_type == 'mentor' and form.rank or form.speciality_field %}
        
           <div class="col-md-12 col-sm-10 col-xs-12" style="margin-top: 20px;">
-            <div class="form-group col-md-6 mb-0">
-             {{ form.speciality_field|as_crispy_field }}
-            </div>
-          </div>
-          <br>
-          <div class="col-md-12 col-sm-10 col-xs-12" style="margin-top: 20px;">
            <div class="form-group col-md-2 mb-0">
             <label> امتیاز شما: </label>
             <p class="btn btn-default">
