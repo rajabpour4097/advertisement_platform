@@ -22,13 +22,29 @@
             <div class="clearfix"></div>
         </div>
         
-        <!-- Search Box -->
+        <!-- Search Box and Topic Filter -->
         <div class="x_content mb-3">
-            <div class="input-group" style="max-width: 300px;">
-                <input type="text" id="searchInput" class="form-control" placeholder="جستجو در کمپین‌ها..." style="border-radius: 20px; padding: 8px 15px;">
-                <span class="input-group-text bg-transparent border-0" style="margin-right: -40px;">
-                    <i class="fas fa-search text-muted"></i>
-                </span>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group" style="max-width: 300px;">
+                        <input type="text" id="searchInput" class="form-control" placeholder="جستجو در کمپین‌ها..." style="border-radius: 20px; padding: 8px 15px;">
+                        <span class="input-group-text bg-transparent border-0" style="margin-right: -40px;">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="input-group" style="max-width: 300px; margin-right: auto;">
+                        <select id="topicFilter" class="form-select" style="border-radius: 20px; padding: 8px 15px;">
+                            <option value="all">همه موضوعات</option>
+                            {% for campaign in campaigns %}
+                                {% for topic in campaign.topic.all %}
+                                    <option value="{{ topic }}">{{ topic }}</option>
+                                {% endfor %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -240,8 +256,10 @@
 
 <!-- Search Script -->
 <script>
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    const searchText = this.value.toLowerCase();
+// Function to filter table based on search and topic
+function filterTable() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const selectedTopic = document.getElementById('topicFilter').value;
     const table = document.getElementById('campaignsTable');
     const rows = table.getElementsByTagName('tr');
 
@@ -249,17 +267,55 @@ document.getElementById('searchInput').addEventListener('keyup', function() {
     for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         const cells = row.getElementsByTagName('td');
-        let found = false;
+        let matchesSearch = false;
+        let matchesTopic = selectedTopic === 'all';
 
-        for (let cell of cells) {
-            if (cell.textContent.toLowerCase().includes(searchText)) {
-                found = true;
-                break;
+        for (let j = 0; j < cells.length; j++) {
+            const cellText = cells[j].textContent.toLowerCase();
+            
+            // Check for search text match
+            if (cellText.includes(searchText)) {
+                matchesSearch = true;
+            }
+            
+            // Check for topic match - topic column is at index 1 or 0 depending on user type
+            const topicColumnIndex = document.querySelector('.organizer-column') ? 1 : 0;
+            if (j === topicColumnIndex && selectedTopic !== 'all') {
+                if (cellText.includes(selectedTopic.toLowerCase())) {
+                    matchesTopic = true;
+                }
             }
         }
 
-        row.style.display = found ? '' : 'none';
+        row.style.display = (matchesSearch && matchesTopic) ? '' : 'none';
     }
+}
+
+// Remove duplicate topics from dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const topicSelect = document.getElementById('topicFilter');
+    const options = topicSelect.options;
+    const optionsArray = Array.from(options).slice(1); // Skip "All" option
+    
+    // Get unique topics
+    const uniqueTopics = [...new Set(optionsArray.map(option => option.value))];
+    
+    // Clear current options (except "All")
+    while (topicSelect.options.length > 1) {
+        topicSelect.remove(1);
+    }
+    
+    // Add unique topics back
+    uniqueTopics.forEach(topic => {
+        const option = document.createElement('option');
+        option.value = topic;
+        option.text = topic;
+        topicSelect.add(option);
+    });
 });
+
+// Event listeners
+document.getElementById('searchInput').addEventListener('keyup', filterTable);
+document.getElementById('topicFilter').addEventListener('change', filterTable);
 </script>
 {% endblock %}
