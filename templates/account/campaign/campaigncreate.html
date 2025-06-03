@@ -45,6 +45,7 @@
                                        name="topic" 
                                        value="{{ topic.id }}" 
                                        id="topic_{{ topic.id }}"
+                                       data-description="{{ topic.description|default:'' }}"
                                        {% if topic.id in form.topic.value %}checked{% endif %}>
                                 <label for="topic_{{ topic.id }}">
                                     {{ topic.name }}
@@ -127,6 +128,19 @@
                     </div>
                 </div>
             </div>
+
+            <!-- افزودن پنل جدید برای توضیحات موضوع -->
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 style="color: #028c32;">توضیحات موضوع</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <div id="topic-description-container">
+                        <p class="text-muted">لطفاً یک موضوع را انتخاب کنید.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </form>
     </div>
@@ -179,6 +193,16 @@
 
     .topic-checkbox-item {
         flex: 0 0 calc(50% - 5px);
+    }
+
+    #topic-description-container {
+        padding: 15px;
+        min-height: 100px;
+        line-height: 1.8;
+    }
+
+    #topic-description-container p {
+        text-align: justify;
     }
 </style>
 
@@ -295,6 +319,32 @@
 
             formContainer.appendChild(newForm);
             totalForms.value = formCount + 1;
+        });
+
+        // اضافه کردن کد مربوط به نمایش توضیحات موضوع
+        const descriptionContainer = document.getElementById('topic-description-container');
+
+        function updateTopicDescription(radio) {
+            const description = radio.dataset.description;
+            if (description) {
+                descriptionContainer.innerHTML = `<p>${description}</p>`;
+            } else {
+                descriptionContainer.innerHTML = '<p class="text-muted">توضیحاتی برای این موضوع ثبت نشده است.</p>';
+            }
+        }
+
+        // نمایش توضیحات موضوع انتخاب شده در لود اولیه
+        topicRadios.forEach(radio => {
+            if (radio.checked) {
+                updateTopicDescription(radio);
+            }
+            
+            // اضافه کردن event listener برای تغییر radio
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    updateTopicDescription(this);
+                }
+            });
         });
     });
 </script>

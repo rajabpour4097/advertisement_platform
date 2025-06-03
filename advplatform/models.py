@@ -58,6 +58,7 @@ class Topic(models.Model):
     modified_time = models.DateTimeField(auto_now=True)
     min_price = models.BigIntegerField(null=True, blank=True, verbose_name='حداقل قیمت')
     icon = models.ImageField(upload_to='topics/', null=True, blank=True, verbose_name='آیکون')
+    description = models.TextField(null=True, blank=True, verbose_name='توضیحات')
     
     class Meta:
         verbose_name = 'موضوع'
