@@ -50,7 +50,7 @@ from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
 from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
-from .utils.send_sms import send_activation_sms, verify_otp
+from .utils.send_sms import send_activation_sms, verify_otp, send_campaign_confirmation_sms
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 from django.core.paginator import Paginator
@@ -111,19 +111,18 @@ class Register(NotLoginedMixin, CreateView):
         user.save()
         notify_user_registration(user, staff_users)
 
-        if user.user_type != 'mentor':
-            # ارسال کد فعال‌سازی
-            response, otp, error = send_activation_sms(user)
-
-            if response:
-                # ذخیره اطلاعات موردنیاز در session
-                self.request.session['user_id'] = user.id
-                self.request.session['phone_number'] = user.phone_number
-                message = "کد تایید برای شماره موبایل شما ارسال شد."
-                return redirect('verify_otp')
-            else:
-                form.add_error(None, f"خطا در ارسال پیامک: {error}")
-                return self.form_invalid(form)
+        
+        # ارسال کد فعال‌سازی
+        response, otp, error = send_activation_sms(user)
+        if response:
+            # ذخیره اطلاعات موردنیاز در session
+            self.request.session['user_id'] = user.id
+            self.request.session['phone_number'] = user.phone_number
+            message = "کد تایید برای شماره موبایل شما ارسال شد."
+            return redirect('verify_otp')
+        else:
+            form.add_error(None, f"خطا در ارسال پیامک: {error}")
+            return self.form_invalid(form)
 
 
 class VerifyOTP(View):
@@ -514,6 +513,12 @@ class CampaignConfirmMentorView(LoginRequiredMixin, View):
 
         # ارسال اعلان
         notify_campaign_actions(request.user, campaign, 'create', staff_users, am_users)
+        
+        # ارسال پیامک
+        success, error = send_campaign_confirmation_sms(campaign, needs_mentor)
+        if not success:
+            print(f"Error in sending SMS: {error}")
+            messages.warning(request, f"خطا در ارسال پیامک: {error}")
 
         return redirect('account:campaigns')
 

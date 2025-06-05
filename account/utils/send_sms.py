@@ -2,6 +2,8 @@ from melipayamak import Api
 from django.conf import settings
 import random
 from django.core.cache import cache
+from django.db.models import Q
+from account.models import CustomUser
 
 def generate_otp():
     """
@@ -61,4 +63,70 @@ def send_activation_sms(user):
         return response, otp, None  # برگرداندن پاسخ، کد OTP و None به عنوان خطا
         
     except Exception as e:
-        return None, None, str(e)  # برگرداندن None و پیغام خطا 
+        return None, None, str(e)  # برگرداندن None و پیغام خطا
+
+def send_campaign_confirmation_sms(campaign, needs_mentor):
+    """
+    ارسال پیامک اطلاع‌رسانی وضعیت کمپین به کاربر و مدیران
+    """
+    try:
+        print("Starting SMS service...")
+        
+        # چک کردن تنظیمات
+        print(f"Settings check - Username: {settings.MELIPAYAMAK_USERNAME}, Number: {settings.MELIPAYAMAK_NUMBER}")
+        
+        # چک کردن شماره موبایل کاربر
+        print(f"Customer phone number: {campaign.customer.phone_number if campaign.customer else 'No customer'}")
+        
+        # چک کردن تعداد مدیران
+        staff_am_users = CustomUser.objects.filter(Q(is_staff=True) | Q(is_am=True))
+        print(f"Number of staff/am users: {staff_am_users.count()}")
+        print(f"Staff/am users with phone numbers: {staff_am_users.filter(phone_number__isnull=False).count()}")
+        
+        # تولید کد OTP
+        otp = generate_otp()
+        
+        # ذخیره کد در کش
+        store_otp(campaign.customer.phone_number, otp)
+
+        # متن پیامک
+        sms_message = f"""
+           کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} ثبت شد و در دست بررسی است.
+        لغو11
+        """
+
+        # تنظیمات ملی پیامک
+        username = settings.MELIPAYAMAK_USERNAME
+        password = settings.MELIPAYAMAK_PASSWORD
+        api = Api(username, password)
+        sms = api.sms()
+        
+        # ارسال پیامک
+        response = sms.send(
+            to=campaign.customer.phone_number,
+            _from=settings.MELIPAYAMAK_NUMBER,
+            text=sms_message
+        )
+        
+        # پیام برای مدیران
+        staff_am_message = f"""
+        کمپین جدید:
+        موضوع: {campaign.topic.first().name if campaign.topic else 'نامشخص'}
+        کاربر: {campaign.customer.get_full_name()}
+        لغو11
+        """
+        
+        # ارسال پیامک به مدیران (staff و am)
+        for staff_am_user in staff_am_users:
+            if staff_am_user.phone_number:
+                sms.send(
+                    to=staff_am_user.phone_number,
+                    _from=settings.MELIPAYAMAK_NUMBER,
+                    text=staff_am_message
+                )
+                
+        return True, None
+        
+    except Exception as e:
+        print(f"Error in sending SMS: {str(e)}")
+        return False, str(e) 
