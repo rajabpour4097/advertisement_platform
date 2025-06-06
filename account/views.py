@@ -50,7 +50,7 @@ from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
 from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
-from .utils.send_sms import send_activation_sms, verify_otp, send_campaign_confirmation_sms
+from .utils.send_sms import send_activation_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 from django.core.paginator import Paginator
@@ -646,11 +646,17 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
                 staff_users=staff_users,
                 am_users=am_users
             )
+            
+            # ارسال پیامک به کاربر
+            success, error = send_campaign_review_sms(campaign, editing_campaign)
+            if not success:
+                print(f"Error in sending review SMS: {error}")
+                messages.warning(request, f"خطا در ارسال پیامک: {error}")
 
             return redirect('account:campaigns')  
 
         elif form_type == 'start' and form2.is_valid():
-        # فقط starttimedate و endtimedate از فرم گرفته شوند
+            # فقط starttimedate و endtimedate از فرم گرفته شوند
             campaign.starttimedate = form2.cleaned_data['starttimedate']
             campaign.endtimedate = form2.cleaned_data['endtimedate']
             campaign.is_active = True
@@ -665,6 +671,13 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
                 am_users=am_users,
                 dealers=dealers  # Pass dealers to notify them
             )
+            
+            # ارسال پیامک به کاربر و دیلرها
+            success, error = send_campaign_start_sms(campaign)
+            if not success:
+                print(f"Error in sending start campaign SMS: {error}")
+                messages.warning(request, f"خطا در ارسال پیامک: {error}")
+            
             campaign.save()  # ذخیره کمپین
 
             return redirect('account:campaigns')
@@ -673,13 +686,22 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
             campaign.assigned_mentor = form3.cleaned_data['assigned_mentor']
             campaign.is_active = False
             campaign.status = "reviewing"
+            
+            # ارسال نوتیفیکیشن
             notify_campaign_mentor_assignment(
                 campaign,
                 campaign.assigned_mentor,
                 staff_users, 
                 am_users, 
                 request_user=request.user
-                )
+            )
+            
+            # ارسال پیامک به کاربر
+            success, error = send_campaign_mentor_assignment_sms(campaign)
+            if not success:
+                print(f"Error in sending mentor assignment SMS: {error}")
+                messages.warning(request, f"خطا در ارسال پیامک: {error}")
+            
             campaign.save()
             return redirect('account:campaigns')
 

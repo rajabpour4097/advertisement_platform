@@ -83,12 +83,6 @@ def send_campaign_confirmation_sms(campaign, needs_mentor):
         print(f"Number of staff/am users: {staff_am_users.count()}")
         print(f"Staff/am users with phone numbers: {staff_am_users.filter(phone_number__isnull=False).count()}")
         
-        # تولید کد OTP
-        otp = generate_otp()
-        
-        # ذخیره کد در کش
-        store_otp(campaign.customer.phone_number, otp)
-
         # متن پیامک
         sms_message = f"""
            کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} ثبت شد و در دست بررسی است.
@@ -129,4 +123,117 @@ def send_campaign_confirmation_sms(campaign, needs_mentor):
         
     except Exception as e:
         print(f"Error in sending SMS: {str(e)}")
+        return False, str(e)
+
+def send_campaign_review_sms(campaign, editing_campaign):
+    """
+    ارسال پیامک اطلاع‌رسانی بررسی کمپین به کاربر
+    """
+    try:
+        # تنظیمات ملی پیامک
+        username = settings.MELIPAYAMAK_USERNAME
+        password = settings.MELIPAYAMAK_PASSWORD
+        api = Api(username, password)
+        sms = api.sms()
+        
+        # پیام برای کاربر
+        user_message = f"""
+        کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} توسط مدیر بررسی شد.
+        لطفا وارد پنل کاربری خود شوید و اصلاحات را انجام دهید.
+        لغو11
+        """
+        
+        # ارسال پیامک به کاربر
+        if campaign.customer and campaign.customer.phone_number:
+            response = sms.send(
+                to=campaign.customer.phone_number,
+                _from=settings.MELIPAYAMAK_NUMBER,
+                text=user_message
+            )
+            
+        return True, None
+        
+    except Exception as e:
+        print(f"Error in sending review SMS: {str(e)}")
+        return False, str(e)
+
+def send_campaign_start_sms(campaign):
+    """
+    ارسال پیامک اطلاع‌رسانی شروع کمپین به کاربر و دیلرها
+    """
+    try:
+        # تنظیمات ملی پیامک
+        username = settings.MELIPAYAMAK_USERNAME
+        password = settings.MELIPAYAMAK_PASSWORD
+        api = Api(username, password)
+        sms = api.sms()
+        
+        # پیام برای کاربر
+        user_message = f"""
+        کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} شروع شده است.
+        لغو11
+        """
+        
+        # پیام برای دیلرها
+        dealer_message = f"""
+        کمپین جدید در حال برگزاری:
+        موضوع: {campaign.topic.first().name if campaign.topic else 'نامشخص'}
+        برای مشارکت وارد پنل کاربری خود شوید.
+        لغو11
+        """
+        
+        # ارسال پیامک به کاربر
+        if campaign.customer and campaign.customer.phone_number:
+            sms.send(
+                to=campaign.customer.phone_number,
+                _from=settings.MELIPAYAMAK_NUMBER,
+                text=user_message
+            )
+            
+        # ارسال پیامک به دیلرها
+        dealers = CustomUser.objects.filter(user_type='dealer')
+        for dealer in dealers:
+            if dealer.phone_number:
+                sms.send(
+                    to=dealer.phone_number,
+                    _from=settings.MELIPAYAMAK_NUMBER,
+                    text=dealer_message
+                )
+                
+        return True, None
+        
+    except Exception as e:
+        print(f"Error in sending start campaign SMS: {str(e)}")
+        return False, str(e)
+
+def send_campaign_mentor_assignment_sms(campaign):
+    """
+    ارسال پیامک اطلاع‌رسانی تخصیص مشاور به کاربر
+    """
+    try:
+        # تنظیمات ملی پیامک
+        username = settings.MELIPAYAMAK_USERNAME
+        password = settings.MELIPAYAMAK_PASSWORD
+        api = Api(username, password)
+        sms = api.sms()
+        
+        # پیام برای کاربر
+        user_message = f"""
+        کاربر گرامی،
+        مشاور {campaign.assigned_mentor.get_full_name()} برای کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} تعیین شد.
+        لغو11
+        """
+        
+        # ارسال پیامک به کاربر
+        if campaign.customer and campaign.customer.phone_number:
+            sms.send(
+                to=campaign.customer.phone_number,
+                _from=settings.MELIPAYAMAK_NUMBER,
+                text=user_message
+            )
+                
+        return True, None
+        
+    except Exception as e:
+        print(f"Error in sending mentor assignment SMS: {str(e)}")
         return False, str(e) 
