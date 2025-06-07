@@ -31,7 +31,7 @@ def verify_otp(user_phone, otp):
 
 def send_activation_sms(user):
     """
-    ارسال پیامک حاوی کد فعال‌سازی به کاربر
+    ارسال پیامک حاوی کد فعال‌سازی به کاربر با استفاده از الگو
     """
     try:
         # تولید کد OTP
@@ -40,30 +40,23 @@ def send_activation_sms(user):
         # ذخیره کد در کش
         store_otp(user.phone_number, otp)
 
-        # متن پیامک
-        sms_message = f"""
-        کد تایید شما: {otp}
-        این کد تا ۲ دقیقه معتبر است.
-        لغو11
-        """
-
         # تنظیمات ملی پیامک
         username = settings.MELIPAYAMAK_USERNAME
         password = settings.MELIPAYAMAK_PASSWORD
         api = Api(username, password)
         sms = api.sms()
         
-        # ارسال پیامک
-        response = sms.send(
+        # ارسال پیامک با الگو
+        response = sms.send_by_pattern(
             to=user.phone_number,
-            _from=settings.MELIPAYAMAK_NUMBER,
-            text=sms_message
+            pattern_code="337375",  # کد الگویی که از پنل دریافت کردید
+            values=[otp]  # پارامترهای الگو به ترتیب
         )
         
-        return response, otp, None  # برگرداندن پاسخ، کد OTP و None به عنوان خطا
+        return response, otp, None
         
     except Exception as e:
-        return None, None, str(e)  # برگرداندن None و پیغام خطا
+        return None, None, str(e)
 
 def send_campaign_confirmation_sms(campaign, needs_mentor):
     """
