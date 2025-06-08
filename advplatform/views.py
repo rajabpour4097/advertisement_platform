@@ -43,7 +43,7 @@ class CustomLoginView(LoginView):
                 return redirect('verify_otp')
             else:
                 messages.error(self.request, f'خطا در ارسال کد تایید: {error}')
-                return redirect('login')
+                return redirect('adv:login')
                 
         return super().form_valid(form)
 
