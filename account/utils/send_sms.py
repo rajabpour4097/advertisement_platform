@@ -1,6 +1,7 @@
 from melipayamak import Api
 from django.conf import settings
 import random
+import requests
 from django.core.cache import cache
 from django.db.models import Q
 from account.models import CustomUser
@@ -30,39 +31,30 @@ def verify_otp(user_phone, otp):
     return False
 
 def send_activation_sms(user):
-    """
-    ارسال پیامک حاوی کد فعال‌سازی به کاربر
-    """
     try:
-        # تولید کد OTP
         otp = generate_otp()
-        
-        # ذخیره کد در کش
         store_otp(user.phone_number, otp)
 
-        # تنظیمات ملی پیامک
-        username = settings.MELIPAYAMAK_USERNAME
-        password = settings.MELIPAYAMAK_PASSWORD
-        api = Api(username, password)
-        sms = api.sms()
-        
-        # متن پیامک
-        message = f"""
-        کد تایید شما: {otp}
-        لغو11
-        """
-        
-        # ارسال پیامک
-        response = sms.send(
-            to=user.phone_number,
-            _from=settings.MELIPAYAMAK_NUMBER,
-            text=message
-        )
-        
-        return response, otp, None
-        
+        url = "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber"
+        payload = {
+            "username": settings.MELIPAYAMAK_USERNAME,
+            "password": settings.MELIPAYAMAK_PASSWORD,
+            "text": otp,
+            "to": user.phone_number,
+            "bodyId": "337375"
+        }
+
+        response = requests.post(url, json=payload)
+        result = response.json()
+
+        if result.get("RetStatus") == 1:
+            return result, otp, None
+        else:
+            return None, None, result.get("StrRetStatus")
+
     except Exception as e:
         return None, None, str(e)
+
 
 def send_campaign_confirmation_sms(campaign, needs_mentor):
     """
