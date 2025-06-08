@@ -58,60 +58,54 @@ def send_activation_sms(user):
 
 def send_campaign_confirmation_sms(campaign, needs_mentor):
     """
-    ارسال پیامک اطلاع‌رسانی وضعیت کمپین به کاربر و مدیران
+    ارسال پیامک اطلاع‌رسانی وضعیت کمپین به کاربر و مدیران با استفاده از الگوهای ملی پیامک
     """
     try:
-        print("Starting SMS service...")
-        
-        # چک کردن تنظیمات
-        print(f"Settings check - Username: {settings.MELIPAYAMAK_USERNAME}, Number: {settings.MELIPAYAMAK_NUMBER}")
-        
-        # چک کردن شماره موبایل کاربر
-        print(f"Customer phone number: {campaign.customer.phone_number if campaign.customer else 'No customer'}")
-        
         # چک کردن تعداد مدیران
         staff_am_users = CustomUser.objects.filter(Q(is_staff=True) | Q(is_am=True))
-        print(f"Number of staff/am users: {staff_am_users.count()}")
-        print(f"Staff/am users with phone numbers: {staff_am_users.filter(phone_number__isnull=False).count()}")
-        
-        # متن پیامک
-        sms_message = f"""
-           کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} ثبت شد و در دست بررسی است.
-        لغو11
-        """
 
-        # تنظیمات ملی پیامک
-        username = settings.MELIPAYAMAK_USERNAME
-        password = settings.MELIPAYAMAK_PASSWORD
-        api = Api(username, password)
-        sms = api.sms()
-        
-        # ارسال پیامک
-        response = sms.send(
-            to=campaign.customer.phone_number,
-            _from=settings.MELIPAYAMAK_NUMBER,
-            text=sms_message
+        # اطلاعات کمپین
+        topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+        customer_name = campaign.customer.get_full_name()
+        customer_phone = campaign.customer.phone_number
+
+        # ارسال پیامک به مشتری با الگو (کد متن 337938)
+        payload_user = {
+            "username": settings.MELIPAYAMAK_USERNAME,
+            "password": settings.MELIPAYAMAK_PASSWORD,
+            "to": customer_phone,
+            "bodyId": "337938",  # کد الگو مخصوص مشتری
+            "text": topic
+        }
+        user_response = requests.post(
+            "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
+            json=payload_user
         )
-        
-        # پیام برای مدیران
-        staff_am_message = f"""
-        کمپین جدید:
-        موضوع: {campaign.topic.first().name if campaign.topic else 'نامشخص'}
-        کاربر: {campaign.customer.get_full_name()}
-        لغو11
-        """
-        
-        # ارسال پیامک به مدیران (staff و am)
+        user_result = user_response.json()
+
+        if user_result.get("RetStatus") != 1:
+            return False, f"User SMS failed: {user_result.get('StrRetStatus')}"
+
+        # ارسال پیامک به مدیران با الگو (کد متن 337941)
         for staff_am_user in staff_am_users:
             if staff_am_user.phone_number:
-                sms.send(
-                    to=staff_am_user.phone_number,
-                    _from=settings.MELIPAYAMAK_NUMBER,
-                    text=staff_am_message
+                payload_admin = {
+                    "username": settings.MELIPAYAMAK_USERNAME,
+                    "password": settings.MELIPAYAMAK_PASSWORD,
+                    "to": staff_am_user.phone_number,
+                    "bodyId": "337941",  # کد الگو مخصوص مدیران
+                    "text": f"{topic},{customer_name}"
+                }
+                admin_response = requests.post(
+                    "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
+                    json=payload_admin
                 )
-                
+                admin_result = admin_response.json()
+                if admin_result.get("RetStatus") != 1:
+                    return False, f"Admin SMS failed: {admin_result.get('StrRetStatus')}"
+
         return True, None
-        
+
     except Exception as e:
         print(f"Error in sending SMS: {str(e)}")
         return False, str(e)
