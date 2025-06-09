@@ -89,12 +89,13 @@ def send_campaign_confirmation_sms(campaign, needs_mentor):
         # ارسال پیامک به مدیران با الگو (کد متن 337941)
         for staff_am_user in staff_am_users:
             if staff_am_user.phone_number:
+                pattern_text = f"{topic};{customer_name}"
                 payload_admin = {
                     "username": settings.MELIPAYAMAK_USERNAME,
                     "password": settings.MELIPAYAMAK_PASSWORD,
                     "to": staff_am_user.phone_number,
                     "bodyId": "337941",  # کد الگو مخصوص مدیران
-                    "text": f"{topic},{customer_name}"
+                    "text": pattern_text
                 }
                 admin_response = requests.post(
                     "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
@@ -112,113 +113,132 @@ def send_campaign_confirmation_sms(campaign, needs_mentor):
 
 def send_campaign_review_sms(campaign, editing_campaign):
     """
-    ارسال پیامک اطلاع‌رسانی بررسی کمپین به کاربر
+    ارسال پیامک اطلاع‌رسانی بررسی کمپین به کاربر با استفاده از الگو
     """
     try:
         # تنظیمات ملی پیامک
         username = settings.MELIPAYAMAK_USERNAME
         password = settings.MELIPAYAMAK_PASSWORD
-        api = Api(username, password)
-        sms = api.sms()
-        
-        # پیام برای کاربر
-        user_message = f"""
-        کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} توسط مدیر بررسی شد.
-        لطفا وارد پنل کاربری خود شوید و اصلاحات را انجام دهید.
-        لغو11
-        """
-        
-        # ارسال پیامک به کاربر
-        if campaign.customer and campaign.customer.phone_number:
-            response = sms.send(
-                to=campaign.customer.phone_number,
-                _from=settings.MELIPAYAMAK_NUMBER,
-                text=user_message
+
+        # استخراج نام موضوع کمپین
+        topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+        customer_phone = campaign.customer.phone_number.strip() if campaign.customer else None
+
+        # ارسال پیامک فقط در صورتی که شماره موجود باشد
+        if customer_phone:
+            payload = {
+                "username": username,
+                "password": password,
+                "to": customer_phone,
+                "bodyId": "337980",  # کد متن الگو
+                "text": topic  # متن پیامک شامل نام موضوع کمپین
+            }
+
+            response = requests.post(
+                "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
+                json=payload
             )
-            
+
+            result = response.json()
+            if result.get("RetStatus") != 1:
+                return False, f"User SMS failed: {result.get('StrRetStatus')}"
+
         return True, None
-        
+
     except Exception as e:
         print(f"Error in sending review SMS: {str(e)}")
         return False, str(e)
 
 def send_campaign_start_sms(campaign):
     """
-    ارسال پیامک اطلاع‌رسانی شروع کمپین به کاربر و دیلرها
+    ارسال پیامک اطلاع‌رسانی شروع کمپین به کاربر و دیلرها با استفاده از الگو
     """
     try:
         # تنظیمات ملی پیامک
         username = settings.MELIPAYAMAK_USERNAME
         password = settings.MELIPAYAMAK_PASSWORD
-        api = Api(username, password)
-        sms = api.sms()
-        
-        # پیام برای کاربر
-        user_message = f"""
-        کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} شروع شده است.
-        لغو11
-        """
-        
-        # پیام برای دیلرها
-        dealer_message = f"""
-        کمپین جدید در حال برگزاری:
-        موضوع: {campaign.topic.first().name if campaign.topic else 'نامشخص'}
-        برای مشارکت وارد پنل کاربری خود شوید.
-        لغو11
-        """
-        
-        # ارسال پیامک به کاربر
+
+        # نام موضوع کمپین
+        topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+
+        # ارسال پیامک به مشتری
         if campaign.customer and campaign.customer.phone_number:
-            sms.send(
-                to=campaign.customer.phone_number,
-                _from=settings.MELIPAYAMAK_NUMBER,
-                text=user_message
+            customer_payload = {
+                "username": username,
+                "password": password,
+                "to": campaign.customer.phone_number.strip(),
+                "bodyId": "337981",  # الگوی مشتری
+                "text": topic
+            }
+
+            customer_response = requests.post(
+                "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
+                json=customer_payload
             )
-            
+            customer_result = customer_response.json()
+            if customer_result.get("RetStatus") != 1:
+                return False, f"Customer SMS failed: {customer_result.get('StrRetStatus')}"
+
         # ارسال پیامک به دیلرها
         dealers = CustomUser.objects.filter(user_type='dealer')
         for dealer in dealers:
             if dealer.phone_number:
-                sms.send(
-                    to=dealer.phone_number,
-                    _from=settings.MELIPAYAMAK_NUMBER,
-                    text=dealer_message
+                dealer_payload = {
+                    "username": username,
+                    "password": password,
+                    "to": dealer.phone_number.strip(),
+                    "bodyId": "337982",  # الگوی دیلرها
+                    "text": topic
+                }
+
+                dealer_response = requests.post(
+                    "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
+                    json=dealer_payload
                 )
-                
+                dealer_result = dealer_response.json()
+                if dealer_result.get("RetStatus") != 1:
+                    return False, f"Dealer SMS failed: {dealer_result.get('StrRetStatus')}"
+
         return True, None
-        
+
     except Exception as e:
         print(f"Error in sending start campaign SMS: {str(e)}")
         return False, str(e)
 
 def send_campaign_mentor_assignment_sms(campaign):
     """
-    ارسال پیامک اطلاع‌رسانی تخصیص مشاور به کاربر
+    ارسال پیامک اطلاع‌رسانی تخصیص مشاور به کاربر با استفاده از الگو
     """
     try:
         # تنظیمات ملی پیامک
         username = settings.MELIPAYAMAK_USERNAME
         password = settings.MELIPAYAMAK_PASSWORD
-        api = Api(username, password)
-        sms = api.sms()
-        
-        # پیام برای کاربر
-        user_message = f"""
-        کاربر گرامی،
-        مشاور {campaign.assigned_mentor.get_full_name()} برای کمپین شما با موضوع {campaign.topic.first().name if campaign.topic else 'نامشخص'} تعیین شد.
-        لغو11
-        """
-        
-        # ارسال پیامک به کاربر
-        if campaign.customer and campaign.customer.phone_number:
-            sms.send(
-                to=campaign.customer.phone_number,
-                _from=settings.MELIPAYAMAK_NUMBER,
-                text=user_message
+
+        # استخراج مقادیر متغیرها
+        mentor_name = campaign.assigned_mentor.get_full_name() if campaign.assigned_mentor else 'نامشخص'
+        topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+        customer_phone = campaign.customer.phone_number.strip() if campaign.customer else None
+
+        if customer_phone:
+            payload = {
+                "username": username,
+                "password": password,
+                "to": customer_phone,
+                "bodyId": "337984",  # الگوی تخصیص مشاور
+                "text": f"{mentor_name};{topic}"  # ترتیب دقیق باید مطابق الگو باشد
+            }
+
+            response = requests.post(
+                "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
+                json=payload
             )
-                
+
+            result = response.json()
+            if result.get("RetStatus") != 1:
+                return False, f"Mentor SMS failed: {result.get('StrRetStatus')}"
+
         return True, None
-        
+
     except Exception as e:
         print(f"Error in sending mentor assignment SMS: {str(e)}")
-        return False, str(e) 
+        return False, str(e)
