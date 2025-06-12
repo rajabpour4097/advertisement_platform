@@ -183,6 +183,11 @@
                                                     <i class="fa fa-times fa-sm"></i>
                                                     <small>لغو شرکت</small>
                                                 </button>
+                                                <button onclick="window.location.href='{% url 'account:editproposal' campaign.pk %}'" 
+                                                        class="btn btn-outline-warning  btn-sm rounded-pill" style="background-color: #ffc107; color: #000;">
+                                                    <i class="fa fa-edit"></i>
+                                                    <small>ویرایش پیشنهاد</small>
+                                                </button>
                                             {% endif %}
                                         </div>
                                     {% endif %}

@@ -862,6 +862,35 @@ class CampaignCancelParticipateView(DealerUserMixin, View):
             messages.warning(request, "شما در این کمپین عضو نبودید.")
 
         return HttpResponseRedirect(reverse_lazy('account:campaigns'))
+    
+
+class CampaignEditProposalView(DealerUserMixin, View):
+    template_name = 'account/campaign/campaign_edit_proposal.html'
+
+    def get(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        proposal = get_object_or_404(CampaignTransaction, campaign=campaign, dealer=request.user)
+        form = ParticipateCampaignForm(instance=proposal)
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'proposal': proposal
+        })
+
+    def post(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        proposal = get_object_or_404(CampaignTransaction, campaign=campaign, dealer=request.user)
+        form = ParticipateCampaignForm(request.POST, instance=proposal)
+        if form.is_valid():
+            form.save()
+            return redirect('account:campaigns')
+        
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'proposal': proposal
+        })
+
 
 
 class RunningCampaignParticipatedListView(ManagerUserMixin, ListView):
