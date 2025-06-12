@@ -176,11 +176,11 @@ MELIPAYAMAK_PASSWORD = MELIPAYAMAK_PASS
 MELIPAYAMAK_NUMBER = MELIPAYAMAK_NUM  # شماره اختصاصی ملی پیامک
 
 # Site URL for activation links
-SITE_URL = 'https://your-domain.com'  # آدرس سایت شما
+SITE_URL = MY_SITE_URL  # آدرس سایت شما
 
 # ZarinPal Configuration
-ZARINPAL_MERCHANT_ID = 'YOUR-MERCHANT-ID'  # Replace with your merchant ID
-ZARINPAL_CALLBACK_URL = 'http://127.0.0.1:8000/wallet/verify/'  # Update with your domain
+ZARINPAL_MERCHANT_ID = MY_ZARINPAL_MERCHANT_ID  # Replace with your merchant ID
+ZARINPAL_CALLBACK_URL = MY_ZARINPAL_CALLBACK_URL  # Update with your domain
 
 # LOGGING = {
 #     'version': 1,

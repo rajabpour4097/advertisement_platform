@@ -19,13 +19,12 @@ from advplatform.models import Campaign
 from .forms import PaymentReceiptForm, WalletChargeForm
 
 # ZarinPal Configuration
-# MERCHANT = settings.ZARINPAL_MERCHANT_ID
-MERCHANT = 'a4288510-6e57-11ea-be08-000c295eb8fc'
+MERCHANT = settings.ZARINPAL_MERCHANT_ID
 ZP_API_REQUEST = "https://api.zarinpal.com/pg/v4/payment/request.json"
 ZP_API_VERIFY = "https://api.zarinpal.com/pg/v4/payment/verify.json"
 ZP_API_STARTPAY = "https://www.zarinpal.com/pg/StartPay/{authority}"
 description = "پرداخت در سامانه تبلیغات"  # Required
-CallbackURL = 'http://127.0.0.1:8000/wallet/verify/' # Important: replace with your host
+CallbackURL = settings.ZARINPAL_CALLBACK_URL # Important: replace with your host
 
 
 class WalletHomeView(LoginRequiredMixin, View):
