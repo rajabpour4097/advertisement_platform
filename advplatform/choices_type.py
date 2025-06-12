@@ -28,6 +28,7 @@ CAMPAIGN_TYPE = [
                  ('successful', 'موفق'),
                  ('editing', 'اصلاح مشتری'),
                  ('cancel', 'انصراف مشتری'),
+                 ('finished', 'پایان یافته'),
                  
                 ]
 

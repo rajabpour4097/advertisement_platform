@@ -152,7 +152,8 @@ def notify_campaign_actions(user, campaign, action_type, staff_users, am_users, 
         'cancel': ('لغو', 'لغو کرده‌اید'),
         'review': ('بررسی', 'در حال بررسی است'),
         'editing': ('ویرایش', 'در حال ویرایش است'),
-        'progressing': ('برگزاری', 'در حال برگزاری است')
+        'progressing': ('برگزاری', 'در حال برگزاری است'),
+        'finished': ('پایان', 'به پایان رسیده است')
     }
     
     other_actions = {
@@ -164,7 +165,8 @@ def notify_campaign_actions(user, campaign, action_type, staff_users, am_users, 
         'cancel': ('لغو', 'لغو شد'),
         'review': ('بررسی', 'در حال بررسی است'),
         'editing': ('ویرایش', 'در حال ویرایش است'),
-        'progressing': ('برگزاری', 'در حال برگزاری است')
+        'progressing': ('برگزاری', 'در حال برگزاری است'),
+        'finished': ('پایان', 'به پایان رسید')
     }
     
     recipient_verb_text, recipient_action_text = recipient_actions[action_type]

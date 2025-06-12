@@ -242,3 +242,41 @@ def send_campaign_mentor_assignment_sms(campaign):
     except Exception as e:
         print(f"Error in sending mentor assignment SMS: {str(e)}")
         return False, str(e)
+
+def send_campaign_finished_sms(campaign):
+    """
+    ارسال پیامک اطلاع‌رسانی پایان کمپین به کاربر با استفاده از الگو
+    """
+    try:
+        # تنظیمات ملی پیامک
+        username = settings.MELIPAYAMAK_USERNAME
+        password = settings.MELIPAYAMAK_PASSWORD
+
+        # استخراج نام موضوع کمپین
+        topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+        customer_phone = campaign.customer.phone_number.strip() if campaign.customer else None
+
+        # ارسال پیامک فقط در صورتی که شماره موجود باشد
+        if customer_phone:
+            payload = {
+                "username": username,
+                "password": password,
+                "to": customer_phone,
+                "bodyId": "339423",  # کد متن الگو برای پایان کمپین
+                "text": topic  # متن پیامک شامل نام موضوع کمپین
+            }
+
+            response = requests.post(
+                "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
+                json=payload
+            )
+
+            result = response.json()
+            if result.get("RetStatus") != 1:
+                return False, f"User SMS failed: {result.get('StrRetStatus')}"
+
+        return True, None
+
+    except Exception as e:
+        print(f"Error in sending finished campaign SMS: {str(e)}")
+        return False, str(e)
