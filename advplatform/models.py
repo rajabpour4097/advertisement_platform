@@ -247,6 +247,9 @@ class Campaign(models.Model):
         words = self.describe.split()  # Split the text into words
         return " ".join(words[:10])
     
+    def get_campaign_price(self):
+        return (self.purposed_price*10)/100
+    
 
 class Portfolio(models.Model):
     dealer = models.ForeignKey(

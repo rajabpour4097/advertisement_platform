@@ -1,6 +1,7 @@
 {% extends "account/account_base.html" %}
 {% load static %}
 {% load humanize %}
+{% load advplatform_tags %}
 
 {% block title %}پرداخت کمپین{% endblock %}
 
@@ -16,10 +17,10 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>عنوان کمپین:</strong> {{ campaign.describe }}</p>
-                            <p><strong>مبلغ قابل پرداخت:</strong> {{ campaign.purposed_price|intcomma }} تومان</p>
+                            <p><strong>مبلغ قابل پرداخت:</strong> {{ campaign.get_campaign_price| format_price }} </p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>موجودی کیف پول:</strong> {{ wallet.balance|intcomma }} تومان</p>
+                            <p><strong>موجودی کیف پول:</strong> {{ wallet.balance| format_price }} </p>
                         </div>
                     </div>
                 </div>
