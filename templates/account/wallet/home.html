@@ -1,0 +1,65 @@
+{% extends 'account/account_base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}کیف پول{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Wallet Balance Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">موجودی کیف پول</h5>
+                    <h2 class="text-primary">{{ wallet.balance|intcomma }} تومان</h2>
+                    <div class="mt-3">
+                        <a href="{% url 'wallet:charge' %}" class="btn btn-primary">شارژ کیف پول</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">تراکنش‌های اخیر</h5>
+                    {% if transactions %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>نوع</th>
+                                        <th>مبلغ</th>
+                                        <th>وضعیت</th>
+                                        <th>تاریخ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                    <tr>
+                                        <td>{{ transaction.get_transaction_type_display }}</td>
+                                        <td>{{ transaction.amount|intcomma }} تومان</td>
+                                        <td>
+                                            <span class="badge {% if transaction.status == 'completed' %}bg-success{% elif transaction.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ transaction.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ transaction.created_at|date:"Y/m/d" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-end mt-3">
+                            <a href="{% url 'wallet:transactions' %}" class="btn btn-outline-primary">مشاهده همه تراکنش‌ها</a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">هیچ تراکنشی یافت نشد.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

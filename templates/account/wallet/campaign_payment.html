@@ -1,0 +1,140 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}پرداخت کمپین{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">اطلاعات کمپین</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>عنوان کمپین:</strong> {{ campaign.describe }}</p>
+                            <p><strong>مبلغ قابل پرداخت:</strong> {{ campaign.purposed_price|intcomma }} تومان</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>موجودی کیف پول:</strong> {{ wallet.balance|intcomma }} تومان</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">انتخاب روش پرداخت</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="paymentForm">
+                        {% csrf_token %}
+                        
+                        <div class="payment-methods mb-4">
+                            {% if wallet_sufficient %}
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
+                                <label class="form-check-label" for="wallet">
+                                    پرداخت از کیف پول
+                                </label>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="gateway" value="gateway">
+                                <label class="form-check-label" for="gateway">
+                                    پرداخت از طریق درگاه بانکی
+                                </label>
+                            </div>
+                            
+                            {% if wallet.balance > 0 %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="mixed" value="mixed">
+                                <label class="form-check-label" for="mixed">
+                                    پرداخت ترکیبی (کیف پول + درگاه بانکی)
+                                </label>
+                            </div>
+                            
+                            <div id="mixedPaymentSection" class="mt-3" style="display: none;">
+                                <div class="form-group">
+                                    <label for="wallet_amount">مبلغ پرداخت از کیف پول (تومان):</label>
+                                    <input type="number" class="form-control" id="wallet_amount" name="wallet_amount" 
+                                           max="{{ wallet.balance }}" min="0" step="1000">
+                                    <small class="text-muted">حداکثر مبلغ قابل برداشت از کیف پول: {{ wallet.balance|intcomma }} تومان</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">پرداخت</button>
+                            <a href="{% url 'account:campaigns' %}" class="btn btn-outline-secondary">انصراف</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mixedPaymentSection = document.getElementById('mixedPaymentSection');
+    const paymentMethodInputs = document.querySelectorAll('input[name="payment_method"]');
+    const walletAmountInput = document.getElementById('wallet_amount');
+
+    paymentMethodInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.value === 'mixed') {
+                mixedPaymentSection.style.display = 'block';
+                walletAmountInput.required = true;
+            } else {
+                mixedPaymentSection.style.display = 'none';
+                walletAmountInput.required = false;
+            }
+        });
+    });
+
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+        if (!selectedMethod) {
+            e.preventDefault();
+            alert('لطفا یک روش پرداخت را انتخاب کنید.');
+            return;
+        }
+
+        if (selectedMethod.value === 'mixed') {
+            const amount = parseInt(walletAmountInput.value);
+            const maxAmount = parseInt(walletAmountInput.getAttribute('max'));
+            if (isNaN(amount) || amount <= 0 || amount > maxAmount) {
+                e.preventDefault();
+                alert('لطفا مبلغ معتبری برای پرداخت از کیف پول وارد کنید.');
+                return;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-methods {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 1rem;
+    }
+    .form-check {
+        padding: 0.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    .form-check:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %} 

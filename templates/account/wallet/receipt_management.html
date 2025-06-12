@@ -1,0 +1,58 @@
+{% extends 'account/account_base.html' %}
+{% load static %}
+{% load account_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>مدیریت فیش‌های پرداختی</h2>
+    
+    {% if receipts %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>کاربر</th>
+                    <th>مبلغ (تومان)</th>
+                    <th>تاریخ ثبت</th>
+                    <th>بانک</th>
+                    <th>شماره پیگیری</th>
+                    <th>تصویر فیش</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for receipt in receipts %}
+                <tr>
+                    <td>{{ receipt.transaction.wallet.user.get_full_name }}</td>
+                    <td>{{ receipt.transaction.amount }}</td>
+                    <td>{{ receipt.payment_date | jalali_timedate }}</td>
+                    <td>{{ receipt.bank_name }}</td>
+                    <td>{{ receipt.tracking_number }}</td>
+                    <td>
+                        <a href="{{ receipt.receipt_image.url }}" target="_blank">
+                            <img src="{{ receipt.receipt_image.url }}" alt="فیش پرداختی" style="max-width: 100px;">
+                        </a>
+                    </td>
+                    <td>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="receipt_id" value="{{ receipt.id }}">
+                            <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">تایید</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">رد</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% comment %} {% include "pagination.html" with page_obj=page_obj %} {% endcomment %}
+    
+    {% else %}
+    <div class="alert alert-info">
+        در حال حاضر فیش پرداختی در انتظار بررسی وجود ندارد.
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

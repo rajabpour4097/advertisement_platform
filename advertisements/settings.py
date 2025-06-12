@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'advplatform.apps.AdvplatformConfig',
     'account.apps.AccountConfig',
     'widget_tweaks',
@@ -43,7 +44,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'notifications',
     'internal_messages',
-        
+    'wallet.apps.WalletConfig',
 ]
 
 AUTH_USER_MODEL = 'advplatform.CustomUser'
@@ -176,6 +177,10 @@ MELIPAYAMAK_NUMBER = MELIPAYAMAK_NUM  # شماره اختصاصی ملی پیا�
 
 # Site URL for activation links
 SITE_URL = 'https://your-domain.com'  # آدرس سایت شما
+
+# ZarinPal Configuration
+ZARINPAL_MERCHANT_ID = 'YOUR-MERCHANT-ID'  # Replace with your merchant ID
+ZARINPAL_CALLBACK_URL = 'http://127.0.0.1:8000/wallet/verify/'  # Update with your domain
 
 # LOGGING = {
 #     'version': 1,

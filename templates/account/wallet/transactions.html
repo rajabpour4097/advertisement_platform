@@ -1,0 +1,105 @@
+{% extends 'account/account_base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}تاریخچه تراکنش‌ها{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">تاریخچه تراکنش‌ها</h5>
+                    <a href="{% url 'wallet:home' %}" class="btn btn-outline-primary btn-sm">بازگشت به کیف پول</a>
+                </div>
+                <div class="card-body">
+                    {% if transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>تاریخ</th>
+                                        <th>نوع تراکنش</th>
+                                        <th>روش پرداخت</th>
+                                        <th>مبلغ</th>
+                                        <th>وضعیت</th>
+                                        <th>توضیحات</th>
+                                        <th>کد پیگیری</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in transactions %}
+                                    <tr>
+                                        <td>{{ transaction.created_at|date:"Y/m/d H:i" }}</td>
+                                        <td>{{ transaction.get_transaction_type_display }}</td>
+                                        <td>{{ transaction.get_payment_method_display }}</td>
+                                        <td>{{ transaction.amount|intcomma }} تومان</td>
+                                        <td>
+                                            <span class="badge {% if transaction.status == 'completed' %}bg-success{% elif transaction.status == 'pending' %}bg-warning{% elif transaction.status == 'reviewing' %}bg-info{% else %}bg-danger{% endif %}">
+                                                {{ transaction.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ transaction.description|default:"-" }}</td>
+                                        <td>{{ transaction.tracking_code|default:"-" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if is_paginated %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">هیچ تراکنشی یافت نشد.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badge {
+        font-size: 0.875rem;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
