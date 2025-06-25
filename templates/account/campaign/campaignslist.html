@@ -192,7 +192,18 @@
                                         </div>
                                     {% endif %}
                                 {% elif campaign.status == 'finished' %}
-                                    <span class="badge bg-secondary">پایان یافته</span>
+                                    <div>
+                                        <span class="badge bg-secondary">پایان یافته</span>
+                                    </div>
+                                    {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
+                                        <div>
+                                            <span class="badge bg-primary" style="margin-top:2px; font-size: 10px;">
+                                                <a href="{% url 'account:finished_campaign_proposals' campaign.id %}">
+                                                    مشاهده پیشنهادات <i class="fa fa-search"></i>
+                                                </a>
+                                            </span>
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                             </td>
 
@@ -240,15 +251,27 @@
 
                             <!-- Winner Column -->
                             <td>
-                                {% if campaign.campaign_dealer %}
-                                    <div class="avatar-info">
-                                        <div class="user-details">
-                                            <span class="winner-user-name">{{ campaign.campaign_dealer.get_full_name }}</span>
+                                <div style="font-size: 11px;">
+                                    {% if campaign.campaign_dealer %}
+                                        <div class="avatar-info">
+                                            <div class="user-details">
+                                                <span class="winner-user-name">{{ campaign.campaign_dealer.get_full_name }}</span>
+                                            </div>
+                                        
                                         </div>
-                                    </div>
-                                {% else %}
-                                    <span class="text-muted">تعیین نشده</span>
-                                {% endif %}
+                                        <div>
+                                            <span class="badge bg-primary" style="margin-top:2px; font-size: 7px;">
+                                                <a href="#">
+                                                    مشاهده طرح پیشنهادی <i class="fa fa-search"></i>
+                                                </a>
+                                            </span>
+                                        </div>
+                                    {% elif not campaign.campaign_dealer and not campaign.get_finished_proposals and campaign.status == 'finished' %}
+                                        <span class="text-muted">بدون برنده</span>
+                                    {% else %}
+                                        <span class="text-muted">تعیین نشده</span>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

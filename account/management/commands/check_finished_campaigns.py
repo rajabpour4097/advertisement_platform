@@ -34,6 +34,7 @@ class Command(BaseCommand):
             # Update campaign status
             campaign.status = 'finished'
             campaign.is_active = False
+            campaign.modified_time = timezone.now()
             campaign.save()
 
             # Send notifications

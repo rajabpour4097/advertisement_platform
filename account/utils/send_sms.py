@@ -280,3 +280,35 @@ def send_campaign_finished_sms(campaign):
     except Exception as e:
         print(f"Error in sending finished campaign SMS: {str(e)}")
         return False, str(e)
+
+def send_campaign_winner_sms(campaign, winner):
+    """Send SMS to campaign winner"""
+    try:
+        username = settings.MELIPAYAMAK_USERNAME
+        password = settings.MELIPAYAMAK_PASSWORD
+        
+        topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+        winner_phone = winner.phone_number.strip()
+        
+        if winner_phone:
+            payload = {
+                "username": username,
+                "password": password,
+                "to": winner_phone,
+                "bodyId": "339780",  # Update with actual template ID
+                "text": f"{topic}"
+            }
+            
+            response = requests.post(
+                "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber",
+                json=payload
+            )
+            
+            result = response.json()
+            if result.get("RetStatus") != 1:
+                return False, f"SMS failed: {result.get('StrRetStatus')}"
+                
+        return True, None
+        
+    except Exception as e:
+        return False, str(e)

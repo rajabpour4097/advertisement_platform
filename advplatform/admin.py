@@ -79,7 +79,7 @@ admin.site.register(CustomUser, CustomUserAdmin)
 
 @register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
-    list_display = ['customer','describe', 'purposed_price', 'created_time']
+    list_display = ['customer','describe', 'purposed_price', 'created_time', 'modified_time', 'status']
     list_filter = ['customer', 'is_active']
     search_fields = ['topic']
     inlines = [CampaignImagesInline]

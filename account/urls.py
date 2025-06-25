@@ -31,6 +31,8 @@ from account.views import (
     ProfileView,
     CampaignConfirmMentorView,
     RunningCampaignParticipatedListView,
+    FinishedCampaignProposalsListView,
+    SelectCampaignWinnerView,
     )
 from advplatform.views import custom_404_view
 
@@ -64,6 +66,8 @@ urlpatterns = [
     path('campaigns/cancelparticipate/<int:pk>', CampaignCancelParticipateView.as_view(), name='cancelcampaignparticipate'), 
     path('campaigns/editproposal/<int:pk>', CampaignEditProposalView.as_view(), name='editproposal'),
     path('campaigns/running-campaign-participated/<int:pk>', RunningCampaignParticipatedListView.as_view(), name='runningcampaignparticipated'),
+    path('campaigns/finished-proposals/<int:pk>/', FinishedCampaignProposalsListView.as_view(), name='finished_campaign_proposals'),
+    path('campaigns/select-winner/<int:campaign_id>/<int:dealer_id>/', SelectCampaignWinnerView.as_view(), name='select_winner'),
     path('mentoruserslist/', MentorUsersList.as_view(), name='mentoruserslist'), 
     path('mymentor/', MyMentor.as_view(), name='mymentor'), 
     path('mentorslist/', MentorsList.as_view(), name='mentorslist'), 

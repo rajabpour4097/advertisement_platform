@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,6 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from account.models import CampaignTransaction, EditingCampaign, RequestForMentor
+from wallet.models import Wallet, Transaction
 from .tokens import account_activation_token
 from django.contrib.auth.models import Group
 from django.core.mail import EmailMessage
@@ -49,8 +51,8 @@ from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
-from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
-from .utils.send_sms import send_activation_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms
+from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_campaign_winner, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
+from .utils.send_sms import send_activation_sms, send_campaign_winner_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 from django.core.paginator import Paginator
@@ -901,6 +903,82 @@ class RunningCampaignParticipatedListView(ManagerUserMixin, ListView):
     def get_queryset(self):
         campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
         return campaign.running_campaign.filter(campaign=campaign).order_by('-created_at')
+    
+
+class FinishedCampaignProposalsListView(LoginRequiredMixin, EditCampaignUserMixin, ListView):
+    template_name = 'account/campaign/finished_campaign_proposals_list.html'
+    context_object_name = 'proposals'
+    paginate_by = 8
+
+    def get_queryset(self):
+        self.campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        if self.campaign.status == 'finished' and not self.campaign.is_active:
+            return CampaignTransaction.objects.filter(campaign=self.campaign)
+        return CampaignTransaction.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['campaign'] = self.campaign
+        return context
+        
+
+class SelectCampaignWinnerView(EditCampaignUserMixin, View):
+    template_name = 'account/campaign/confirm_winner.html'
+
+    def get(self, request, campaign_id, dealer_id):
+        campaign = get_object_or_404(Campaign, pk=campaign_id)
+        dealer = get_object_or_404(CustomUser, pk=dealer_id)
+        
+        if campaign.campaign_dealer:
+            messages.error(request, "برنده این کمپین قبلاً انتخاب شده است.")
+            return redirect('account:finished_campaign_proposals', pk=campaign_id)
+        elif not campaign.get_finished_proposals():
+            messages.error(request, "زمان انتخاب برنده به پایان رسیده است.")
+            return redirect('account:finished_campaign_proposals', pk=campaign_id)
+        
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'dealer': dealer
+        })
+
+    def post(self, request, campaign_id, dealer_id):
+        campaign = get_object_or_404(Campaign, pk=campaign_id)
+        dealer = get_object_or_404(CustomUser, pk=dealer_id)
+
+        # Set campaign winner
+        campaign.campaign_dealer = dealer
+        campaign.save()
+
+        # Calculate and add gift to winner's wallet
+        gift_amount = campaign.get_gift_price()
+        wallet, _ = Wallet.objects.get_or_create(user=dealer)
+        wallet.deposit(gift_amount)
+
+        Transaction.objects.create(
+            wallet=wallet,
+            amount=gift_amount,
+            transaction_type='deposit',
+            payment_method='wallet',
+            status='completed',
+            campaign=campaign,
+            description=f"واریز جایزه برنده شدن در کمپین {campaign.id}"
+        )
+
+        # Send notifications
+        if request.user.is_staff or request.user.is_am:
+            request_user = campaign.customer
+        else:
+            request_user = request.user
+            
+        notify_campaign_winner(campaign, dealer, request_user, staff_users, am_users)
+
+        # Send SMS to winner
+        success, error = send_campaign_winner_sms(campaign, dealer)
+        if not success:
+            messages.warning(request, f"خطا در ارسال پیامک: {error}")
+
+        messages.success(request, "برنده کمپین با موفقیت انتخاب شد.")
+        return redirect('account:campaigns')
 
 
 class MentorUsersList(MentorUserMixin, TemplateView):
@@ -1013,7 +1091,6 @@ class NewMentorActivate(ManagerUserMixin, View):
         notify_mentor_activation(request.user, mentor, staff_users)
         
         return redirect('account:mentorslist')
-
 
 
 

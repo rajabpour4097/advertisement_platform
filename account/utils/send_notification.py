@@ -472,5 +472,46 @@ def notify_password_change(user):
         verb="تغییر رمز عبور",
         description="رمز عبور شما با موفقیت تغییر کرد.",
         target=user
-    ) 
+    )
+
+def notify_campaign_winner(campaign, winner, selector, staff_users, am_users):
+    """Send notifications when a campaign winner is selected"""
+    
+    campaign_desc = campaign.topic.first().name
+    
+    # Notify winner
+    send_notification(
+        sender=selector,
+        recipient=winner,
+        verb="انتخاب برنده کمپین",
+        description=f"شما به عنوان برنده کمپین '{campaign_desc}' انتخاب شده‌اید.",
+        target=campaign
+    )
+    
+    # Notify campaign owner
+    send_notification(
+        sender=selector,
+        recipient=campaign.customer,
+        verb="انتخاب برنده کمپین",
+        description=f"{winner.get_full_name()} به عنوان برنده کمپین '{campaign_desc}' انتخاب شد.",
+        target=campaign
+    )
+    
+    # Notify staff users
+    send_staff_notification(
+        sender=selector,
+        staff_users=staff_users,
+        verb="انتخاب برنده کمپین",
+        description=f"{winner.get_full_name()} به عنوان برنده کمپین '{campaign_desc}' انتخاب شد.",
+        target=campaign
+    )
+    
+    # Notify AM users
+    send_am_notification(
+        sender=selector,
+        am_users=am_users,
+        verb="انتخاب برنده کمپین",
+        description=f"{winner.get_full_name()} به عنوان برنده کمپین '{campaign_desc}' انتخاب شد.",
+        target=campaign
+    )
 

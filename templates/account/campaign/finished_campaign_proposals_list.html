@@ -1,0 +1,109 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load advplatform_tags %}
+{% load account_tags %}
+{% load humanize %}
+
+{% block title %}لیست پیشنهادات کمپین{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        
+        <div class="x_title">
+            <h2>لیست پیشنهادات کمپین</h2>
+            <div class="clearfix"></div>
+        </div>
+        <div class="card-body">
+            {% if proposals %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if not campaign.get_finished_proposals %}
+                    <div class="alert alert-warning">
+                        مهلت انتخاب برنده برای این کمپین پایان یافته
+                    </div>
+                {% endif %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>مجری</th>
+                                <th>قیمت پیشنهادی</th>
+                                <th>شرح پیشنهاد</th>
+                                {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
+                                    <th>عملیات</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proposal in proposals %}
+                                <tr>
+                                    <td>{{ proposal.dealer.get_full_name }}</td>
+                                    <td>{{ proposal.proposal_price|intcomma }} تومان</td>
+                                    <td>
+                                        <a href="#">
+                                            <span data-bs-toggle="tooltip" 
+                                                  data-bs-placement="top" 
+                                                  title="{{ proposal.proposals|truncatechars:50 }}">
+                                                {{ proposal.proposals|truncatechars:30 }}
+                                            </span>
+                                        </a>
+                                    </td>
+                                    {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
+                                        <td>
+                                            <a href="{% url 'account:select_winner' campaign.id proposal.dealer.id %}" 
+                                               class="btn btn-success btn-sm">
+                                                انتخاب بعنوان برنده
+                                            </a>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="proposalModal{{ proposal.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">پیشنهادات مجری</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {{ proposal.proposals|linebreaks }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% include "account/pagination.html" %}
+            {% elif not proposals and not campaign.get_finished_proposals %}
+                <div class="alert alert-info">
+                    این کمپین بدون شرکت کننده بود و مبلغ آن عودت داده شده.
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    این کمپین بدون شرکت کننده می‌باشد و مبلغ کل طی ۴۸ ساعت به حساب کیف پول شما عودت داده می‌شود.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    // Enable Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

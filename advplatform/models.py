@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
@@ -249,6 +250,9 @@ class Campaign(models.Model):
     
     def get_campaign_price(self):
         return (self.purposed_price*10)/100
+    
+    def get_finished_proposals(self):
+        return self.endtimedate >= timezone.now() - timedelta(hours=48)
     
 
 class Portfolio(models.Model):

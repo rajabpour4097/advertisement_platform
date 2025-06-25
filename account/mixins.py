@@ -180,12 +180,29 @@ class CancelUserMixin(UserPassesTestMixin):
 
 
 class EditCampaignUserMixin(UserPassesTestMixin):
-    
+
     def test_func(self):
-        campaign_id = self.kwargs.get('pk')
+        user = self.request.user
+
+        # اگر کاربر لاگین نکرده
+        if not user.is_authenticated:
+            return False
+
+        # دریافت campaign و هندل کردن وجود نداشتن آن
+        campaign_id = self.kwargs.get('campaign_id')
+        if not campaign_id:
+            campaign_id = self.kwargs.get('pk')
+            
         campaign = Campaign.objects.filter(pk=campaign_id).first()
-        return self.request.user.is_staff or self.request.user.is_am or\
-            self.request.user.user_type == 'customer' and self.request.user == campaign.customer
+        if not campaign:
+            return False  # یا raise PermissionDenied یا 404 بسته به نیاز
+
+        # بررسی دسترسی کاربر
+        return (
+            user.is_staff or
+            user.is_am or
+            (user.user_type == 'customer' and user == campaign.customer)
+        )
 
 
 class MentorUserMixin(UserPassesTestMixin):
@@ -204,6 +221,3 @@ class AdvertisementsManagerMixin(UserPassesTestMixin):
     
     def test_func(self):
         return self.request.user.user_type == 'AM'
-    
-    
-    
