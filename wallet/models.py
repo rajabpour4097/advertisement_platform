@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.core.validators import MinValueValidator
 from advplatform.models import CustomUser, Campaign
@@ -19,7 +20,7 @@ class Wallet(models.Model):
     def deposit(self, amount):
         """افزایش موجودی کیف پول"""
         if amount > 0:
-            self.balance += amount
+            self.balance += Decimal(str(amount))
             self.save()
             return True
         return False
@@ -27,7 +28,7 @@ class Wallet(models.Model):
     def withdraw(self, amount):
         """برداشت از کیف پول"""
         if 0 < amount <= self.balance:
-            self.balance -= amount
+            self.balance -= Decimal(str(amount))
             self.save()
             return True
         return False

@@ -1,0 +1,42 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}جزئیات پیشنهاد طرح برنده{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'account/build/css/campaign_style.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    
+    
+    <!-- نمایش جزئیات پیشنهاد طرح برنده -->
+    <div class="col-md-6 col-xs-12 campaign-details">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2 style="color: #028c32;">جزئیات پیشنهاد طرح برنده</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                        <p>
+                            <strong class="campaign-strong">نام برنده:</strong> {{ proposal.dealer.get_full_name }} <br>
+                            <strong class="campaign-strong">پیشنهاد:</strong> {{ proposal.proposals }} <br>
+                            <strong class="campaign-strong">جزئیات تکمیلی:</strong> {{ proposal.proposals }}<br>
+                            <strong class="campaign-strong">مبلغ پیشنهادی اجرا:</strong> {{ proposal.proposal_price }}
+                        </p>
+            </div>
+        </div>
+                    <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
+
+    </div>   
+</div>
+
+<style>
+    // ... existing styles ...
+</style>
+
+
+{% endblock %}

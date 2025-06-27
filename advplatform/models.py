@@ -210,6 +210,7 @@ class Campaign(models.Model):
         related_name='assigned_campaigns',
         verbose_name='مشاور اختصاص داده شده'
         )
+    finished_review = models.BooleanField(default=False, verbose_name='وضعیت تعیین برنده') #Check finished after 48 hours campaign
     class Meta:
         verbose_name = 'کمپین'
         verbose_name_plural = 'کمپین ها'

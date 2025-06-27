@@ -981,6 +981,25 @@ class SelectCampaignWinnerView(EditCampaignUserMixin, View):
         return redirect('account:campaigns')
 
 
+class WinnedProposalDetail(EditCampaignUserMixin, View):
+    template_name = 'account/campaign/show_winned_proposal_detail.html'
+
+    def get(self, request, pk):
+        campaign = get_object_or_404(Campaign, pk=pk)
+        propsal = get_object_or_404(CampaignTransaction, campaign=campaign)
+        
+        # if campaign.campaign_dealer:
+        #     messages.error(request, "برنده این کمپین قبلاً انتخاب شده است.")
+        #     return redirect('account:finished_campaign_proposals', pk=campaign_id)
+        # elif not campaign.get_finished_proposals():
+        #     messages.error(request, "زمان انتخاب برنده به پایان رسیده است.")
+        #     return redirect('account:finished_campaign_proposals', pk=campaign_id)
+        
+        return render(request, self.template_name, {
+            'proposal': propsal,
+        })
+
+
 class MentorUsersList(MentorUserMixin, TemplateView):
     
     template_name = 'account/mentor/mentoruserslist.html'
@@ -1091,6 +1110,4 @@ class NewMentorActivate(ManagerUserMixin, View):
         notify_mentor_activation(request.user, mentor, staff_users)
         
         return redirect('account:mentorslist')
-
-
-
+    
