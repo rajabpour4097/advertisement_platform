@@ -986,18 +986,16 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
 
     def get(self, request, pk):
         campaign = get_object_or_404(Campaign, pk=pk)
-        propsal = get_object_or_404(CampaignTransaction, campaign=campaign)
-        
-        # if campaign.campaign_dealer:
-        #     messages.error(request, "برنده این کمپین قبلاً انتخاب شده است.")
-        #     return redirect('account:finished_campaign_proposals', pk=campaign_id)
-        # elif not campaign.get_finished_proposals():
-        #     messages.error(request, "زمان انتخاب برنده به پایان رسیده است.")
-        #     return redirect('account:finished_campaign_proposals', pk=campaign_id)
-        
-        return render(request, self.template_name, {
-            'proposal': propsal,
-        })
+        if campaign.campaign_dealer:
+            propsal = get_object_or_404(CampaignTransaction, campaign=campaign,dealer=campaign.campaign_dealer)
+                
+            return render(request, self.template_name, {
+                'proposal': propsal,
+            })
+            
+        else:
+            messages.error(request, "این کمپین برنده ای نداشته یا هنوز انتخاب نشده.")
+            return redirect('account:campaigns')
 
 
 class MentorUsersList(MentorUserMixin, TemplateView):
