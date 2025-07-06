@@ -62,8 +62,8 @@
                             <div id="mixedPaymentSection" class="mt-3" style="display: none;">
                                 <div class="form-group">
                                     <label for="wallet_amount">مبلغ پرداخت از کیف پول (تومان):</label>
-                                    <input type="number" class="form-control" id="wallet_amount" name="wallet_amount" 
-                                           max="{{ wallet.balance }}" min="0" step="1000">
+                                    <input type="text" id="wallet_amount" name="wallet_amount">
+                                    <span id="wallet_amount_formatted"></span>
                                     <small class="text-muted">حداکثر مبلغ قابل برداشت از کیف پول: {{ wallet.balance| format_price }}</small>
                                 </div>
                             </div>
@@ -120,6 +120,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+document.getElementById('wallet_amount').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value) {
+        document.getElementById('wallet_amount_formatted').textContent = Number(value).toLocaleString('fa-IR') + ' تومان';
+    } else {
+        document.getElementById('wallet_amount_formatted').textContent = '';
+    }
+});
 </script>
 {% endblock %}
 
@@ -138,4 +147,4 @@ document.addEventListener('DOMContentLoaded', function() {
         border-bottom: none;
     }
 </style>
-{% endblock %} 
+{% endblock %}
