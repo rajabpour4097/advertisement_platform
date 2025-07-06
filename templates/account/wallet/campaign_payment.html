@@ -64,7 +64,7 @@
                                     <label for="wallet_amount">مبلغ پرداخت از کیف پول (تومان):</label>
                                     <input type="number" class="form-control" id="wallet_amount" name="wallet_amount" 
                                            max="{{ wallet.balance }}" min="0" step="1000">
-                                    <small class="text-muted">حداکثر مبلغ قابل برداشت از کیف پول: {{ wallet.balance|intcomma }} تومان</small>
+                                    <small class="text-muted">حداکثر مبلغ قابل برداشت از کیف پول: {{ wallet.balance| format_price }}</small>
                                 </div>
                             </div>
                             {% endif %}
