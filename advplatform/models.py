@@ -188,7 +188,7 @@ class Campaign(models.Model):
                               choices=CAMPAIGN_TYPE, 
                               max_length=30, 
                               verbose_name='وضعیت اجرای کمپین', 
-                              default='reviewing'
+                              default='unpaid'
                               )
     
     campaign_dealer = models.ForeignKey(

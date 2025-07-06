@@ -13,6 +13,13 @@
                     <h5 class="card-title mb-0">تاریخچه تراکنش‌ها</h5>
                     <a href="{% url 'wallet:home' %}" class="btn btn-outline-primary btn-sm">بازگشت به کیف پول</a>
                 </div>
+                {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                 <div class="card-body">
                     {% if transactions %}
                         <div class="table-responsive">

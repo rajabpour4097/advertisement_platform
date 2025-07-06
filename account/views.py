@@ -522,6 +522,7 @@ class CampaignConfirmMentorView(LoginRequiredMixin, View):
             print(f"Error in sending SMS: {error}")
             messages.warning(request, f"خطا در ارسال پیامک: {error}")
 
+        # هدایت به صفحه پرداخت ۱۰ درصد بودجه کمپین
         return redirect('account:campaigns')
 
 
@@ -954,14 +955,15 @@ class SelectCampaignWinnerView(EditCampaignUserMixin, View):
         wallet, _ = Wallet.objects.get_or_create(user=dealer)
         wallet.deposit(gift_amount)
 
-        Transaction.objects.create(
+        transaction = Transaction.objects.create(
             wallet=wallet,
             amount=gift_amount,
             transaction_type='deposit',
             payment_method='wallet',
             status='completed',
             campaign=campaign,
-            description=f"واریز جایزه برنده شدن در کمپین {campaign.id}"
+            description=f"واریز جایزه برنده شدن در کمپین {campaign.id}",
+            wallet_amount=gift_amount,
         )
 
         # Send notifications
@@ -1075,8 +1077,7 @@ class ChangeStatusRequestForMentor(StaffUserMixin, View):
         if status =='reject': 
             request_for_mentor.status = status
             request_for_mentor.save()
-            notify_mentor_request_status(request_for_mentor, status, request.user, staff_users)
-
+            notify
             
         elif status == 'approved':
             requested_user = get_object_or_404(CustomUser, pk=requested_user_id)

@@ -211,6 +211,16 @@
                                             </span>
                                         </div>
                                     {% endif %}
+                                {% elif campaign.status == 'unpaid' %}
+                                        {% if request.user.user_type == 'customer' %}
+                                            <div>
+                                                <a href="{% url 'wallet:campaign_payment' campaign.id %}" class="badge bg-secondary">منتظر پرداخت</a>
+                                            </div>
+                                        {% else %}
+                                            <div>
+                                                <span class="badge bg-secondary">منتظر پرداخت</span>
+                                            </div>
+                                        {% endif %}
                                 {% endif %}
                             </td>
 

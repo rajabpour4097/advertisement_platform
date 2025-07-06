@@ -135,65 +135,65 @@ class PaymentVerifyView(View):
         if t_status == 'OK':
             try:
                 transaction = Transaction.objects.get(id=request.session.get('transaction_id'))
-                
-                # Verify payment with ZarinPal
+                campaign = transaction.campaign
                 req_data = {
                     "merchant_id": MERCHANT,
-                    "amount": transaction.amount,
+                    "amount": int(transaction.amount),
                     "authority": t_authority
                 }
                 req_header = {"accept": "application/json", "content-type": "application/json'"}
-                
                 response = requests.post(url=ZP_API_VERIFY, data=json.dumps(req_data), headers=req_header)
-                
                 if response.status_code == 200:
                     response_data = response.json()
                     if response_data['data']['code'] == 100:
-                        # Payment successful
                         transaction.status = 'completed'
                         transaction.save()
-                        
-                        # If it's a mixed payment, deduct from wallet now
-                        if transaction.payment_method == 'mixed':
-                            wallet = transaction.wallet
-                            description = transaction.description
-                            wallet_amount = int(description.split('کیف پول: ')[1].split(' تومان')[0].replace(',', ''))
-                            wallet.withdraw(wallet_amount)
-                            wallet.save()
-                            print(f"Deducting {wallet_amount} from wallet {wallet.id}")
-                        
-                        # Update campaign status if it's a campaign payment
+                        # تغییر وضعیت کمپین به reviewing
                         if transaction.transaction_type == 'campaign_payment':
-                            campaign = transaction.campaign
-                            campaign.is_active = True
+                            campaign.status = "reviewing"
                             campaign.save()
-                        
                         messages.success(request, 'پرداخت با موفقیت انجام شد.')
-                        return redirect('wallet:transactions')
+                        return redirect('account:campaigns')
                     else:
-                        # Payment failed
                         transaction.status = 'failed'
                         transaction.save()
+                        # برگشت مبلغ به کیف پول اگر پرداخت از کیف پول بوده
+                        # if transaction.payment_method in ['wallet', 'mixed']:
+                        #     transaction.wallet.deposit(transaction.amount)
+                        if transaction.transaction_type == 'campaign_payment':
+                            campaign.status = "unpaid"
+                            campaign.save()
                         messages.error(request, 'پرداخت ناموفق بود.')
                         return redirect('wallet:transactions')
+                        # return redirect('wallet:campaign_payment', campaign_id=campaign.id)
                 else:
-                    # Error in verification
                     transaction.status = 'failed'
                     transaction.save()
+                    # if transaction.payment_method in ['wallet', 'mixed']:
+                    #     transaction.wallet.deposit(transaction.amount)
+                    if transaction.transaction_type == 'campaign_payment':
+                        campaign.status = "unpaid"
+                        campaign.save()
                     messages.error(request, 'خطا در تایید پرداخت.')
                     return redirect('wallet:transactions')
-                    
+                    # return redirect('wallet:campaign_payment', campaign_id=campaign.id)
             except Transaction.DoesNotExist:
                 messages.error(request, 'تراکنش یافت نشد.')
                 return redirect('wallet:transactions')
         else:
-            # User cancelled payment
             try:
                 transaction = Transaction.objects.get(id=request.session.get('transaction_id'))
+                campaign = transaction.campaign
                 transaction.status = 'failed'
                 transaction.save()
+                # if transaction.payment_method in ['wallet', 'mixed']:
+                #     transaction.wallet.deposit(transaction.amount)
+                if transaction.transaction_type == 'campaign_payment':
+                    campaign.status = "unpaid"
+                    campaign.save()
                 messages.error(request, 'پرداخت لغو شد.')
                 return redirect('wallet:transactions')
+                # return redirect('wallet:campaign_payment', campaign_id=campaign.id)
             except Transaction.DoesNotExist:
                 messages.error(request, 'تراکنش یافت نشد.')
                 return redirect('wallet:transactions')
@@ -236,84 +236,73 @@ class CampaignPaymentView(View):
     def get(self, request, campaign_id):
         campaign = get_object_or_404(Campaign, id=campaign_id)
         wallet, created = Wallet.objects.get_or_create(user=request.user)
-        campaign_price = campaign.get_campaign_price()
-        
+        campaign_price = campaign.get_campaign_price()  # فقط ۱۰ درصد
+
         context = {
             'campaign': campaign,
             'wallet': wallet,
+            'campaign_price': campaign_price,
             'wallet_sufficient': wallet.has_sufficient_balance(campaign_price)
         }
         return render(request, self.template_name, context)
-    
+
     def post(self, request, campaign_id):
         campaign = get_object_or_404(Campaign, id=campaign_id)
         payment_method = request.POST.get('payment_method')
-        wallet_amount = Decimal(request.POST.get('wallet_amount', 0))
-        
+        wallet_amount = Decimal(request.POST.get('wallet_amount') or '0')
         wallet, created = Wallet.objects.get_or_create(user=request.user)
-        total_amount = campaign.purposed_price
-        
+        campaign_price = Decimal(campaign.get_campaign_price())  # فقط ۱۰ درصد، به تومان
+
         if payment_method == 'wallet':
-            if not wallet.has_sufficient_balance(total_amount):
+            if not wallet.has_sufficient_balance(campaign_price):
                 messages.error(request, 'موجودی کیف پول کافی نیست.')
                 return redirect('wallet:campaign_payment', campaign_id=campaign_id)
-                
             # Create transaction
             transaction = Transaction.objects.create(
                 wallet=wallet,
-                amount=total_amount,
+                amount=campaign_price,
                 transaction_type='campaign_payment',
                 payment_method='wallet',
                 campaign=campaign,
                 status='completed',
-                description=f'پرداخت کامل از کیف پول: {total_amount} تومان'
+                description=f'پرداخت کامل از کیف پول: {campaign_price} تومان'
             )
-            
-            # Update wallet balance
-            wallet.withdraw(total_amount)
-            
-            # Update campaign status
-            campaign.is_active = True
+            wallet.withdraw(campaign_price)
+            # تغییر وضعیت کمپین به reviewing
+            campaign.status = "reviewing"
             campaign.save()
-            
             messages.success(request, 'پرداخت با موفقیت انجام شد.')
             return redirect('account:campaigns')
-            
+
         elif payment_method == 'gateway':
-            # Create transaction for gateway payment
             transaction = Transaction.objects.create(
                 wallet=wallet,
-                amount=total_amount,
+                amount=campaign_price,
                 transaction_type='campaign_payment',
                 payment_method='gateway',
                 campaign=campaign,
-                description=f'پرداخت از درگاه: {total_amount} تومان'
+                description=f'پرداخت از درگاه: {campaign_price} تومان'
             )
-            return self.process_gateway_payment(request, transaction)
-            
+            # ذخیره transaction id در session برای verify
+            request.session['transaction_id'] = transaction.id
+            return self.process_gateway_payment(request, transaction, campaign_price)
+
         elif payment_method == 'mixed':
             if not wallet.has_sufficient_balance(wallet_amount):
                 messages.error(request, 'موجودی کیف پول کافی نیست.')
                 return redirect('wallet:campaign_payment', campaign_id=campaign_id)
-                
-            gateway_amount = total_amount - wallet_amount
-            
-            # Create transaction for mixed payment
+            gateway_amount = campaign_price - wallet_amount
             transaction = Transaction.objects.create(
                 wallet=wallet,
-                amount=total_amount,
+                amount=campaign_price,
                 transaction_type='campaign_payment',
                 payment_method='mixed',
                 campaign=campaign,
                 description=f'پرداخت ترکیبی - کیف پول: {wallet_amount} تومان، درگاه: {gateway_amount} تومان'
             )
-            
-            # Store transaction ID in session for verification
             request.session['transaction_id'] = transaction.id
-            
-            # Process remaining amount through gateway
             return self.process_gateway_payment(request, transaction, gateway_amount)
-            
+
         messages.error(request, 'روش پرداخت نامعتبر است.')
         return redirect('wallet:campaign_payment', campaign_id=campaign_id)
     
@@ -321,9 +310,11 @@ class CampaignPaymentView(View):
         if amount is None:
             amount = transaction.amount
             
+        amount_rials = int(amount * 10)  # تبدیل تومان به ریال
+            
         req_data = {
             "merchant_id": MERCHANT,
-            "amount": int(amount),
+            "amount": amount_rials,
             "callback_url": CallbackURL,
             "description": description,
             "metadata": {"mobile": request.user.phone_number, "transaction_id": transaction.id}
@@ -390,3 +381,4 @@ class ReceiptManagementView(ListView):
             messages.warning(request, 'فیش پرداختی رد شد.')
             
         return redirect('wallet:receipt_management')
+    
