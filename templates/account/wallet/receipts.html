@@ -1,5 +1,6 @@
 {% extends 'account/account_base.html' %}
 {% load static %}
+{% load advplatform_tags %}
 {% load account_tags %}
 
 {% block title %}مدیریت فیش‌های واریزی{% endblock %}
@@ -18,29 +19,28 @@
                     <th>بانک</th>
                     <th>شماره پیگیری</th>
                     <th>تصویر فیش</th>
-                    <th>عملیات</th>
+                    <th>وضعیت</th>
                 </tr>
             </thead>
             <tbody>
                 {% for receipt in receipts %}
                 <tr>
                     <td>{{ receipt.transaction.wallet.user.get_full_name }}</td>
-                    <td>{{ receipt.transaction.amount }}</td>
+                    <td>{{ receipt.transaction.amount | format_price }}</td>
                     <td>{{ receipt.payment_date | jalali_timedate }}</td>
                     <td>{{ receipt.bank_name }}</td>
                     <td>{{ receipt.tracking_number }}</td>
                     <td>
-                        <a href="{{ receipt.receipt_image.url }}" target="_blank">
-                            <img src="{{ receipt.receipt_image.url }}" alt="فیش پرداختی" style="max-width: 100px;">
-                        </a>
+                        <img src="{{ receipt.receipt_image.url }}" alt="فیش پرداختی" style="max-width: 100px;">                        
                     </td>
                     <td>
-                        <form method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="receipt_id" value="{{ receipt.id }}">
-                            <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">تایید</button>
-                            <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">رد</button>
-                        </form>
+                        {% if receipt.transaction.status == 'completed' %}
+                            <span class="badge badge-success" style="background-color: green;">تایید شده</span>
+                        {% elif receipt.transaction.status == 'rejected' %}
+                            <span class="badge badge-danger" style="background-color: red;">رد شده</span>
+                        {% else %}
+                            <span class="badge badge-warning" style="background-color: orange;">درحال بررسی</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

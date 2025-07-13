@@ -1,6 +1,7 @@
 {% extends 'account/account_base.html' %}
 {% load static %}
 {% load humanize %}
+{% load advplatform_tags %}
 
 {% block title %}تاریخچه تراکنش‌ها{% endblock %}
 
@@ -39,9 +40,15 @@
                                     {% for transaction in transactions %}
                                     <tr>
                                         <td>{{ transaction.created_at|date:"Y/m/d H:i" }}</td>
-                                        <td>{{ transaction.get_transaction_type_display }}</td>
+                                        <td>{{ transaction.get_transaction_type_display }} 
+                                            {% if transaction.campaign %}
+                                                {% for topic in transaction.campaign.topic.all %}
+                                                   <p class="text-primary">{{ topic.name }}</p>
+                                                {% endfor %}
+                                                {% endif %}
+                                        </td>
                                         <td>{{ transaction.get_payment_method_display }}</td>
-                                        <td>{{ transaction.amount|intcomma }} تومان</td>
+                                        <td>{{ transaction.amount| format_price }} </td>
                                         <td>
                                             <span class="badge {% if transaction.status == 'completed' %}bg-success{% elif transaction.status == 'pending' %}bg-warning{% elif transaction.status == 'reviewing' %}bg-info{% else %}bg-danger{% endif %}">
                                                 {{ transaction.get_status_display }}

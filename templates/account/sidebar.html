@@ -70,9 +70,13 @@
              <li><a href="#"><i class="fa fa-list-ul"></i> لیست درخواست پشتیبان</a></li>
              {% endif %}
              <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: Dodgerblue;"></i> مدیریت پیام</a></li>
-             <li><a><i class="fa fa-money" style="color: Mediumslateblue;"></i> مالی<span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-credit-card" style="color: Mediumslateblue;"></i> مالی<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <li><a href="{% url 'wallet:home' %}"><i class="fa fa-wallet"></i>کیف پول</a></li>
+                    {% if user.is_staff or user.is_am %}
+                        <li><a href="{% url 'wallet:receipts' %}"><i class="fa fa-money"></i>مدیریت فیش ها</a></li>
+                        <li><a href="{% url 'wallet:receipt_management' %}"><i class="fa fa-clock-o"></i>فیش های در انتظار تایید</a></li>
+                    {% endif %}
                 </ul>
             </li>
          </ul>

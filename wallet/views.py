@@ -14,6 +14,8 @@ import json
 import requests
 from decimal import Decimal
 
+from account.mixins import ManagerUserMixin
+
 from .models import Wallet, Transaction, PaymentReceipt
 from advplatform.models import Campaign
 from .forms import PaymentReceiptForm, WalletChargeForm
@@ -345,8 +347,7 @@ class CampaignPaymentView(View):
             return redirect('wallet:campaign_payment', campaign_id=transaction.campaign.id)
 
 
-@method_decorator(staff_member_required, name='dispatch')
-class ReceiptManagementView(ListView):
+class ReceiptManagementView(ManagerUserMixin, ListView):
     template_name = 'account/wallet/receipt_management.html'
     context_object_name = 'receipts'
     paginate_by = 20
@@ -382,3 +383,16 @@ class ReceiptManagementView(ListView):
             
         return redirect('wallet:receipt_management')
     
+    
+class ReceiptsListView(ManagerUserMixin, ListView):
+    template_name = 'account/wallet/receipts.html'
+    context_object_name = 'receipts'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return PaymentReceipt.objects.select_related(
+            'transaction', 
+            'transaction__wallet', 
+            'transaction__wallet__user'
+        ).order_by('-transaction__created_at')
+
