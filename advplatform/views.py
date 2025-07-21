@@ -13,7 +13,6 @@ from account.utils.send_sms import send_activation_sms
 
 current_time = timezone.now()
 
-
 def custom_404_view(request, exception):
     return render(request, "404.html", status=404)
 

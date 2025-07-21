@@ -20,7 +20,7 @@ class Command(BaseCommand):
         expired_campaigns = Campaign.objects.filter(
             status='finished',
             is_active=False,
-            endtimedate__lt=now - timezone.timedelta(hours=48),
+            endtimedate__lt=now - timezone.timedelta(hours=96),
             finished_review=False
         )
 

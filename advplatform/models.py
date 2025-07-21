@@ -210,7 +210,7 @@ class Campaign(models.Model):
         related_name='assigned_campaigns',
         verbose_name='مشاور اختصاص داده شده'
         )
-    finished_review = models.BooleanField(default=False, verbose_name='وضعیت تعیین برنده') #Check finished after 48 hours campaign
+    finished_review = models.BooleanField(default=False, verbose_name='وضعیت تعیین برنده') #Check finished after 96 hours campaign
     class Meta:
         verbose_name = 'کمپین'
         verbose_name_plural = 'کمپین ها'
@@ -253,7 +253,7 @@ class Campaign(models.Model):
         return (self.purposed_price*10)/100
     
     def get_finished_proposals(self):
-        return self.endtimedate >= timezone.now() - timedelta(hours=48)
+        return self.endtimedate >= timezone.now() - timedelta(hours=96)
     
 
 class Portfolio(models.Model):

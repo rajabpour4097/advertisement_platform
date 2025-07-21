@@ -5,18 +5,20 @@ from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from account.models import CampaignTransaction, EditingCampaign
 from django.utils import timezone
-import jdatetime
 
 
 
 class SignupForm(UserCreationForm):
         
     user_type = forms.ChoiceField(choices=USER_TYPE, required=True)
+    first_name = forms.CharField(max_length=30, required=True)
+    last_name = forms.CharField(max_length=30, required=True)
+
     class Meta:
         model = CustomUser
-        fields = ('email', 'password1', 'password2', 'user_type', 'phone_number')
-        
-        
+        fields = ('email', 'password1', 'password2', 'user_type', 'phone_number', 'first_name', 'last_name')
+
+
 class ProfileForm(forms.ModelForm):
     
     profile_image = forms.ImageField(required=False, label="عکس پروفایل")

@@ -13,6 +13,24 @@
     {% csrf_token %}
 
   <div data-mdb-input-init class="form-outline mb-4">
+    <label class="form-label" type="text">نام</label>
+    {{ form.first_name|add_class:"form-control" }}
+    {% if form.first_name.errors %}
+      {% for error in form.first_name.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <div data-mdb-input-init class="form-outline mb-4">
+    <label class="form-label" type="text">نام خانوادگی</label>
+    {{ form.last_name|add_class:"form-control" }}
+    {% if form.last_name.errors %}
+      {% for error in form.last_name.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+    {% endif %}
+  </div>
+  <div data-mdb-input-init class="form-outline mb-4">
     <label class="form-label" type="text">آدرس ایمیل</label>
     {{ form.email|add_class:"form-control" }}
     {% if form.email.errors %}

@@ -485,8 +485,8 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
         else:
             return self.form_invalid(form)
 
-        # به جای redirect مستقیم به لیست کمپین‌ها، به صفحه تأیید پشتیبان هدایت می‌کنیم
-        return redirect('account:confirm_mentor', pk=self.object.pk)
+        # تغییر مسیر به صفحه انتخاب منتور
+        return redirect('account:confirm_mentor', pk=self.object.pk)  # به جای redirect به پرداخت
 
 
 class CampaignConfirmMentorView(LoginRequiredMixin, View):
@@ -513,17 +513,15 @@ class CampaignConfirmMentorView(LoginRequiredMixin, View):
         campaign.needs_mentor = needs_mentor
         campaign.save()
 
-        # ارسال اعلان
+        # ارسال اعلان و پیامک
         notify_campaign_actions(request.user, campaign, 'create', staff_users, am_users)
-        
-        # ارسال پیامک
         success, error = send_campaign_confirmation_sms(campaign, needs_mentor)
         if not success:
             print(f"Error in sending SMS: {error}")
             messages.warning(request, f"خطا در ارسال پیامک: {error}")
 
-        # هدایت به صفحه پرداخت ۱۰ درصد بودجه کمپین
-        return redirect('account:campaigns')
+        # هدایت به صفحه پرداخت
+        return redirect('wallet:campaign_payment', campaign_id=campaign.pk)
 
 
 class CampaignDeleteView(LoginRequiredMixin, ManagerUserMixin, DeleteView):
@@ -1109,4 +1107,4 @@ class NewMentorActivate(ManagerUserMixin, View):
         notify_mentor_activation(request.user, mentor, staff_users)
         
         return redirect('account:mentorslist')
-    
+
