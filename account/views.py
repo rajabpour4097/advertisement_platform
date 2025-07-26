@@ -63,8 +63,6 @@ from django.core.paginator import Paginator
 
 '''
 TODO:
-    1-Change Register HttpResponse template with render
-    2-Change activate HttpResponse template with render
 
 '''
 

@@ -160,15 +160,13 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp-relay.brevo.com"
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False  # باید False باشد
-EMAIL_USE_SSL = True 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 EMAIL_HOST_USER = EMAIL_HOST_USER_NAME
 EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_KEY
-DEFAULT_FROM_EMAIL = "mohammad4097@gmail.com"
-
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER_NAME
 
 # Melipayamak SMS Settings
 MELIPAYAMAK_USERNAME = MELIPAYAMAK_USER

@@ -13,6 +13,7 @@ class SignupForm(UserCreationForm):
     user_type = forms.ChoiceField(choices=USER_TYPE, required=True)
     first_name = forms.CharField(max_length=30, required=True)
     last_name = forms.CharField(max_length=30, required=True)
+    email = forms.EmailField()
 
     class Meta:
         model = CustomUser
