@@ -116,3 +116,8 @@ def send_campaign_one_percent_dealer_sms(campaign, dealer, gift_amount):
     topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
     text = f"{topic};{gift_amount}"
     return send_sms(dealer.phone_number, "341524", text)
+
+def send_campaign_cancel_sms(campaign):
+    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    phone = campaign.customer.phone_number.strip() if campaign.customer else None
+    return send_sms(phone, "349749", topic) if phone else (True, None)
