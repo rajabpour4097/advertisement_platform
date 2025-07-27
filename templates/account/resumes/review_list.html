@@ -64,6 +64,13 @@
 </style>
 
 <h2 style="margin-top: 100px;">لیست رزومه‌ها</h2>
+{% if messages %}
+  <ul>
+    {% for message in messages %}
+      <li style="color: red;">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
 
 <table class="table">
     <thead>
@@ -91,6 +98,7 @@
                     {% if resume.status == 'active' %}status-active
                     {% elif resume.status == 'inactive' %}status-inactive
                     {% elif resume.status == 'deleted' %}status-deleted
+                    {% elif resume.status == 'approved' %}status-active
                     {% else %}status-inactive{% endif %}">
                     {{ resume.get_status_display }}
                 </span>

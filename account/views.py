@@ -1129,7 +1129,7 @@ class SubmitResumeView(DealerUserMixin, CreateView):
     model = Resume
     form_class = ResumeForm
     template_name = 'account/resumes/submit.html'
-    success_url = reverse_lazy('account:home')  # ریدایرکت پس از ارسال موفق
+    success_url = reverse_lazy('account:review_resumes')  # ریدایرکت پس از ارسال موفق
 
     def form_valid(self, form):
         form.instance.user = self.request.user  # اتصال رزومه به کاربر جاری
@@ -1158,6 +1158,10 @@ class ResumeDeleteView(DealerUserMixin, DeleteView):
     model = Resume
     template_name = 'account/resumes/confirm_delete.html'
     success_url = reverse_lazy('account:review_resumes')
-    
+
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()  # دریافت نمونه رزومه
+        if self.object.status == 'approved':
+            messages.error(request, "این رزومه قبلاً توسط مدیر تایید شده و امکان حذف آن وجود ندارد.")
+            return redirect(self.success_url)
         return super().post(request, *args, **kwargs)

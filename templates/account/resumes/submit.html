@@ -68,6 +68,11 @@
         <div>
             <label for="id_file">فایل رزومه</label>
             {{ form.file }}
+              {% if form.file.errors %}
+            <div style="color: red;">
+                {{ form.file.errors }}
+            </div>
+        {% endif %}
         </div>
     </div>
 
