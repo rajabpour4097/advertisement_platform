@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import timedelta
 from advplatform.models import Campaign
-from account.utils.send_sms import send_campaign_cancel_sms, send_sms
+from account.utils.send_sms import send_campaign_cancel_sms
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from account.utils.send_notification import notify_campaign_actions

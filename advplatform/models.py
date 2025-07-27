@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager
 from django.urls import reverse
 import jdatetime
-from advplatform.choices_type import CAMPAIGN_TYPE, CUSTOMER_TYPE, DEALER_TYPE, USER_TYPE
+from advplatform.choices_type import CAMPAIGN_TYPE, CUSTOMER_TYPE, DEALER_TYPE, RESUME_STATUS_CHOICES, USER_TYPE
 
 '''
     TODO:
@@ -330,4 +330,31 @@ class PortfolioImages(models.Model):
     
     def __str__(self):
         return str(self.portfolio)
-     
+    
+
+class Resume(models.Model):
+    
+
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE,
+        limit_choices_to={'is_active': True, 'user_type': 'dealer'},
+        related_name='cvs',
+        blank=True, null=True,
+        verbose_name='مجری کمپین'
+      )
+    title = models.CharField(max_length=100, verbose_name='عنوان رزومه')
+    describe = models.TextField(blank=True, null=True, verbose_name='توضیحات')
+    file = models.FileField(upload_to='resumes/files/', blank=True, null=True, verbose_name='فایل رزومه')
+    status = models.CharField(max_length=20, choices=RESUME_STATUS_CHOICES, default='pending', verbose_name='وضعیت')
+    manager_comment = models.TextField(blank=True, null=True, verbose_name='نظر مدیر')
+    is_seen_by_manager = models.BooleanField(default=False, verbose_name='مشاهده شده توسط مدیر')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'رزومه'
+        verbose_name_plural = 'رزومه ها'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title} - {self.status}"

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import register
 from django.contrib.auth.admin import UserAdmin
-from .models import ActivityCategory, CustomUser, SpecialityCategory, Topic,\
+from .models import ActivityCategory, CustomUser, Resume, SpecialityCategory, Topic,\
     Campaign, Portfolio,UsersImages, CampaignImages, PortfolioImages 
 
 
@@ -92,3 +92,14 @@ class PortfolioAdmin(admin.ModelAdmin):
     list_editable = ['is_active']
     search_fields = ['topic']
     inlines = [PortfolioImagesInline]
+
+
+@admin.register(Resume)
+class ResumeAdmin(admin.ModelAdmin):
+    list_display = ['user', 'title', 'status', 'is_seen_by_manager', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['user__username', 'title']
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('user')

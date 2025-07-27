@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from account.models import RequestForMentor
-from advplatform.models import Campaign, CustomUser, Portfolio, Topic
+from advplatform.models import Campaign, CustomUser, Portfolio, Resume, Topic
 from django.utils import timezone
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.admin.models import LogEntry

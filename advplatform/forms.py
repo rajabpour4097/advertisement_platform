@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser
+from .models import CustomUser, Resume
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.contrib.auth.backends import ModelBackend
@@ -69,3 +69,38 @@ class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
         fields = '__all__'
+        
+
+class ResumeForm(forms.ModelForm):
+    file = forms.FileField(label='فایل رزومه', required=True)
+
+    class Meta:
+        model = Resume
+        fields = ['title', 'describe', 'file']
+    
+    def clean_file(self):
+        file = self.cleaned_data.get('file')
+        if not file:
+            return file
+
+        allowed_types = [
+            'application/pdf', 
+            'image/jpeg', 
+            'image/png',
+            'application/zip',
+            'application/x-zip-compressed'
+        ]
+        
+        if file.content_type not in allowed_types:
+            raise forms.ValidationError('فقط فایل‌های PDF، عکس (JPG/PNG) یا ZIP مجاز هستند.')
+
+        if file.size > 10 * 1024 * 1024:  # 10 مگابایت محدودیت حجم
+            raise forms.ValidationError('حداکثر حجم فایل ۱۰ مگابایت است.')
+
+        return file
+
+
+class ResumeReviewForm(forms.ModelForm):
+    class Meta:
+        model = Resume
+        fields = ['status', 'manager_comment']

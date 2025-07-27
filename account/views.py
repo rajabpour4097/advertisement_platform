@@ -1,4 +1,3 @@
-from datetime import timedelta
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,13 +8,11 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from account.models import CampaignTransaction, EditingCampaign, RequestForMentor
+from advplatform.forms import ResumeForm, ResumeReviewForm
 from wallet.models import Wallet, Transaction
 from .tokens import account_activation_token
-from django.contrib.auth.models import Group
-from django.core.mail import EmailMessage
 from django.db.models import Q, Count
 from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView, ListView
-from django.views.generic.edit import BaseUpdateView
 from account.forms import (
                             AssignMentorForm,
                             CampaignCreateForm,
@@ -45,7 +42,7 @@ from account.mixins import (
                             PortfolioEditMixin,
                             StaffUserMixin
                             )
-from advplatform.models import Campaign, CustomUser, Portfolio, UsersImages, Topic
+from advplatform.models import Campaign, CustomUser, Portfolio, Resume, UsersImages, Topic
 from django.contrib.auth import logout
 from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
@@ -768,7 +765,13 @@ class CampaignParticipateView(DealerUserMixin, View):
     
     def dispatch(self, request, *args, **kwargs):
         campaign = get_object_or_404(Campaign, id=kwargs['pk'])
-        
+
+        if not Resume.objects.filter(user=request.user, status='approved').exists():
+            return render(self.request, '403.html',
+                          {'error_message': "تا زمانی که رزومه ای ارسال نکرده اید و توسط مدیر بررسی و تایید نشده است، نمی توانید در هیچ کمپین شرکت کنید.",
+                           'back_url': "account:campaigns"},
+                          )
+
         if request.user in campaign.list_of_participants.all():
             return render(self.request, '403.html', 
                           {'error_message': "شما قبلاً به این کمپین پیوسته اید.",
@@ -1106,3 +1109,55 @@ class NewMentorActivate(ManagerUserMixin, View):
         
         return redirect('account:mentorslist')
 
+
+class ResumeReviewListView(DealerUserMixin, ListView):
+    model = Resume
+    template_name = 'account/resumes/review_list.html'
+    context_object_name = 'resumes'
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff or user.is_am:  # فرض بر این که ManagerUserMixin به چنین ویژگی‌ای اضافه کرده
+            return Resume.objects.all().order_by('-created_at')
+        elif user.user_type == 'dealer':  # و همچنین DealerUserMixin
+            return Resume.objects.filter(user=user).order_by('-created_at')
+        else:
+            return Resume.objects.none()
+
+    
+class SubmitResumeView(DealerUserMixin, CreateView):
+    model = Resume
+    form_class = ResumeForm
+    template_name = 'account/resumes/submit.html'
+    success_url = reverse_lazy('account:home')  # ریدایرکت پس از ارسال موفق
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user  # اتصال رزومه به کاربر جاری
+        return super().form_valid(form)
+
+
+class ResumeDetailView(ManagerUserMixin, UpdateView):
+    model = Resume
+    form_class = ResumeReviewForm
+    template_name = 'account/resumes/detail.html'
+    success_url = reverse_lazy('account:review_resumes')
+    context_object_name = 'resume'
+
+    def test_func(self):
+        return self.request.user.is_staff  # فقط ادمین‌ها اجازه دارند
+
+    def get_object(self, queryset=None):
+        resume = get_object_or_404(Resume, id=self.kwargs['resume_id'])
+        if not resume.is_seen_by_manager:
+            resume.is_seen_by_manager = True
+            resume.save()
+        return resume
+
+
+class ResumeDeleteView(DealerUserMixin, DeleteView):
+    model = Resume
+    template_name = 'account/resumes/confirm_delete.html'
+    success_url = reverse_lazy('account:review_resumes')
+    
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)

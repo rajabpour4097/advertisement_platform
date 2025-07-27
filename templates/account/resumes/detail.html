@@ -1,0 +1,38 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load account_tags %}
+{% block title %}بررسی رزومه{% endblock %}
+
+
+{% block content %}
+
+<h2>بررسی رزومه</h2>
+
+<p><strong>کاربر:</strong> {{ resume.user.username }}</p>
+<p><strong>عنوان رزومه:</strong> {{ resume.title }}</p>
+<p><strong>توضیحات:</strong> {{ resume.description }}</p>
+
+{% if resume.file %}
+    <p><strong>فایل رزومه:</strong>
+        {% if resume.file.name|endswith:".pdf" %}
+            <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+            <a href="{{ resume.file.url }}" target="_blank" rel="noopener noreferrer">مشاهده فایل</a>
+        {% elif resume.file.name|endswith:".jpg" or resume.file.name|endswith:".png" or resume.file.name|endswith:".jpeg" %}
+            <img src="{{ resume.file.url }}" class="img-fluid rounded" style="max-width:400px;">
+        {% else %}
+            <a href="{{ resume.file.url }}" download>دانلود فایل</a>
+        {% endif %}
+    </p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">ثبت نتیجه بررسی</button>
+</form>
+
+<p><a href="{% url 'account:review_resumes' %}">بازگشت به لیست</a></p>
+{% endblock %}
+

@@ -38,3 +38,10 @@ REQUEST_TYPE = [
                 ('approved', 'تایید'),
                 ('reject', 'عدم تایید'),
               ]
+
+RESUME_STATUS_CHOICES = (
+        ('pending', 'در انتظار بررسی'),
+        ('approved', 'تأیید شده'),
+        ('rejected', 'رد شده'),
+        ('edited', 'ویرایش شده توسط مدیر'),
+    )

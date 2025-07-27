@@ -30,9 +30,13 @@ from account.views import (
     PortfolioListView,
     ProfileView,
     CampaignConfirmMentorView,
+    ResumeDeleteView,
+    ResumeDetailView,
+    ResumeReviewListView,
     RunningCampaignParticipatedListView,
     FinishedCampaignProposalsListView,
     SelectCampaignWinnerView,
+    SubmitResumeView,
     WinnedProposalDetail,
     )
 from advplatform.views import custom_404_view
@@ -76,5 +80,9 @@ urlpatterns = [
     path('mentor/choosementor/<int:pk>', MentorChooseView.as_view(), name='choosementor'), 
     path('mentor/activementor/<int:pk>', NewMentorActivate.as_view(), name='activementor'), 
     path('requestformentor/', ListOfRequestForMentor.as_view(), name='listofrequestformentor'), 
-    path('requestformentor/<int:request_id>/change-status/', ChangeStatusRequestForMentor.as_view(), name='changestatusrequestformentor'),    
+    path('requestformentor/<int:request_id>/change-status/', ChangeStatusRequestForMentor.as_view(), name='changestatusrequestformentor'),  
+    path('resume/submit/', SubmitResumeView.as_view(), name='submit_resume'),  
+    path('resume/review/', ResumeReviewListView.as_view(), name='review_resumes'),
+    path('resume/review/<int:resume_id>/', ResumeDetailView.as_view(), name='resume_detail'),
+    path('resume/review/delete/<int:pk>/', ResumeDeleteView.as_view(), name='delete_resume'),
 ]

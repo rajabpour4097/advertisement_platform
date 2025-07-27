@@ -1,0 +1,84 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}ارسال رزومه{% endblock %}
+
+
+{% block content %}
+<style>
+    .resume-form {
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: sans-serif;
+    }
+
+    .resume-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .resume-form input[type="text"],
+    .resume-form textarea,
+    .resume-form input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+    }
+
+    .resume-form .row {
+        display: flex;
+        gap: 20px;
+    }
+
+    .resume-form .row > div {
+        flex: 1;
+    }
+
+    .resume-form button {
+        background-color: #4F75FF;
+        color: white;
+        padding: 10px 25px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .resume-form button:hover {
+        background-color: #3b63e0;
+    }
+</style>
+
+<h2>ارسال رزومه</h2>
+
+<form method="post" enctype="multipart/form-data" class="resume-form">
+    {% csrf_token %}
+
+    <div class="row">
+        <div>
+            <label for="id_title">عنوان</label>
+            {{ form.title }}
+        </div>
+        <div>
+            <label for="id_file">فایل رزومه</label>
+            {{ form.file }}
+        </div>
+    </div>
+
+    <div>
+        <label for="id_describe">توضیحات</label>
+        {{ form.describe }}
+    </div>
+
+    <button type="submit">ارسال رزومه</button>
+</form>
+
+
+{% endblock %}
+

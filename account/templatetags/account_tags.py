@@ -44,3 +44,10 @@ def format_participants_count(count):
     if count == 0:
         return "بدون شرکت‌کننده"
     return f"{count:,} شرکت‌کننده"
+
+
+@register.filter
+def endswith(value, suffix):
+    if isinstance(value, str):
+        return value.endswith(suffix)
+    return False

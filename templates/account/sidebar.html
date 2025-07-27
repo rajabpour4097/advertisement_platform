@@ -50,11 +50,20 @@
                 </ul>
              </li>
              {% endif %}
-             {% if user.user_type == 'dealer' or user.is_staff or user.is_am %}
-             <li><a><i class="fa fa-archive" style="color: Tomato;"></i> نمونه کارها <span class="fa fa-chevron-down"></span></a>
+             {% if user.is_staff or user.is_am %}
+             <li><a><i class="fa fa-archive" style="color: Tomato;"></i>نمونه کارها و رزومه ها<span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
                      <li><a href="{% url 'account:portfolios' %}"><i class="fa fa-list"></i>لیست نمونه کارها</a></li>
                      <li><a href="{% url 'account:portfoliocreate' %}"><i class="fa fa-edit"></i>ایجاد نمونه کار جدید</a></li>
+                     <li><a href="{% url 'account:review_resumes' %}"><i class="fa fa-list"></i>لیست رزومه ها</a></li>
+                 </ul>
+             </li>
+             {% endif %}
+             {% if user.user_type == 'dealer' %}
+             <li><a><i class="fa fa-archive" style="color: Tomato;"></i>رزومه های من<span class="fa fa-chevron-down"></span></a>
+                 <ul class="nav child_menu">
+                     <li><a href="{% url 'account:review_resumes' %}"><i class="fa fa-list"></i>لیست رزومه ها</a></li>
+                     <li><a href="{% url 'account:submit_resume' %}"><i class="fa fa-edit"></i>ارسال رزومه</a></li>
                  </ul>
              </li>
              {% endif %}

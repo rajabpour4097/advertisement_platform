@@ -1,0 +1,21 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load account_tags %}
+{% block title %}بررسی رزومه{% endblock %}
+
+
+{% block content %}
+
+<h2>حذف رزومه</h2>
+
+<p>آیا مطمئن هستید که می‌خواهید این رزومه را حذف کنید؟</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">حذف</button>
+    <button type="button" onclick="window.history.back();" class="btn btn-success">انصراف</button>
+</form>
+
+{% endblock %}
+

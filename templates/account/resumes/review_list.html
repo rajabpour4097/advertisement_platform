@@ -1,0 +1,120 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load account_tags %}
+
+{% block title %}لیست رزومه‌ها{% endblock %}
+
+
+{% block content %}
+<style>
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: sans-serif;
+}
+.table th, .table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+.table th {
+    background-color: #f9f9f9;
+}
+.avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+.status {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.8em;
+    font-weight: bold;
+    display: inline-block;
+}
+.status-active {
+    background-color: #d4edda;
+    color: #155724;
+}
+.status-inactive {
+    background-color: #fff3cd;
+    color: #856404;
+}
+.status-deleted {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.user-cell {
+    display: flex;
+    align-items: center;
+}
+.resume-link {
+    font-size: 0.9em;
+    color: #007bff;
+    text-decoration: none;
+}
+.resume-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+<h2 style="margin-top: 100px;">لیست رزومه‌ها</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>کاربر</th>
+            <th>عنوان</th>
+            <th>وضعیت</th>
+            <th>تاریخ</th>
+            <th>فایل رزومه</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for resume in resumes %}
+            <tr style="{% if resume.status == 'pending' and not resume.is_seen_by_manager and not user.user_type == 'dealer' %}background-color: #d2d1cfff; font-weight: bold;{% endif %}">
+            <td>{{ forloop.counter }}</td>
+            <td class="user-cell">
+                <img src="{{ resume.user.customuserimages.first.image.url }}" class="avatar" alt="avatar">
+                {{ resume.user.get_full_name|default:resume.user.username }}
+            </td>
+            <td>{{ resume.title }}</td>
+            <td>
+                <span class="status 
+                    {% if resume.status == 'active' %}status-active
+                    {% elif resume.status == 'inactive' %}status-inactive
+                    {% elif resume.status == 'deleted' %}status-deleted
+                    {% else %}status-inactive{% endif %}">
+                    {{ resume.get_status_display }}
+                </span>
+            </td>
+            <td>{{ resume.created_at|jalali_timedate }}</td>
+            <td>
+                {% if resume.file %}
+                    <a href="{{ resume.file.url }}" target="_blank" class="resume-link">مشاهده</a>
+                {% else %}
+                    <span style="color:#888; font-size: 0.85em;">ندارد</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if user.user_type == 'dealer' %}
+                <a href="{% url 'account:delete_resume' resume.id %}" class="btn btn-danger">حذف</a>
+                {% else %}
+                <a href="{% url 'account:resume_detail' resume.id %}" class="btn btn-primary">بررسی</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}
+
