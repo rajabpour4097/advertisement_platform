@@ -60,6 +60,7 @@ class Topic(models.Model):
     min_price = models.BigIntegerField(null=True, blank=True, verbose_name='حداقل قیمت')
     icon = models.ImageField(upload_to='topics/', null=True, blank=True, verbose_name='آیکون')
     description = models.TextField(null=True, blank=True, verbose_name='توضیحات')
+    short_describe = models.CharField(max_length=200, null=True, blank=True, verbose_name='توضیحات کوتاه')
     color = models.CharField(max_length=7, default="#cccccc")  # مثل #28a745
     
     class Meta:
