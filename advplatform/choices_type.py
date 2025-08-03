@@ -4,7 +4,6 @@
 USER_TYPE = [
              ('customer', 'مشتری'),
              ('dealer', 'عامل تبلیغ'),
-             ('mentor', 'مشاور'),
             ]
 
 CUSTOMER_TYPE = [
