@@ -8,6 +8,95 @@
 {% endblock %}
 
 {% block content %}
+<style>
+.topic-card-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.topic-card {
+    position: relative;
+    width: calc(33.33% - 10px);
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+/* استایل در حالت انتخاب‌شده */
+.topic-card.selected {
+    box-shadow: 0 0 10px rgba(235, 237, 235, 0.3);
+    
+}
+.topic-card .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.topic-card img {
+    width: 30px;
+    height: 30px;
+}
+
+.topic-card h4 {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.topic-card p {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+    min-height: 38px;
+}
+
+.topic-card .checkmark {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+    color: green;
+    display: none;
+}
+
+.topic-card.selected .checkmark {
+    display: block;
+}
+
+.topic-card .info-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* نمایش 2 کارت در ردیف برای تبلت */
+@media (max-width: 992px) {
+    .topic-card {
+        width: calc(50% - 10px);
+    }
+}
+
+/* نمایش 1 کارت در ردیف برای موبایل */
+@media (max-width: 576px) {
+    .topic-card {
+        width: 100%;
+    }
+}
+
+</style>
+
 <div class="container-fluid" style="scale:90%;">
     <div class="row">
         <!-- فرم اصلی -->
@@ -37,29 +126,30 @@
 
                     {# Custom topic checkbox rendering #}
                     <div class="form-group">
-                        <label for="id_topic">موضوعات کمپین:</label>
-                        <div class="topic-checkbox-list">
+                        <label for="id_topic">دسته‌بندی کمپین:</label>
+                        <div class="topic-card-list">
                             {% for topic in form.fields.topic.queryset %}
-                            <div class="topic-checkbox-item">
-                                <input type="radio" 
-                                       name="topic" 
-                                       value="{{ topic.id }}" 
-                                       id="topic_{{ topic.id }}"
-                                       data-description="{{ topic.description|default:'' }}"
-                                       {% if topic.id in form.topic.value %}checked{% endif %}>
-                                <label for="topic_{{ topic.id }}">
-                                    {{ topic.name }}
-                                </label>
-                                <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
+                            <div class="topic-card {% if topic.id in form.topic.value %}selected{% endif %}" 
+                                 data-id="{{ topic.id }}" 
+                                 data-description="{{ topic.description|default:'' }}"
+                                 data-color="{{ topic.color }}">
+                                <div class="icon-wrapper">
+                                    <img src="{{ topic.icon.url }}" alt="{{ topic.name }}" />
+                                </div>
+                                <h4>{{ topic.name }}</h4>
+                                <p class="short-description">{{ topic.short_description }}</p>
+                                <!-- اضافه کردن توضیحات ریزتر -->
+                                <div class="detailed-description">
+                                    {{ topic.description|default:"توضیحات تکمیلی اینجا نمایش داده می‌شود" }}
+                                </div>
+                                <span class="info-btn" title="اطلاعات بیشتر">ℹ️</span>
+                                <div class="checkmark">✔</div>
                             </div>
                             {% endfor %}
                         </div>
-                        {% if form.topic.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.topic.errors }}
-                            </div>
-                        {% endif %}
+                        <input type="hidden" name="topic" id="selected-topic-id" value="{{ form.topic.value.0 }}">
                     </div>
+
 
                     <div class="form-group">
                         <label for="id_topic">شرح کمپین:</label>{# Render describe field #}
@@ -146,207 +236,92 @@
     </div>
 </div>
 
-<style>
-    /* استایل‌های جدید */
-    .x_panel {
-        margin-bottom: 20px;
-        border: 1px solid #e6e9ed;
-        border-radius: 5px;
-        padding: 15px;
-    }
-
-    .rules-container {
-        padding: 15px;
-    }
-
-    .rules-list {
-        padding-right: 20px;
-        line-height: 1.8;
-    }
-
-    /* استایل‌های ریسپانسیو */
-    @media (max-width: 768px) {
-        .col-md-6 {
-            padding: 0 10px;
-        }
-        
-        .x_panel {
-            margin: 10px 0;
-        }
-        
-        form {
-            padding: 10px;
-        }
-    }
-
-    /* اصلاح مشکل بیرون زدگی فرم */
-    .form-group {
-        margin-bottom: 15px;
-        width: 100%;
-    }
-
-    .topic-checkbox-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .topic-checkbox-item {
-        flex: 0 0 calc(50% - 5px);
-    }
-
-    #topic-description-container {
-        padding: 15px;
-        min-height: 100px;
-        line-height: 1.8;
-    }
-
-    #topic-description-container p {
-        text-align: justify;
-    }
-</style>
-
 <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // AutoNumeric برای فیلد قیمت پیشنهادی
-        const priceInput = document.querySelector('input[name="{{ form.purposed_price.name }}"]');
-        if (priceInput) {
-            new AutoNumeric(priceInput, {
-                currencySymbol: ' تومان',
-                currencySymbolPlacement: 's',
-                digitGroupSeparator: ',',
-                decimalCharacter: '.',
-                decimalPlaces: 0,
-                minimumValue: '0',
-                modifyValueOnWheel: false
+    const cards = document.querySelectorAll(".topic-card");
+    const hiddenInput = document.getElementById("selected-topic-id");
+    const form = document.querySelector("form");
+    const rulesCheckbox = document.getElementById("rules");
+    const descriptionContainer = document.getElementById("topic-description-container");
+
+    function resetCardStyles() {
+    cards.forEach(card => {
+        card.classList.remove("selected");
+        card.style.borderColor = "#ddd";  // ← بازگرداندن به حالت اولیه
+        card.style.backgroundColor = "#fff"; // ← در صورت نیاز
             });
         }
 
-        // چک کردن تیک قوانین و مقررات و انتخاب موضوع
-        const form = document.querySelector('form');
-        const rulesCheckbox = document.getElementById('rules_accepted');
-        const topicRadios = document.querySelectorAll('input[name="topic"]');
-        
-        form.addEventListener('submit', function(e) {
-            let isTopicSelected = false;
-            
-            // بررسی انتخاب موضوع
-            topicRadios.forEach(radio => {
-                if (radio.checked) {
-                    isTopicSelected = true;
-                }
+    function showModal(title, message) {
+        const modalHtml = `
+            <div class="modal fade" id="customModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${title}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">${message}</div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">متوجه شدم</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        $('#customModal').modal('show');
+        $('#customModal').on('hidden.bs.modal', function () {
+            $(this).remove();
+        });
+    }
+
+    cards.forEach(card => {
+        card.addEventListener("click", () => {
+                        resetCardStyles();
+                        card.classList.add("selected");
+                        const color = card.dataset.color || "#2ecc71";
+                        card.style.borderColor = color;
+                        hiddenInput.value = card.dataset.id;
+                        const description = card.dataset.description || "توضیحاتی برای این موضوع ثبت نشده است.";
+                        if (descriptionContainer) {
+                            descriptionContainer.innerHTML = `<p>${description}</p>`;
+                        }
+                    });
+
+        const infoBtn = card.querySelector(".info-btn");
+        if (infoBtn) {
+            infoBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                alert(card.dataset.description || "توضیحاتی برای این دسته موجود نیست.");
             });
-            
-            if (!isTopicSelected) {
-                e.preventDefault();
-                const modalHtml = `
-                    <div class="modal fade" id="topicModal" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">توجه</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    لطفاً یک موضوع برای کمپین انتخاب کنید
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary" data-dismiss="modal">متوجه شدم</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                $('#topicModal').modal('show');
-                
-                $('#topicModal').on('hidden.bs.modal', function () {
-                    $(this).remove();
-                });
-                return;
-            }
-            
-            // بررسی تیک قوانین
-            if (!rulesCheckbox.checked) {
-                e.preventDefault();
-                
-                const modalHtml = `
-                    <div class="modal fade" id="rulesModal" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">توجه</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body text-danger">
-                                    برای ایجاد کمپین جدید باید قوانین را تایید کنید
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary" data-dismiss="modal">متوجه شدم</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                $('#rulesModal').modal('show');
-                
-                $('#rulesModal').on('hidden.bs.modal', function () {
-                    $(this).remove();
-                });
-            }
-        });
-
-        // افزودن داینامیک تصاویر کمپین
-        let totalForms = document.querySelector("#id_campaignsimages-TOTAL_FORMS");
-        let formContainer = document.querySelector("#image-form-container");
-        let firstForm = formContainer.querySelector(".image-form");
-        let addButton = document.querySelector("#add-image-form");
-
-        addButton.addEventListener("click", function () {
-            let formCount = parseInt(totalForms.value);
-            let newForm = firstForm.cloneNode(true);
-
-            newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
-            newForm.querySelectorAll("input").forEach(input => input.value = "");
-
-            formContainer.appendChild(newForm);
-            totalForms.value = formCount + 1;
-        });
-
-        // اضافه کردن کد مربوط به نمایش توضیحات موضوع
-        const descriptionContainer = document.getElementById('topic-description-container');
-
-        function updateTopicDescription(radio) {
-            const description = radio.dataset.description;
-            if (description) {
-                descriptionContainer.innerHTML = `<p>${description}</p>`;
-            } else {
-                descriptionContainer.innerHTML = '<p class="text-muted">توضیحاتی برای این موضوع ثبت نشده است.</p>';
-            }
         }
 
-        // نمایش توضیحات موضوع انتخاب شده در لود اولیه
-        topicRadios.forEach(radio => {
-            if (radio.checked) {
-                updateTopicDescription(radio);
-            }
-            
-            // اضافه کردن event listener برای تغییر radio
-            radio.addEventListener('change', function() {
-                if (this.checked) {
-                    updateTopicDescription(this);
-                }
-            });
-        });
+        if (card.classList.contains("selected")) {
+            const color = card.dataset.color || "#f0fff5";
+            card.style.backgroundColor = color;
+        }
     });
+
+    form.addEventListener("submit", function (e) {
+        const selectedTopicId = hiddenInput.value;
+        if (!selectedTopicId) {
+            e.preventDefault();
+            showModal("توجه", "لطفاً یک موضوع برای کمپین انتخاب کنید");
+            return;
+        }
+
+        if (!rulesCheckbox.checked) {
+            e.preventDefault();
+            showModal("توجه", "برای ایجاد کمپین جدید باید قوانین را تایید کنید");
+            return;
+        }
+    });
+});
+
 </script>
+
 {% endblock %}
 

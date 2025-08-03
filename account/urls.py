@@ -82,7 +82,7 @@ urlpatterns = [
     path('requestformentor/', ListOfRequestForMentor.as_view(), name='listofrequestformentor'), 
     path('requestformentor/<int:request_id>/change-status/', ChangeStatusRequestForMentor.as_view(), name='changestatusrequestformentor'),  
     path('resume/submit/', SubmitResumeView.as_view(), name='submit_resume'),  
-    path('resume/review/', ResumeReviewListView.as_view(), name='review_resumes'),
-    path('resume/review/<int:resume_id>/', ResumeDetailView.as_view(), name='resume_detail'),
-    path('resume/review/delete/<int:pk>/', ResumeDeleteView.as_view(), name='delete_resume'),
+    path('resume/resume/', ResumeReviewListView.as_view(), name='review_resumes'),
+    path('resume/resume/<int:resume_id>/', ResumeDetailView.as_view(), name='resume_detail'),
+    path('resume/resume/delete/<int:pk>/', ResumeDeleteView.as_view(), name='delete_resume'),
 ]
