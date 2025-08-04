@@ -100,7 +100,6 @@
                     <div class="nav toggle">
                         <a id="menu_toggle"><i class="fa fa-bars"></i></a>
                     </div>
-
                     <ul class="nav navbar-nav navbar-right">
                         <li class="">
                             <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown"
@@ -210,7 +209,11 @@
 {% endif %}       
 <!-- page content -->
 <div class="right_col" role="main">
-
+    <div class="col-md-12 text-center">
+        {% if not user.customuserimages.first.image.url %}
+            <p class="alert alert-danger">{% if user.cutomer_type == 'private' %}پروفایل کاربری{% else%} برند تجاری{% endif %}  شما تصویر ندارد. لطفاً برای تجربه بهتر در استفاده از سایت تصویر خود را بارگذاری کنید. <a href="{% url 'account:profile' %}">اینجا کلیک کنید</a></p>
+        {% endif %}
+    </div>  
  {% block content %}{% endblock %}
 
 </div>

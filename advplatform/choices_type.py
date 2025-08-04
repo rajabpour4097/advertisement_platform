@@ -2,14 +2,13 @@
 
 
 USER_TYPE = [
-             ('customer', 'مشتری'),
-             ('dealer', 'عامل تبلیغ'),
+             ('customer', 'مجری تبلیغ'),
+             ('dealer', 'سفارش دهنده تبلیغ'),
             ]
 
 CUSTOMER_TYPE = [
-                 ('', ''),
-                 ('juridical', 'حقیقی'),
-                 ('private', 'حقوقی'),
+                 ('private', 'حقیقی'),
+                 ('juridical', 'حقوقی'),
                 ]
 
 DEALER_TYPE = [

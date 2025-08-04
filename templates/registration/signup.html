@@ -6,30 +6,20 @@
 {% endblock %}
 
 {% block customcontent %}
-<div class="container" style="max-width: 500px;">
-  <form method="post" novalidate>
+<div class="container" style="max-width: 600px;">
+  {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+          {% endfor %}
+    {% endif %}
+  <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
 
+    <!-- نام کاربری -->
     <div data-mdb-input-init class="form-outline mb-4">
-      {{ form.first_name|add_class:"form-control"|attr:"placeholder:نام *" }}
-      {% if form.first_name.errors %}
-        {% for error in form.first_name.errors %}
-        <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-      {% endif %}
-    </div>
-
-    <div data-mdb-input-init class="form-outline mb-4">
-      {{ form.last_name|add_class:"form-control"|attr:"placeholder:نام خانوادگی *" }}
-      {% if form.last_name.errors %}
-        {% for error in form.last_name.errors %}
-        <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-      {% endif %}
-    </div>
-
-    <div data-mdb-input-init class="form-outline mb-4">
-      {{ form.email|add_class:"form-control"|attr:"placeholder:آدرس ایمیل *" }}
+      {{ form.email|add_class:"form-control"|attr:"placeholder:نام کاربری(ایمیل) *" }}
       {% if form.email.errors %}
         {% for error in form.email.errors %}
         <span class="text-danger">{{ error }}</span>
@@ -37,8 +27,9 @@
       {% endif %}
     </div>
 
+    <!-- کلمه عبور -->
     <div data-mdb-input-init class="form-outline mb-4">
-      {{ form.password1|add_class:"form-control"|attr:"placeholder:گذرواژه *" }}
+      {{ form.password1|add_class:"form-control"|attr:"placeholder:کلمه عبور *" }}
       {% if form.password1.errors %}
         {% for error in form.password1.errors %}
         <span class="text-danger">{{ error }}</span>
@@ -46,8 +37,9 @@
       {% endif %}
     </div>
 
+    <!-- تایید کلمه عبور -->
     <div data-mdb-input-init class="form-outline mb-4">
-      {{ form.password2|add_class:"form-control"|attr:"placeholder:تایید گذرواژه *" }}
+      {{ form.password2|add_class:"form-control"|attr:"placeholder:تایید کلمه عبور *" }}
       {% if form.password2.errors %}
         {% for error in form.password2.errors %}
         <span class="text-danger">{{ error }}</span>
@@ -55,13 +47,62 @@
       {% endif %}
     </div>
 
+    <!-- نوع کاربر (حقیقی/حقوقی) -->
     <div data-mdb-input-init class="form-outline mb-4">
-      <select name="user_type" class="form-control" id="{{ form.user_type.id_for_label }}">
-        <option value="" selected disabled>نوع کاربری</option>
-        {% for value, label in form.user_type.field.choices %}
-          <option value="{{ value }}" {% if form.user_type.value == value %}selected{% endif %}>{{ label }}</option>
+      {{ form.cutomer_type|add_class:"form-control"|attr:"onchange:togglePersonFields()" }}
+      {% if form.cutomer_type.errors %}
+        {% for error in form.cutomer_type.errors %}
+        <span class="text-danger">{{ error }}</span>
         {% endfor %}
-      </select>
+      {% endif %}
+    </div>
+
+    <!-- فیلدهای حقیقی -->
+    <div id="real_person_fields" style="display: none;">
+      <div data-mdb-input-init class="form-outline mb-4">
+        {{ form.first_name|add_class:"form-control"|attr:"placeholder:نام *" }}
+        {% if form.first_name.errors %}
+          {% for error in form.first_name.errors %}
+          <span class="text-danger">{{ error }}</span>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <div data-mdb-input-init class="form-outline mb-4">
+        {{ form.last_name|add_class:"form-control"|attr:"placeholder:نام خانوادگی *" }}
+        {% if form.last_name.errors %}
+          {% for error in form.last_name.errors %}
+          <span class="text-danger">{{ error }}</span>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- فیلدهای حقوقی -->
+    <div id="legal_person_fields" style="display: none;">
+      <div data-mdb-input-init class="form-outline mb-4">
+        {{ form.company_name|add_class:"form-control"|attr:"placeholder:نام شرکت *" }}
+        {% if form.company_name.errors %}
+          {% for error in form.company_name.errors %}
+          <span class="text-danger">{{ error }}</span>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- شماره همراه -->
+    <div data-mdb-input-init class="form-outline mb-4">
+      {{ form.phone_number|add_class:"form-control"|attr:"placeholder:شماره همراه *" }}
+      {% if form.phone_number.errors %}
+        {% for error in form.phone_number.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- نوع کاربر (مجری/سفارش دهنده) -->
+    <div data-mdb-input-init class="form-outline mb-4">
+      {{ form.user_type|add_class:"form-control" }}
       {% if form.user_type.errors %}
         {% for error in form.user_type.errors %}
         <span class="text-danger">{{ error }}</span>
@@ -69,10 +110,11 @@
       {% endif %}
     </div>
 
+    <!-- آدرس -->
     <div data-mdb-input-init class="form-outline mb-4">
-      {{ form.phone_number|add_class:"form-control"|attr:"placeholder:شماره تماس *" }}
-      {% if form.phone_number.errors %}
-        {% for error in form.phone_number.errors %}
+      {{ form.address|add_class:"form-control"|attr:"placeholder:آدرس" }}
+      {% if form.address.errors %}
+        {% for error in form.address.errors %}
         <span class="text-danger">{{ error }}</span>
         {% endfor %}
       {% endif %}
@@ -85,4 +127,33 @@
     </div>
   </form>
 </div>
+
+<script>
+function togglePersonFields() {
+  const personType = document.getElementById('{{ form.cutomer_type.id_for_label }}').value;
+  const realFields = document.getElementById('real_person_fields');
+  const legalFields = document.getElementById('legal_person_fields');
+  
+  if (personType === 'private') {  // حقیقی
+    realFields.style.display = 'block';
+    legalFields.style.display = 'none';
+  } else if (personType === 'juridical') {  // حقوقی
+    realFields.style.display = 'none';
+    legalFields.style.display = 'block';
+  } else {
+    realFields.style.display = 'none';
+    legalFields.style.display = 'none';
+  }
+}
+
+// اجرا پس از لود صفحه و در صورت خطا
+document.addEventListener('DOMContentLoaded', function() {
+  const customerTypeField = document.getElementById('{{ form.cutomer_type.id_for_label }}');
+  if (customerTypeField) {
+    customerTypeField.addEventListener('change', togglePersonFields);
+    // اجرای تابع برای حفظ وضعیت پس از خطا
+    togglePersonFields();
+  }
+});
+</script>
 {% endblock %}

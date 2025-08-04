@@ -50,7 +50,7 @@ class SpecialityCategory(models.Model):
     
 
 class Topic(models.Model):
-    name = models.CharField(max_length=60)
+    name = models.CharField(max_length=100)
     parent = models.ForeignKey(
         'self', on_delete=models.CASCADE, 
         related_name='children', null=True, blank=True
@@ -135,6 +135,7 @@ class CustomUser(AbstractUser):
                                          related_name='speciality_field',
                                          verbose_name='تخصص'
                                          ) # for Dealer
+    company_name = models.CharField(max_length=150, blank=True, null=True, verbose_name='نام شرکت')
     modified_time = models.DateTimeField(auto_now=True, verbose_name='آخرین تغییر پروفایل')
     is_am = models.BooleanField(default=False, verbose_name='مدیر تبلیغات')
 
@@ -163,6 +164,11 @@ class CustomUser(AbstractUser):
     
     def get_field_count(self):
         return len([field for field in self._meta.get_fields() if field.concrete])
+    
+    def get_full_name(self):
+        if self.company_name:
+            return f"شرکت {self.company_name}".strip()
+        return f"{self.first_name} {self.last_name}".strip()
        
     
 class Campaign(models.Model):

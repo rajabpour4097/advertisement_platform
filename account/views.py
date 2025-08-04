@@ -120,8 +120,8 @@ class Register(NotLoginedMixin, CreateView):
         else:
             form.add_error(None, f"خطا در ارسال پیامک: {error}")
             return self.form_invalid(form)
-
-
+   
+   
 class VerifyOTP(View):
     template_name = 'registration/verify_otp.html'
 
@@ -455,9 +455,9 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
         else:
             context['image_formset'] = CampaignImageFormSet()
         # Add topic count to each topic
-        context['form'].fields['topic'].queryset = Topic.objects.annotate(
-            campaign_count=Count('topics')
-        )
+        context['form'].fields['topic'].queryset = Topic.objects.filter(parent__isnull=True).annotate(
+                campaign_count=Count('topics')
+            )
         return context
 
     def form_valid(self, form):

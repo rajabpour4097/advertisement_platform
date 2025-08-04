@@ -1,6 +1,7 @@
 from django import forms
-from advplatform.choices_type import USER_TYPE
-from advplatform.models import Campaign, CampaignImages, CustomUser, Portfolio, PortfolioImages, Topic, UsersImages
+from advplatform.choices_type import CUSTOMER_TYPE, USER_TYPE
+from advplatform.models import Campaign, CampaignImages,\
+    CustomUser, Portfolio, PortfolioImages, UsersImages
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from account.models import CampaignTransaction, EditingCampaign
@@ -9,15 +10,56 @@ from django.utils import timezone
 
 
 class SignupForm(UserCreationForm):
-        
-    user_type = forms.ChoiceField(choices=USER_TYPE, required=True)
-    first_name = forms.CharField(max_length=30, required=True)
-    last_name = forms.CharField(max_length=30, required=True)
+    user_type = forms.ChoiceField(
+        choices=[('', 'نوع کاربری*')] + list(USER_TYPE), 
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    cutomer_type = forms.ChoiceField(
+        choices=[('', 'نوع کاربر (حقیقی/حقوقی)')] + list(CUSTOMER_TYPE), 
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'onchange': 'togglePersonFields()'
+        })
+    )
+    first_name = forms.CharField(max_length=30, required=False)
+    last_name = forms.CharField(max_length=30, required=False)
+    company_name = forms.CharField(max_length=150, required=False)
     email = forms.EmailField()
-
+    address = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+        }), 
+        required=True
+    )
+    
     class Meta:
         model = CustomUser
-        fields = ('email', 'password1', 'password2', 'user_type', 'phone_number', 'first_name', 'last_name')
+        fields = ('email', 'password1', 'password2', 'cutomer_type', 'first_name', 'last_name', 
+                 'company_name', 'phone_number', 'address', 'user_type')
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        cutomer_type = cleaned_data.get('cutomer_type')
+        first_name = cleaned_data.get('first_name')
+        last_name = cleaned_data.get('last_name')
+        company_name = cleaned_data.get('company_name')
+
+        # validation برای مشتری حقیقی
+        if cutomer_type == 'private':
+            if not first_name:
+                self.add_error('first_name', 'نام برای مشتری حقیقی اجباری است.')
+            if not last_name:
+                self.add_error('last_name', 'نام خانوادگی برای مشتری حقیقی اجباری است.')
+        
+        # validation برای مشتری حقوقی
+        elif cutomer_type == 'juridical':
+            if not company_name:
+                self.add_error('company_name', 'نام شرکت برای مشتری حقوقی اجباری است.')
+
+        return cleaned_data
 
 
 class ProfileForm(forms.ModelForm):
