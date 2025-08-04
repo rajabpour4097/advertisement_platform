@@ -41,7 +41,7 @@ class CustomUserAdmin(UserAdmin):
     # add_form = UserCreationForm
 
     # فیلدهایی که در پنل ادمین نمایش داده می‌شوند
-    list_display = ('email', 'first_name', 'last_name', 'user_type', 'is_staff')
+    list_display = ('email', 'first_name', 'last_name', 'company_name','user_type', 'cutomer_type', 'is_staff')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
