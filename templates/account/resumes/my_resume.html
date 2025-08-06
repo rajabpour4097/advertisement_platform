@@ -262,34 +262,12 @@
                 <!-- بخش انتخاب استان و شهرها -->
                 <div class="form-group">
                     <label>حوزه خدمات (استان‌ها و شهرها)</label>
-                    <div id="provinces-container">
-                        {% if provinces %}
-                            {% for province in provinces %}
-                                <div class="province-section">
-                                    <div class="province-header">
-                                        <input type="checkbox" id="province_{{ province.id }}" 
-                                               class="province-checkbox" data-province-id="{{ province.id }}">
-                                        <label for="province_{{ province.id }}">{{ province.name }}</label>
-                                    </div>
-                                    <div class="cities-grid" id="cities_{{ province.id }}" style="display: none;">
-                                        {% for city in province.cities.all %}
-                                            <div class="city-checkbox">
-                                                <input type="checkbox" name="service_area" value="{{ city.id }}" 
-                                                       id="city_{{ city.id }}" class="city-check" 
-                                                       data-province="{{ province.id }}"
-                                                       {% if city.id in selected_cities %}checked{% endif %}>
-                                                <label for="city_{{ city.id }}">{{ city.name }}</label>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="empty-message">
-                                هیچ استان و شهری در سیستم تعریف نشده است. لطفاً با مدیر سیستم تماس بگیرید.
-                            </div>
-                        {% endif %}
-                    </div>
+                    <button type="button" id="open-city-modal" style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
+                        انتخاب استان و شهر
+                    </button>
+                    <div id="selected-cities-summary" style="margin-top:10px;"></div>
+                    <!-- این input برای ارسال داده به سرور -->
+                    <input type="hidden" name="service_area" id="service_area_input">
                 </div>
 
                 <!-- بخش دسته‌های تخصصی -->
@@ -528,7 +506,225 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dealerTypeSelect.value) {
         loadSpecialtyCategories(dealerTypeSelect.value);
     }
+
+    // مدیریت انتخاب استان و شهر با مدال
+    const openCityModalButton = document.getElementById('open-city-modal');
+    const cityModal = new bootstrap.Modal(document.getElementById('cityModal'));
+    const cityForm = document.getElementById('city-form');
+    const selectedCitiesSummary = document.getElementById('selected-cities-summary');
+    const serviceAreaInput = document.getElementById('service_area_input');
+
+    openCityModalButton.addEventListener('click', function() {
+        // بازنشانی فرم شهرها
+        cityForm.reset();
+        // بارگذاری استان‌ها و شهرها
+        loadProvincesAndCities();
+        // نمایش مدال
+        cityModal.show();
+    });
+
+    function loadProvincesAndCities() {
+        fetch('/account/get-provinces-and-cities/')
+            .then(response => response.json())
+            .then(data => {
+                const provincesContainer = document.getElementById('provinces-container-modal');
+                provincesContainer.innerHTML = '';
+
+                if (data.provinces && data.provinces.length > 0) {
+                    data.provinces.forEach(province => {
+                        const provinceDiv = document.createElement('div');
+                        provinceDiv.className = 'province-section';
+                        provinceDiv.innerHTML = `
+                            <div class="province-header">
+                                <input type="checkbox" id="province_modal_${province.id}" 
+                                       class="province-checkbox" data-province-id="${province.id}">
+                                <label for="province_modal_${province.id}">${province.name}</label>
+                            </div>
+                            <div class="cities-grid" id="cities_modal_${province.id}" style="display: none;">
+                                ${province.cities.map(city => `
+                                    <div class="city-checkbox">
+                                        <input type="checkbox" name="service_area_modal" value="${city.id}" 
+                                               id="city_modal_${city.id}" class="city-check" 
+                                               data-province="${province.id}">
+                                        <label for="city_modal_${city.id}">${city.name}</label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        provincesContainer.appendChild(provinceDiv);
+                    });
+
+                    // مدیریت نمایش شهرها در مدال
+                    const provinceCheckboxes = document.querySelectorAll('.province-checkbox');
+                    provinceCheckboxes.forEach(checkbox => {
+                        const provinceId = checkbox.getAttribute('data-province-id');
+                        const citiesContainer = document.getElementById(`cities_modal_${provinceId}`);
+                        const cityCheckboxes = citiesContainer.querySelectorAll('.city-check');
+                        
+                        // نمایش شهرها هنگام کلیک روی استان
+                        checkbox.addEventListener('change', function() {
+                            if (this.checked) {
+                                citiesContainer.style.display = 'grid';
+                                // انتخاب تمام شهرهای استان
+                                cityCheckboxes.forEach(cityCheckbox => {
+                                    cityCheckbox.checked = true;
+                                });
+                            } else {
+                                citiesContainer.style.display = 'none';
+                                // حذف انتخاب تمام شهرهای استان
+                                cityCheckboxes.forEach(cityCheckbox => {
+                                    cityCheckbox.checked = false;
+                                });
+                            }
+                        });
+                    });
+                } else {
+                    provincesContainer.innerHTML = '<div class="empty-message">هیچ استانی در سیستم تعریف نشده است.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading provinces and cities:', error);
+            });
+    }
+
+    // ثبت انتخاب شهرها
+    cityForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const selectedCities = [];
+        const cityCheckboxes = document.querySelectorAll('input[name="service_area_modal"]:checked');
+        cityCheckboxes.forEach(checkbox => {
+            selectedCities.push(checkbox.value);
+        });
+
+        // به‌روزرسانی خلاصه انتخاب شهرها
+        updateSelectedCitiesSummary(selectedCities);
+
+        // بستن مدال
+        cityModal.hide();
+    });
+
+    function updateSelectedCitiesSummary(selectedCities) {
+        if (selectedCities.length === 0) {
+            selectedCitiesSummary.innerHTML = 'هیچ شهری انتخاب نشده است.';
+        } else {
+            selectedCitiesSummary.innerHTML = '';
+            selectedCities.forEach(cityId => {
+                const cityName = document.querySelector(`label[for="city_modal_${cityId}"]`).innerText;
+                const div = document.createElement('div');
+                div.innerText = cityName;
+                selectedCitiesSummary.appendChild(div);
+            });
+        }
+
+        // به‌روزرسانی مقدار input مخفی
+        serviceAreaInput.value = selectedCities.join(',');
+    }
 });
+</script>
+
+<!-- مدال انتخاب استان و شهر -->
+<div class="modal" id="cityModal" tabindex="-1" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3);">
+    <div style="background:#fff; max-width:500px; margin:40px auto; border-radius:10px; padding:20px; position:relative;">
+        <h4 style="margin-bottom:10px;">انتخاب شهر</h4>
+        <input type="text" id="city-search" placeholder="جستجو در شهرها..." class="form-control" style="margin-bottom:10px;">
+        <div id="province-list" style="max-height:350px; overflow-y:auto;">
+            <!-- استان‌ها و شهرها اینجا با جاوااسکریپت ساخته می‌شوند -->
+        </div>
+        <div style="margin-top:20px; text-align:left;">
+            <button type="button" class="btn btn-success" id="city-modal-confirm">تایید</button>
+            <button type="button" class="btn btn-secondary" id="city-modal-cancel">انصراف</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const provinces = {{ provinces|safe }};
+const selectedCityIds = {{ selected_cities|safe }};
+
+function renderProvinceList(filter="") {
+    const container = document.getElementById('province-list');
+    container.innerHTML = "";
+    provinces.forEach(province => {
+        // فیلتر بر اساس جستجو
+        const filteredCities = province.cities.filter(city => city.name.includes(filter));
+        if (filter && filteredCities.length === 0 && !province.name.includes(filter)) return;
+
+        // استان
+        const provinceDiv = document.createElement('div');
+        provinceDiv.style.marginBottom = "10px";
+        provinceDiv.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                <div>
+                    <input type="checkbox" class="province-all" data-province="${province.id}">
+                    <span style="font-weight:bold;">${province.name}</span>
+                </div>
+                <span class="toggle-cities" data-province="${province.id}" style="font-size:18px;cursor:pointer;">&#x25BC;</span>
+            </div>
+            <div class="cities-list" id="cities-list-${province.id}" style="display:none; margin-right:20px; margin-top:5px;"></div>
+        `;
+        container.appendChild(provinceDiv);
+
+        // شهرها
+        const citiesList = provinceDiv.querySelector(`#cities-list-${province.id}`);
+        province.cities.forEach(city => {
+            const checked = selectedCityIds.includes(city.id) ? "checked" : "";
+            const cityDiv = document.createElement('div');
+            cityDiv.innerHTML = `
+                <label style="display:flex;align-items:center;">
+                    <input type="checkbox" class="city-checkbox" data-city="${city.id}" data-province="${province.id}" ${checked}>
+                    <span>${city.name}</span>
+                </label>
+            `;
+            citiesList.appendChild(cityDiv);
+        });
+
+        // مدیریت باز/بستن شهرها
+        provinceDiv.querySelector('.toggle-cities').onclick = function() {
+            const list = provinceDiv.querySelector('.cities-list');
+            list.style.display = list.style.display === "none" ? "block" : "none";
+            this.innerHTML = list.style.display === "none" ? "&#x25BC;" : "&#x25B2;";
+        };
+
+        // مدیریت انتخاب همه شهرهای استان
+        provinceDiv.querySelector('.province-all').onclick = function() {
+            const checked = this.checked;
+            citiesList.querySelectorAll('.city-checkbox').forEach(cb => cb.checked = checked);
+        };
+    });
+}
+
+document.getElementById('open-city-modal').onclick = function() {
+    document.getElementById('cityModal').style.display = "block";
+    renderProvinceList();
+};
+
+document.getElementById('city-modal-cancel').onclick = function() {
+    document.getElementById('cityModal').style.display = "none";
+};
+
+document.getElementById('city-search').oninput = function() {
+    renderProvinceList(this.value.trim());
+};
+
+document.getElementById('city-modal-confirm').onclick = function() {
+    // جمع‌آوری شهرهای انتخاب‌شده
+    const checkedCities = [];
+    document.querySelectorAll('.city-checkbox:checked').forEach(cb => {
+        checkedCities.push(parseInt(cb.getAttribute('data-city')));
+    });
+    // مقداردهی به input hidden
+    document.getElementById('service_area_input').value = checkedCities.join(',');
+    // نمایش خلاصه انتخاب‌ها
+    const selectedNames = [];
+    provinces.forEach(province => {
+        province.cities.forEach(city => {
+            if (checkedCities.includes(city.id)) selectedNames.push(city.name);
+        });
+    });
+    document.getElementById('selected-cities-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
+    document.getElementById('cityModal').style.display = "none";
+};
 </script>
 
 {% endblock %}

@@ -52,6 +52,8 @@ from .utils.send_notification import notify_campaign_actions, notify_campaign_me
 from .utils.send_sms import send_activation_sms, send_campaign_winner_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms, send_resume_review_sms
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 
 
 
@@ -1222,7 +1224,15 @@ class MyResumeView(DealerUserMixin, View):
             selected_portfolios = []
         
         # دریافت تمام استان‌ها همراه با شهرهایشان
-        provinces = Province.objects.prefetch_related('cities').all()
+        provinces_qs = Province.objects.prefetch_related('cities').all()
+        provinces = [
+            {
+                "id": p.id,
+                "name": p.name,
+                "cities": [{"id": c.id, "name": c.name} for c in p.cities.all()]
+            }
+            for p in provinces_qs
+        ]
         
         # دریافت Topic های والد (بدون parent)
         parent_topics = Topic.objects.filter(parent__isnull=True)
@@ -1234,7 +1244,7 @@ class MyResumeView(DealerUserMixin, View):
             'form': form,
             'resume': resume,
             'is_edit_mode': is_edit_mode,
-            'provinces': provinces,
+            'provinces': json.dumps(provinces, cls=DjangoJSONEncoder),
             'parent_topics': parent_topics,
             'user_portfolios': user_portfolios,
             'selected_cities': selected_cities,
@@ -1268,12 +1278,28 @@ class MyResumeView(DealerUserMixin, View):
                 messages.success(request, 'رزومه شما با موفقیت ویرایش شد و در انتظار بررسی مجدد است.')
             
             resume_instance.save()
-            form.save_m2m()  # برای ذخیره روابط many-to-many
-            
+            city_ids = request.POST.get('service_area', '')
+            city_ids = [int(cid) for cid in city_ids.split(',') if cid]
+            # سپس این city_ids را به form/service_area ست کنید
+            form = ResumeForm(request.POST, request.FILES)
+            if form.is_valid():
+                resume_instance = form.save(commit=False)
+                resume_instance.user = request.user
+                resume_instance.save()
+                resume_instance.service_area.set(city_ids)
+                form.save_m2m()
             return redirect('account:my_resume')
         
         # در صورت خطا، دوباره اطلاعات را بارگذاری کنید
-        provinces = Province.objects.prefetch_related('cities').all()
+        provinces_qs = Province.objects.prefetch_related('cities').all()
+        provinces = [
+            {
+                "id": p.id,
+                "name": p.name,
+                "cities": [{"id": c.id, "name": c.name} for c in p.cities.all()]
+            }
+            for p in provinces_qs
+        ]
         parent_topics = Topic.objects.filter(parent__isnull=True)
         user_portfolios = Portfolio.objects.filter(dealer=request.user, is_active=True)
         selected_cities = request.POST.getlist('service_area')
@@ -1284,7 +1310,7 @@ class MyResumeView(DealerUserMixin, View):
             'form': form,
             'resume': resume,
             'is_edit_mode': is_edit_mode,
-            'provinces': provinces,
+            'provinces': json.dumps(provinces, cls=DjangoJSONEncoder),
             'parent_topics': parent_topics,
             'user_portfolios': user_portfolios,
             'selected_cities': [int(x) for x in selected_cities if x],

@@ -77,19 +77,18 @@ class ResumeForm(forms.ModelForm):
     class Meta:
         model = Resume
         fields = [
-            'title', 'dealer_type', 'service_area', 'describe', 
+            'dealer_type', 'service_area', 'describe', 
             'specialty_categories', 'services', 'socialmedia_and_sites',
             'tools_and_platforms', 'file', 'portfolios', 'partner_brand',
             'bank_account'
         ]
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
             'dealer_type': forms.Select(attrs={'class': 'form-control'}),
-            'describe': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'services': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'socialmedia_and_sites': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'tools_and_platforms': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'partner_brand': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'describe': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'cols': 30}),
+            'services': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'cols': 30}),
+            'socialmedia_and_sites': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'cols': 30}),
+            'tools_and_platforms': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'cols': 30}),
+            'partner_brand': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'cols': 30}),
             'bank_account': forms.TextInput(attrs={'class': 'form-control'}),
         }
     
