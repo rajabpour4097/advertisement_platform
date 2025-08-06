@@ -1,9 +1,6 @@
-
-
-
 USER_TYPE = [
-             ('customer', 'مجری تبلیغ'),
-             ('dealer', 'سفارش دهنده تبلیغ'),
+             ('dealer', 'مجری تبلیغ'),
+             ('customer', 'سفارش دهنده تبلیغ'),
             ]
 
 CUSTOMER_TYPE = [
@@ -37,9 +34,11 @@ REQUEST_TYPE = [
                 ('reject', 'عدم تایید'),
               ]
 
-RESUME_STATUS_CHOICES = (
-        ('pending', 'در انتظار بررسی'),
-        ('approved', 'تأیید شده'),
-        ('rejected', 'رد شده'),
-        ('edited', 'ویرایش شده توسط مدیر'),
-    )
+# وضعیت‌های جدید برای رزومه
+RESUME_STATUS_CHOICES = [
+    ('pending', 'در انتظار بررسی'),
+    ('under_review', 'در حال بررسی'),
+    ('needs_editing', 'نیاز به ویرایش'),
+    ('approved', 'تایید شده'),
+    ('rejected', 'رد شده'),
+]

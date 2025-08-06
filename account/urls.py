@@ -38,6 +38,8 @@ from account.views import (
     SelectCampaignWinnerView,
     SubmitResumeView,
     WinnedProposalDetail,
+    MyResumeView,  # View جدید برای مشاهده رزومه کاربر
+    get_specialty_categories,  # View جدید برای دریافت دسته‌بندی‌های تخصصی
     )
 from advplatform.views import custom_404_view
 
@@ -81,8 +83,8 @@ urlpatterns = [
     path('mentor/activementor/<int:pk>', NewMentorActivate.as_view(), name='activementor'), 
     path('requestformentor/', ListOfRequestForMentor.as_view(), name='listofrequestformentor'), 
     path('requestformentor/<int:request_id>/change-status/', ChangeStatusRequestForMentor.as_view(), name='changestatusrequestformentor'),  
-    path('resume/submit/', SubmitResumeView.as_view(), name='submit_resume'),  
-    path('resume/resume/', ResumeReviewListView.as_view(), name='review_resumes'),
-    path('resume/resume/<int:resume_id>/', ResumeDetailView.as_view(), name='resume_detail'),
-    path('resume/resume/delete/<int:pk>/', ResumeDeleteView.as_view(), name='delete_resume'),
+    path('resume/my-resume/', MyResumeView.as_view(), name='my_resume'),  # URL جدید
+    path('resume/review/', ResumeReviewListView.as_view(), name='review_resumes'),  # برای مدیران
+    path('resume/review/<int:resume_id>/', ResumeDetailView.as_view(), name='resume_detail'),  # برای مدیران
+    path('get-specialty-categories/', get_specialty_categories, name='get_specialty_categories'),
 ]

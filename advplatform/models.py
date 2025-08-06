@@ -13,6 +13,12 @@ from advplatform.choices_type import CAMPAIGN_TYPE, CUSTOMER_TYPE, DEALER_TYPE, 
         
 ''' 
 
+class BaseModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
 
 
 class ActivityCategory(models.Model):
@@ -340,19 +346,73 @@ class PortfolioImages(models.Model):
         return str(self.portfolio)
     
 
-class Resume(models.Model):
+class Province(BaseModel):
+    name = models.CharField(max_length=100, verbose_name='نام استان')
     
+    class Meta:
+        verbose_name = 'استان'
+        verbose_name_plural = 'استان‌ها'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
 
-    user = models.ForeignKey(
+
+class City(BaseModel):
+    name = models.CharField(max_length=100, verbose_name='نام شهر')
+    province = models.ForeignKey(
+        Province, 
+        on_delete=models.CASCADE, 
+        related_name='cities',
+        verbose_name='استان'
+    )
+    
+    class Meta:
+        verbose_name = 'شهر'
+        verbose_name_plural = 'شهرها'
+        ordering = ['name']
+        unique_together = ['name', 'province']  # جلوگیری از تکرار نام شهر در یک استان
+    
+    def __str__(self):
+        return f"{self.name} - {self.province.name}"
+
+
+class Resume(models.Model):
+    user = models.OneToOneField(  # تغییر از ForeignKey به OneToOneField
         CustomUser, on_delete=models.CASCADE,
         limit_choices_to={'is_active': True, 'user_type': 'dealer'},
-        related_name='cvs',
-        blank=True, null=True,
-        verbose_name='مجری کمپین'
-      )
-    title = models.CharField(max_length=100, verbose_name='عنوان رزومه')
-    describe = models.TextField(blank=True, null=True, verbose_name='توضیحات')
+        related_name='resume',  # تغییر نام related_name
+        verbose_name='کاربر صاحب رزومه'
+    )
+    title = models.CharField(max_length=100, blank=True, null=True, verbose_name='عنوان رزومه')
+
+    #### consider by document ####
+    dealer_type = models.ForeignKey(Topic, verbose_name='نوع مجری تبلیغات', 
+                                    related_name='dealer_type', 
+                                    on_delete=models.PROTECT,
+                                    )
+    service_area = models.ManyToManyField(
+                                    City,
+                                    verbose_name='حوزه خدمات (شهرها)',
+                                    related_name='resumes',
+                                    help_text='شهرهایی که در آن‌ها خدمات ارائه می‌دهید'
+                                    )
+    describe = models.TextField(verbose_name='توضیحات')
+    specialty_categories = models.ManyToManyField(Topic, 
+                                                  verbose_name='دسته‌های تخصصی', 
+                                                  related_name='specialty_categories'
+                                                  ) #four subcategories
+    services = models.TextField(verbose_name='خدمات قابل ارائه')
+    socialmedia_and_sites = models.TextField(blank=True, null=True, verbose_name='شبکه‌های اجتماعی و وب‌سایت‌ها')
+    tools_and_platforms = models.TextField(blank=True, null=True, verbose_name='ابزارها و پلتفرم‌ها')
     file = models.FileField(upload_to='resumes/files/', blank=True, null=True, verbose_name='فایل رزومه')
+    #worklinks inline
+    portfolios = models.ManyToManyField(Portfolio, blank=True, verbose_name='پورتفولیوها')
+    partner_brand = models.TextField(blank=True, null=True, verbose_name='برند همکار')
+    #permissions inline
+    bank_account = models.CharField(max_length=25, blank=True, null=True, verbose_name='شماره حساب بانکی')
+    #### end consider by document ####
+    
     status = models.CharField(max_length=20, choices=RESUME_STATUS_CHOICES, default='pending', verbose_name='وضعیت')
     manager_comment = models.TextField(blank=True, null=True, verbose_name='نظر مدیر')
     is_seen_by_manager = models.BooleanField(default=False, verbose_name='مشاهده شده توسط مدیر')
@@ -366,3 +426,173 @@ class Resume(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.title} - {self.status}"
+    
+    def get_permissions_count(self):
+        """تعداد مجوزهای آپلود شده"""
+        return self.permission_files.count()
+    
+    def get_work_links_count(self):
+        """تعداد لینک‌های نمونه کار"""
+        return self.work_links.count()
+    
+    def get_featured_work_links(self):
+        """لینک‌های نمونه کار برجسته"""
+        return self.work_links.filter(is_featured=True)
+    
+    def get_recent_work_links(self, limit=5):
+        """آخرین لینک‌های نمونه کار"""
+        return self.work_links.order_by('-created_at')[:limit]
+    
+    def get_available_specialty_categories(self):
+        """دریافت فرزندان Topic انتخاب شده در dealer_type"""
+        if self.dealer_type:
+            return Topic.objects.filter(parent=self.dealer_type)
+        return Topic.objects.none()
+    
+    def get_service_provinces(self):
+        """استان‌هایی که کاربر در آن‌ها خدمات ارائه می‌دهد"""
+        return Province.objects.filter(cities__in=self.service_area.all()).distinct()
+    
+    def get_service_cities_by_province(self):
+        """شهرها را بر اساس استان گروه‌بندی می‌کند"""
+        cities_by_province = {}
+        for city in self.service_area.all():
+            province_name = city.province.name
+            if province_name not in cities_by_province:
+                cities_by_province[province_name] = []
+            cities_by_province[province_name].append(city.name)
+        return cities_by_province
+
+
+class Permission(BaseModel):
+    """مدل برای ذخیره مجوزهای کاربران"""
+    resume = models.ForeignKey(
+        Resume, 
+        on_delete=models.CASCADE, 
+        related_name='permission_files',
+        verbose_name='رزومه'
+    )
+    title = models.CharField(
+        max_length=100, 
+        verbose_name='عنوان مجوز',
+        help_text='مثل: مجوز کسب، گواهینامه، پروانه فعالیت'
+    )
+    file = models.FileField(
+        upload_to='resumes/permissions/', 
+        verbose_name='فایل مجوز',
+        help_text='فرمت‌های مجاز: PDF, JPG, PNG'
+    )
+    description = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name='توضیحات',
+        help_text='توضیحات اضافی در مورد این مجوز'
+    )
+    issue_date = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name='تاریخ صدور'
+    )
+    expiry_date = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name='تاریخ انقضا'
+    )
+    issuing_authority = models.CharField(
+        max_length=150, 
+        blank=True, 
+        null=True, 
+        verbose_name='مرجع صادرکننده'
+    )
+
+    class Meta:
+        verbose_name = 'مجوز'
+        verbose_name_plural = 'مجوزها'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.resume.user.get_full_name()}"
+    
+    def is_expired(self):
+        """بررسی انقضای مجوز"""
+        if self.expiry_date:
+            from django.utils import timezone
+            return self.expiry_date < timezone.now().date()
+        return False
+
+
+class WorkLink(BaseModel):
+    """مدل برای ذخیره لینک‌های نمونه کارهای کاربران"""
+    resume = models.ForeignKey(
+        Resume, 
+        on_delete=models.CASCADE, 
+        related_name='work_links',
+        verbose_name='رزومه'
+    )
+    title = models.CharField(
+        max_length=100, 
+        verbose_name='عنوان نمونه کار',
+        help_text='عنوان یا توضیح کوتاه نمونه کار'
+    )
+    url = models.URLField(
+        verbose_name='آدرس لینک',
+        help_text='آدرس کامل نمونه کار (مثل: https://example.com)'
+    )
+    description = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name='توضیحات',
+        help_text='توضیحات اضافی در مورد این نمونه کار'
+    )
+    category = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name='دسته‌بندی',
+        help_text='نوع نمونه کار (مثل: وب‌سایت، اپلیکیشن، طراحی گرافیک)'
+    )
+    completion_date = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name='تاریخ تکمیل'
+    )
+    is_featured = models.BooleanField(
+        default=False,
+        verbose_name='نمونه کار برجسته',
+        help_text='آیا این نمونه کار به عنوان کار برجسته نمایش داده شود؟'
+    )
+    order = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name='ترتیب نمایش',
+        help_text='ترتیب نمایش این لینک (عدد کمتر اولویت بالاتر)'
+    )
+
+    class Meta:
+        verbose_name = 'لینک نمونه کار'
+        verbose_name_plural = 'لینک‌های نمونه کارها'
+        ordering = ['order', '-is_featured', '-created_at']
+        unique_together = ['resume', 'url']  # جلوگیری از تکرار URL در یک رزومه
+
+    def __str__(self):
+        return f"{self.title} - {self.resume.user.get_full_name()}"
+    
+    def get_domain(self):
+        """استخراج دامنه از URL"""
+        from urllib.parse import urlparse
+        try:
+            domain = urlparse(self.url).netloc
+            return domain.replace('www.', '')
+        except:
+            return None
+    
+    def is_valid_url(self):
+        """بررسی معتبر بودن URL"""
+        import re
+        url_pattern = re.compile(
+            r'^https?://'  # http:// یا https://
+            r'(?:(?:[A-Z0-9](?:[A ز0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain
+            r'localhost|'  # localhost
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # IP
+            r'(?::\d+)?'  # پورت اختیاری
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        return url_pattern.match(self.url) is not None

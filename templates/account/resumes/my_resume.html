@@ -1,0 +1,534 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}رزومه من{% endblock %}
+
+{% block content %}
+<style>
+    .resume-form {
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: sans-serif;
+    }
+
+    .resume-form .form-group {
+        margin-bottom: 20px;
+    }
+
+    .resume-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #34495e;
+    }
+
+    .resume-form input,
+    .resume-form textarea,
+    .resume-form select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .resume-form .row {
+        display: flex;
+        gap: 20px;
+    }
+
+    .resume-form .row > div {
+        flex: 1;
+    }
+
+    .resume-form button {
+        background-color: #028c32;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+
+    .resume-form button:hover {
+        background-color: #026a24;
+    }
+
+    .resume-status {
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+
+    .status-under_review {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .status-needs_editing {
+        background-color: #fcefe2;
+        color: #856404;
+        border: 1px solid #f9e79f;
+    }
+
+    .status-approved {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .manager-comment {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 15px 0;
+        border-left: 4px solid #007bff;
+    }
+
+    /* استایل‌های جدید برای انتخاب شهر */
+    .province-section {
+        background: #f8f9fa;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .province-header {
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #dee2e6;
+        cursor: pointer;
+    }
+
+    .cities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .city-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .city-checkbox input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+
+    .specialty-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+        min-height: 50px;
+    }
+
+    .specialty-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .specialty-checkbox input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+
+    .char-counter {
+        font-size: 12px;
+        color: #666;
+        text-align: left;
+        margin-top: 5px;
+    }
+
+    .char-counter.over-limit {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .portfolios-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .portfolio-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .portfolio-checkbox input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+
+    .empty-message {
+        color: #666;
+        font-style: italic;
+        padding: 20px;
+        text-align: center;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border: 1px dashed #dee2e6;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>رزومه من</h2>
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content">
+            {% if resume %}
+                <div class="resume-status 
+                    {% if resume.status == 'pending' %}status-pending
+                    {% elif resume.status == 'under_review' %}status-under_review
+                    {% elif resume.status == 'needs_editing' %}status-needs_editing
+                    {% elif resume.status == 'approved' %}status-approved
+                    {% elif resume.status == 'rejected' %}status-rejected
+                    {% endif %}">
+                    
+                    وضعیت رزومه: {{ resume.get_status_display }}
+                    
+                    {% if resume.status == 'needs_editing' %}
+                        <br><small>لطفاً رزومه خود را بر اساس نظرات مدیر ویرایش کنید.</small>
+                    {% elif resume.status == 'rejected' %}
+                        <br><small>رزومه شما رد شده است. می‌توانید رزومه جدیدی ارسال کنید.</small>
+                    {% elif resume.status == 'approved' %}
+                        <br><small>رزومه شما تایید شده و می‌توانید در کمپین‌ها شرکت کنید.</small>
+                    {% endif %}
+                </div>
+
+                {% if resume.manager_comment %}
+                    <div class="manager-comment">
+                        <strong>نظر مدیر:</strong>
+                        <p>{{ resume.manager_comment|linebreaksbr }}</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="resume-form" id="resume-form">
+                {% csrf_token %}
+
+                <div class="row">
+                    <div>
+                        <label for="id_title">عنوان رزومه</label>
+                        <input type="text" name="title" id="id_title" class="form-control" 
+                               value="{{ form.title.value|default:'' }}" maxlength="100">
+                    </div>
+                    <div>
+                        <label for="id_dealer_type">نوع مجری تبلیغات *</label>
+                        <select name="dealer_type" id="id_dealer_type" class="form-control" required>
+                            <option value="">انتخاب کنید...</option>
+                            {% for topic in parent_topics %}
+                                <option value="{{ topic.id }}" 
+                                    {% if form.dealer_type.value == topic.id %}selected{% endif %}>
+                                    {{ topic.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- بخش انتخاب استان و شهرها -->
+                <div class="form-group">
+                    <label>حوزه خدمات (استان‌ها و شهرها)</label>
+                    <div id="provinces-container">
+                        {% if provinces %}
+                            {% for province in provinces %}
+                                <div class="province-section">
+                                    <div class="province-header">
+                                        <input type="checkbox" id="province_{{ province.id }}" 
+                                               class="province-checkbox" data-province-id="{{ province.id }}">
+                                        <label for="province_{{ province.id }}">{{ province.name }}</label>
+                                    </div>
+                                    <div class="cities-grid" id="cities_{{ province.id }}" style="display: none;">
+                                        {% for city in province.cities.all %}
+                                            <div class="city-checkbox">
+                                                <input type="checkbox" name="service_area" value="{{ city.id }}" 
+                                                       id="city_{{ city.id }}" class="city-check" 
+                                                       data-province="{{ province.id }}"
+                                                       {% if city.id in selected_cities %}checked{% endif %}>
+                                                <label for="city_{{ city.id }}">{{ city.name }}</label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-message">
+                                هیچ استان و شهری در سیستم تعریف نشده است. لطفاً با مدیر سیستم تماس بگیرید.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- بخش دسته‌های تخصصی -->
+                <div class="form-group">
+                    <label>دسته‌های تخصصی</label>
+                    <div id="specialty-categories-container" class="specialty-grid">
+                        <div class="empty-message">
+                            ابتدا نوع مجری تبلیغات را انتخاب کنید.
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_describe">توضیحات (حداکثر 250 کاراکتر) *</label>
+                    <textarea name="describe" id="id_describe" class="form-control" rows="3" 
+                              maxlength="250" required>{{ form.describe.value|default:'' }}</textarea>
+                    <div class="char-counter" id="describe-counter">0/250</div>
+                </div>
+
+                <div>
+                    <label for="id_services">خدمات قابل ارائه (حداکثر 120 کاراکتر) *</label>
+                    <textarea name="services" id="id_services" class="form-control" rows="2" 
+                              maxlength="120" required>{{ form.services.value|default:'' }}</textarea>
+                    <div class="char-counter" id="services-counter">0/120</div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label for="id_socialmedia_and_sites">شبکه‌های اجتماعی و وب‌سایت‌ها (حداکثر 120 کاراکتر)</label>
+                        <textarea name="socialmedia_and_sites" id="id_socialmedia_and_sites" 
+                                  class="form-control" rows="2" maxlength="120">{{ form.socialmedia_and_sites.value|default:'' }}</textarea>
+                        <div class="char-counter" id="socialmedia-counter">0/120</div>
+                    </div>
+                    <div>
+                        <label for="id_tools_and_platforms">ابزارها و پلتفرم‌ها (حداکثر 120 کاراکتر)</label>
+                        <textarea name="tools_and_platforms" id="id_tools_and_platforms" 
+                                  class="form-control" rows="2" maxlength="120">{{ form.tools_and_platforms.value|default:'' }}</textarea>
+                        <div class="char-counter" id="tools-counter">0/120</div>
+                    </div>
+                </div>
+
+                <!-- بخش پورتفولیوها -->
+                <div class="form-group">
+                    <label>انتخاب پورتفولیوهای مرتبط</label>
+                    <div class="portfolios-grid">
+                        {% if user_portfolios %}
+                            {% for portfolio in user_portfolios %}
+                                <div class="portfolio-checkbox">
+                                    <input type="checkbox" name="portfolios" value="{{ portfolio.id }}" 
+                                           id="portfolio_{{ portfolio.id }}"
+                                           {% if portfolio.id in selected_portfolios %}checked{% endif %}>
+                                    <label for="portfolio_{{ portfolio.id }}">{{ portfolio.subject|default:"نمونه کار "|add:portfolio.id }}</label>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-message">
+                                شما هنوز پورتفولیویی ایجاد نکرده‌اید. <a href="{% url 'account:portfoliocreate' %}">ایجاد پورتفولیو</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label for="id_partner_brand">برندهای همکار (حداکثر 120 کاراکتر)</label>
+                        <textarea name="partner_brand" id="id_partner_brand" class="form-control" 
+                                  rows="2" maxlength="120">{{ form.partner_brand.value|default:'' }}</textarea>
+                        <div class="char-counter" id="partner-counter">0/120</div>
+                    </div>
+                    <div>
+                        <label for="id_bank_account">شماره حساب بانکی</label>
+                        <input type="text" name="bank_account" id="id_bank_account" 
+                               class="form-control" value="{{ form.bank_account.value|default:'' }}" 
+                               maxlength="25">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_file">فایل رزومه (PDF یا ZIP - حداکثر 10MB)</label>
+                    <input type="file" name="file" id="id_file" class="form-control" 
+                           accept=".pdf,.zip">
+                    {% if resume and resume.file %}
+                        <p>فایل فعلی: <a href="{{ resume.file.url }}" target="_blank">مشاهده فایل</a></p>
+                    {% endif %}
+                </div>
+
+                <div style="margin-top: 30px;">
+                    {% if is_edit_mode %}
+                        <button type="submit">ویرایش رزومه</button>
+                    {% else %}
+                        <button type="submit">ارسال رزومه</button>
+                    {% endif %}
+                    <a href="{% url 'account:home' %}" class="btn btn-secondary">بازگشت</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تابع شمارش کاراکتر
+    function setupCharacterCounter(fieldId, counterId, maxLength) {
+        const field = document.getElementById(fieldId);
+        const counter = document.getElementById(counterId);
+        
+        function updateCounter() {
+            const currentLength = field.value.length;
+            counter.textContent = `${currentLength}/${maxLength}`;
+            
+            if (currentLength > maxLength) {
+                counter.classList.add('over-limit');
+            } else {
+                counter.classList.remove('over-limit');
+            }
+        }
+        
+        field.addEventListener('input', updateCounter);
+        updateCounter(); // برای مقدار اولیه
+    }
+    
+    // راه‌اندازی شمارنده‌های کاراکتر
+    setupCharacterCounter('id_describe', 'describe-counter', 250);
+    setupCharacterCounter('id_services', 'services-counter', 120);
+    setupCharacterCounter('id_socialmedia_and_sites', 'socialmedia-counter', 120);
+    setupCharacterCounter('id_tools_and_platforms', 'tools-counter', 120);
+    setupCharacterCounter('id_partner_brand', 'partner-counter', 120);
+
+    // مدیریت انتخاب استان و شهرها
+    const provinceCheckboxes = document.querySelectorAll('.province-checkbox');
+    
+    provinceCheckboxes.forEach(checkbox => {
+        const provinceId = checkbox.getAttribute('data-province-id');
+        const citiesContainer = document.getElementById(`cities_${provinceId}`);
+        const cityCheckboxes = citiesContainer.querySelectorAll('.city-check');
+        
+        // نمایش شهرها هنگام کلیک روی استان
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                citiesContainer.style.display = 'grid';
+                // انتخاب تمام شهرهای استان
+                cityCheckboxes.forEach(cityCheckbox => {
+                    cityCheckbox.checked = true;
+                });
+            } else {
+                citiesContainer.style.display = 'none';
+                // حذف انتخاب تمام شهرهای استان
+                cityCheckboxes.forEach(cityCheckbox => {
+                    cityCheckbox.checked = false;
+                });
+            }
+        });
+        
+        // بررسی وضعیت اولیه - اگر شهری انتخاب شده، استان را نمایش بده
+        let hasSelectedCity = false;
+        cityCheckboxes.forEach(cityCheckbox => {
+            if (cityCheckbox.checked) {
+                hasSelectedCity = true;
+            }
+            
+            // مدیریت تغییر وضعیت شهرها
+            cityCheckbox.addEventListener('change', function() {
+                const selectedCities = citiesContainer.querySelectorAll('.city-check:checked');
+                
+                if (selectedCities.length === 0) {
+                    checkbox.checked = false;
+                } else if (selectedCities.length === cityCheckboxes.length) {
+                    checkbox.checked = true;
+                }
+            });
+        });
+        
+        if (hasSelectedCity) {
+            citiesContainer.style.display = 'grid';
+            // بررسی آیا همه شهرها انتخاب شده‌اند
+            const selectedCities = citiesContainer.querySelectorAll('.city-check:checked');
+            if (selectedCities.length === cityCheckboxes.length) {
+                checkbox.checked = true;
+            }
+        }
+    });
+
+    // مدیریت دسته‌های تخصصی بر اساس نوع مجری
+    const dealerTypeSelect = document.getElementById('id_dealer_type');
+    const specialtyCategoriesContainer = document.getElementById('specialty-categories-container');
+    
+    function loadSpecialtyCategories(dealerTypeId) {
+        if (!dealerTypeId) {
+            specialtyCategoriesContainer.innerHTML = '<div class="empty-message">ابتدا نوع مجری تبلیغات را انتخاب کنید.</div>';
+            return;
+        }
+        
+        // نمایش loading
+        specialtyCategoriesContainer.innerHTML = '<div class="empty-message">در حال بارگذاری...</div>';
+        
+        fetch(`/account/get-specialty-categories/?dealer_type_id=${dealerTypeId}`)
+            .then(response => response.json())
+            .then(data => {
+                specialtyCategoriesContainer.innerHTML = '';
+                
+                if (data.categories && data.categories.length > 0) {
+                    data.categories.forEach(category => {
+                        const div = document.createElement('div');
+                        div.className = 'specialty-checkbox';
+                        div.innerHTML = `
+                            <input type="checkbox" name="specialty_categories" value="${category.id}" 
+                                   id="specialty_${category.id}">
+                            <label for="specialty_${category.id}">${category.name}</label>
+                        `;
+                        specialtyCategoriesContainer.appendChild(div);
+                    });
+                    
+                    // بازیابی انتخاب‌های قبلی
+                    const selectedCategories = {{ selected_specialty_categories|safe }};
+                    selectedCategories.forEach(categoryId => {
+                        const checkbox = document.getElementById(`specialty_${categoryId}`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                } else {
+                    specialtyCategoriesContainer.innerHTML = '<div class="empty-message">دسته‌بندی تخصصی برای این نوع مجری وجود ندارد.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading specialty categories:', error);
+                specialtyCategoriesContainer.innerHTML = '<div class="empty-message">خطا در بارگذاری دسته‌بندی‌ها</div>';
+            });
+    }
+    
+    dealerTypeSelect.addEventListener('change', function() {
+        loadSpecialtyCategories(this.value);
+    });
+    
+    // بارگذاری اولیه
+    if (dealerTypeSelect.value) {
+        loadSpecialtyCategories(dealerTypeSelect.value);
+    }
+});
+</script>
+
+{% endblock %}

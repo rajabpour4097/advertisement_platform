@@ -42,17 +42,16 @@ from account.mixins import (
                             PortfolioEditMixin,
                             StaffUserMixin
                             )
-from advplatform.models import Campaign, CustomUser, Portfolio, Resume, UsersImages, Topic
+from advplatform.models import Campaign, CustomUser, Portfolio, Resume, UsersImages, Topic, Province, City
 from django.contrib.auth import logout
 from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
-from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_campaign_winner, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change
-from .utils.send_sms import send_activation_sms, send_campaign_winner_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms
+from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_campaign_winner, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change, notify_resume_review
+from .utils.send_sms import send_activation_sms, send_campaign_winner_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms, send_resume_review_sms
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
-from django.core.paginator import Paginator
 
 
 
@@ -893,8 +892,6 @@ class CampaignEditProposalView(DealerUserMixin, View):
             'proposal': proposal
         })
 
-
-
 class RunningCampaignParticipatedListView(ManagerUserMixin, ListView):
     template_name = 'account/campaign/running_campaign_participated_list.html'
     context_object_name = 'proposals'
@@ -1110,26 +1107,17 @@ class NewMentorActivate(ManagerUserMixin, View):
         return redirect('account:mentorslist')
 
 
-class ResumeReviewListView(DealerUserMixin, ListView):
+class ResumeReviewListView(ManagerUserMixin, ListView):
     model = Resume
     template_name = 'account/resumes/review_list.html'
     context_object_name = 'resumes'
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff or user.is_am:  # فرض بر این که ManagerUserMixin به چنین ویژگی‌ای اضافه کرده
-            return Resume.objects.all().order_by('-created_at')
-        elif user.user_type == 'dealer':  # و همچنین DealerUserMixin
-            return Resume.objects.filter(user=user).order_by('-created_at')
-        else:
-            return Resume.objects.none()
 
     
 class SubmitResumeView(DealerUserMixin, CreateView):
     model = Resume
     form_class = ResumeForm
     template_name = 'account/resumes/submit.html'
-    success_url = reverse_lazy('account:review_resumes')  # ریدایرکت پس از ارسال موفق
+    success_url = reverse_lazy('account:my_resume')  # ریدایرکت پس از ارسال موفق
 
     def form_valid(self, form):
         form.instance.user = self.request.user  # اتصال رزومه به کاربر جاری
@@ -1143,15 +1131,62 @@ class ResumeDetailView(ManagerUserMixin, UpdateView):
     success_url = reverse_lazy('account:review_resumes')
     context_object_name = 'resume'
 
-    def test_func(self):
-        return self.request.user.is_staff  # فقط ادمین‌ها اجازه دارند
-
     def get_object(self, queryset=None):
         resume = get_object_or_404(Resume, id=self.kwargs['resume_id'])
-        if not resume.is_seen_by_manager:
+        # تنها در صورت اولین مشاهده، وضعیت را تغییر دهید
+        if not resume.is_seen_by_manager and resume.status == 'pending':
             resume.is_seen_by_manager = True
+            resume.status = 'under_review'
             resume.save()
         return resume
+
+    def form_valid(self, form):
+        old_status = self.object.status
+        response = super().form_valid(form)
+        new_status = self.object.status
+        
+        # ارسال اعلان به کاربر در صورت تغییر وضعیت
+        if old_status != new_status:
+            # ارسال نوتیفیکیشن
+            notify_resume_review(
+                resume=self.object,
+                reviewer=self.request.user,
+                old_status=old_status,
+                new_status=new_status
+            )
+            
+            # ارسال پیامک
+            try:
+                success, error = send_resume_review_sms(self.object, new_status)
+                if not success:
+                    messages.warning(self.request, f"خطا در ارسال پیامک: {error}")
+            except Exception as e:
+                messages.warning(self.request, f"خطا در ارسال پیامک: {str(e)}")
+            
+            # پیام موفقیت
+            status_messages = {
+                'under_review': 'رزومه در حال بررسی قرار گرفت.',
+                'needs_editing': 'درخواست ویرایش رزومه ارسال شد.',
+                'approved': 'رزومه تایید شد.',
+                'rejected': 'رزومه رد شد.'
+            }
+            
+            messages.success(
+                self.request, 
+                status_messages.get(new_status, 'وضعیت رزومه تغییر کرد.')
+            )
+        
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['resume'] = self.object
+        
+        # اضافه کردن اطلاعات مجوزها و لینک‌های کار
+        context['permissions'] = self.object.permission_files.all()
+        context['work_links'] = self.object.work_links.all()
+        
+        return context
 
 
 class ResumeDeleteView(DealerUserMixin, DeleteView):
@@ -1165,3 +1200,116 @@ class ResumeDeleteView(DealerUserMixin, DeleteView):
             messages.error(request, "این رزومه قبلاً توسط مدیر تایید شده و امکان حذف آن وجود ندارد.")
             return redirect(self.success_url)
         return super().post(request, *args, **kwargs)
+
+
+class MyResumeView(DealerUserMixin, View):
+    template_name = 'account/resumes/my_resume.html'
+    
+    def get(self, request):
+        try:
+            resume = Resume.objects.get(user=request.user)
+            form = ResumeForm(instance=resume)
+            is_edit_mode = True
+            selected_cities = list(resume.service_area.values_list('id', flat=True))
+            selected_specialty_categories = list(resume.specialty_categories.values_list('id', flat=True))
+            selected_portfolios = list(resume.portfolios.values_list('id', flat=True))
+        except Resume.DoesNotExist:
+            form = ResumeForm()
+            resume = None
+            is_edit_mode = False
+            selected_cities = []
+            selected_specialty_categories = []
+            selected_portfolios = []
+        
+        # دریافت تمام استان‌ها همراه با شهرهایشان
+        provinces = Province.objects.prefetch_related('cities').all()
+        
+        # دریافت Topic های والد (بدون parent)
+        parent_topics = Topic.objects.filter(parent__isnull=True)
+        
+        # دریافت پورتفولیوهای کاربر
+        user_portfolios = Portfolio.objects.filter(dealer=request.user, is_active=True)
+            
+        return render(request, self.template_name, {
+            'form': form,
+            'resume': resume,
+            'is_edit_mode': is_edit_mode,
+            'provinces': provinces,
+            'parent_topics': parent_topics,
+            'user_portfolios': user_portfolios,
+            'selected_cities': selected_cities,
+            'selected_specialty_categories': selected_specialty_categories,
+            'selected_portfolios': selected_portfolios,
+        })
+    
+    def post(self, request):
+        try:
+            resume = Resume.objects.get(user=request.user)
+            form = ResumeForm(request.POST, request.FILES, instance=resume)
+            is_edit_mode = True
+        except Resume.DoesNotExist:
+            form = ResumeForm(request.POST, request.FILES)
+            resume = None
+            is_edit_mode = False
+        
+        if form.is_valid():
+            resume_instance = form.save(commit=False)
+            resume_instance.user = request.user
+            
+            # اگر رزومه جدید است، وضعیت را pending قرار دهید
+            if not is_edit_mode:
+                resume_instance.status = 'pending'
+                resume_instance.is_seen_by_manager = False
+                messages.success(request, 'رزومه شما با موفقیت ارسال شد و در انتظار بررسی است.')
+            else:
+                # اگر رزومه ویرایش شده، وضعیت را دوباره pending کنید
+                resume_instance.status = 'pending'
+                resume_instance.is_seen_by_manager = False
+                messages.success(request, 'رزومه شما با موفقیت ویرایش شد و در انتظار بررسی مجدد است.')
+            
+            resume_instance.save()
+            form.save_m2m()  # برای ذخیره روابط many-to-many
+            
+            return redirect('account:my_resume')
+        
+        # در صورت خطا، دوباره اطلاعات را بارگذاری کنید
+        provinces = Province.objects.prefetch_related('cities').all()
+        parent_topics = Topic.objects.filter(parent__isnull=True)
+        user_portfolios = Portfolio.objects.filter(dealer=request.user, is_active=True)
+        selected_cities = request.POST.getlist('service_area')
+        selected_specialty_categories = request.POST.getlist('specialty_categories')
+        selected_portfolios = request.POST.getlist('portfolios')
+        
+        return render(request, self.template_name, {
+            'form': form,
+            'resume': resume,
+            'is_edit_mode': is_edit_mode,
+            'provinces': provinces,
+            'parent_topics': parent_topics,
+            'user_portfolios': user_portfolios,
+            'selected_cities': [int(x) for x in selected_cities if x],
+            'selected_specialty_categories': [int(x) for x in selected_specialty_categories if x],
+            'selected_portfolios': [int(x) for x in selected_portfolios if x],
+        })
+
+# اضافه کردن AJAX view برای دریافت دسته‌های تخصصی:
+@login_required
+def get_specialty_categories(request):
+    """دریافت فرزندان Topic بر اساس dealer_type انتخاب شده"""
+    dealer_type_id = request.GET.get('dealer_type_id')
+    
+    if dealer_type_id:
+        try:
+            specialty_categories = Topic.objects.filter(parent_id=dealer_type_id)
+            data = [
+                {
+                    'id': category.id,
+                    'name': category.name
+                }
+                for category in specialty_categories
+            ]
+            return JsonResponse({'categories': data})
+        except ValueError:
+            pass
+    
+    return JsonResponse({'categories': []})

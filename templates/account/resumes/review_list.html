@@ -80,7 +80,6 @@
             <th>عنوان</th>
             <th>وضعیت</th>
             <th>تاریخ</th>
-            <th>فایل رزومه</th>
             <th>عملیات</th>
         </tr>
     </thead>
@@ -89,7 +88,7 @@
             <tr style="{% if resume.status == 'pending' and not resume.is_seen_by_manager and not user.user_type == 'dealer' %}background-color: #d2d1cfff; font-weight: bold;{% endif %}">
             <td>{{ forloop.counter }}</td>
             <td class="user-cell">
-                <img src="{{ resume.user.customuserimages.first.image.url }}" class="avatar" alt="avatar">
+                <img src="{% if resume.user.customuserimages.first %}{{ resume.user.customuserimages.first.image.url }}{% else %}{% static 'account/build/images/user.png' %}{% endif %}" class="avatar" alt="avatar">
                 {{ resume.user.get_full_name|default:resume.user.username }}
             </td>
             <td>{{ resume.title }}</td>
@@ -104,13 +103,6 @@
                 </span>
             </td>
             <td>{{ resume.created_at|jalali_timedate }}</td>
-            <td>
-                {% if resume.file %}
-                    <a href="{{ resume.file.url }}" target="_blank" class="resume-link">مشاهده</a>
-                {% else %}
-                    <span style="color:#888; font-size: 0.85em;">ندارد</span>
-                {% endif %}
-            </td>
             <td>
                 {% if user.user_type == 'dealer' %}
                 <a href="{% url 'account:delete_resume' resume.id %}" class="btn btn-danger">حذف</a>

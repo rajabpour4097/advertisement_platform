@@ -121,3 +121,18 @@ def send_campaign_cancel_sms(campaign):
     topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
     phone = campaign.customer.phone_number.strip() if campaign.customer else None
     return send_sms(phone, "349749", topic) if phone else (True, None)
+
+def send_resume_review_sms(resume, new_status):
+    """ارسال پیامک برای بررسی رزومه"""
+    
+    # موقتاً از body_id عمومی استفاده می‌کنیم
+    body_id = "337375"  # یا هر body_id عمومی که دارید
+    
+    phone = resume.user.phone_number.strip() if resume.user.phone_number else None
+    if not phone:
+        return False, "User phone number not found"
+    
+    # کد پیگیری رزومه
+    text = str(resume.id)
+    
+    return send_sms(phone, body_id, text)

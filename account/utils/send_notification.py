@@ -514,4 +514,30 @@ def notify_campaign_winner(campaign, winner, selector, staff_users, am_users):
         description=f"{winner.get_full_name()} به عنوان برنده کمپین '{campaign_desc}' انتخاب شد.",
         target=campaign
     )
+    
+def notify_resume_review(resume, reviewer, old_status, new_status):
+    """ارسال اعلان برای بررسی رزومه"""
+    try:
+        from notifications.signals import notify
+        
+        status_messages = {
+            'under_review': 'رزومه شما در حال بررسی قرار گرفت',
+            'needs_editing': 'رزومه شما نیاز به ویرایش دارد',
+            'approved': 'رزومه شما تایید شد',
+            'rejected': 'رزومه شما رد شده است'
+        }
+        
+        verb = status_messages.get(new_status, 'وضعیت رزومه تغییر کرد')
+        
+        notify.send(
+            sender=reviewer,
+            recipient=resume.user,
+            verb=verb,
+            description=resume.manager_comment if resume.manager_comment else '',
+            target=resume
+        )
+        
+        return True, None
+    except Exception as e:
+        return False, str(e)
 
