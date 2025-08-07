@@ -219,14 +219,6 @@
             <form method="post" enctype="multipart/form-data" class="resume-form" id="resume-form">
                 {% csrf_token %}
 
-                <div class="row">
-                    <div>
-                        <label for="id_title">عنوان رزومه</label>
-                        <input type="text" name="title" id="id_title" class="form-control" 
-                               value="{{ form.title.value|default:'' }}" maxlength="100">
-                    </div>
-                </div>
-
                 <!-- نوع مجری تبلیغات با radio -->
                 <div class="form-group">
                     <label>نوع مجری تبلیغات *</label>
