@@ -1275,31 +1275,30 @@ class MyResumeView(DealerUserMixin, View):
             resume_instance = form.save(commit=False)
             resume_instance.user = request.user
             
-            # اگر رزومه جدید است، وضعیت را pending قرار دهید
-            if not is_edit_mode:
-                resume_instance.status = 'pending'
-                resume_instance.is_seen_by_manager = False
-                messages.success(request, 'رزومه شما با موفقیت ارسال شد و در انتظار بررسی است.')
-            else:
-                # اگر رزومه ویرایش شده، وضعیت را دوباره pending کنید
-                resume_instance.status = 'pending'
-                resume_instance.is_seen_by_manager = False
-                messages.success(request, 'رزومه شما با موفقیت ویرایش شد و در انتظار بررسی مجدد است.')
-            
-            resume_instance.save()
-            city_ids = request.POST.get('service_area', '')
-            city_ids = [int(cid) for cid in city_ids.split(',') if cid]
-            # سپس این city_ids را به form/service_area ست کنید
-            form = ResumeForm(request.POST, request.FILES)
-            if form.is_valid():
-                resume_instance = form.save(commit=False)
-                resume_instance.user = request.user
-                resume_instance.save()
+            # پردازش شهرهای انتخابی
+            service_area_ids = request.POST.get('service_area', '')
+            if service_area_ids:
+                city_ids = [int(x) for x in service_area_ids.split(',') if x.strip()]
+                resume_instance.save()  # ابتدا رزومه را ذخیره کنید
                 resume_instance.service_area.set(city_ids)
-                form.save_m2m()
+            else:
+                resume_instance.save()
+                
+            # پردازش دسته تخصصی
+            specialty_category = request.POST.get('specialty_categories')
+            if specialty_category:
+                resume_instance.specialty_categories.set([int(specialty_category)])
+                
+            # پردازش نمونه کارها
+            portfolio_ids = request.POST.get('portfolios', '')
+            if portfolio_ids:
+                portfolio_ids_list = [int(x) for x in portfolio_ids.split(',') if x.strip()]
+                resume_instance.portfolios.set(portfolio_ids_list)
+            
+            messages.success(request, 'رزومه شما با موفقیت ذخیره شد.')
             return redirect('account:my_resume')
         
-        # در صورت خطا، دوباره اطلاعات را بارگذاری کنید
+        # در صورت خطا، دوباره صفحه را بارگذاری کنید
         provinces_qs = Province.objects.prefetch_related('cities').all()
         provinces = [
             {

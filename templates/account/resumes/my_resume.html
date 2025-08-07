@@ -6,6 +6,7 @@
 
 {% block content %}
 <style>
+    /* همه استایل‌های قبلی + استایل‌های جدید */
     .resume-form {
         max-width: 800px;
         margin: 0 auto;
@@ -58,104 +59,93 @@
         background-color: #026a24;
     }
 
-    .resume-status {
-        padding: 10px;
-        border-radius: 5px;
-        margin-bottom: 20px;
-        text-align: center;
-        font-weight: bold;
-    }
-
-    .status-pending {
-        background-color: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeaa7;
-    }
-
-    .status-under_review {
-        background-color: #d1ecf1;
-        color: #0c5460;
-        border: 1px solid #bee5eb;
-    }
-
-    .status-needs_editing {
-        background-color: #fcefe2;
-        color: #856404;
-        border: 1px solid #f9e79f;
-    }
-
-    .status-approved {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-
-    .status-rejected {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    .manager-comment {
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 5px;
-        margin: 15px 0;
-        border-left: 4px solid #007bff;
-    }
-
-    .char-counter {
-        font-size: 12px;
-        color: #666;
-        text-align: left;
-        margin-top: 5px;
-    }
-
-    .char-counter.over-limit {
-        color: #dc3545;
-        font-weight: bold;
-    }
-
-    .empty-message {
-        color: #666;
-        font-style: italic;
-        padding: 20px;
-        text-align: center;
-        background: #f8f9fa;
-        border-radius: 5px;
-        border: 1px dashed #dee2e6;
-    }
-
-    .custom-file-upload {
-        margin-top: 5px;
-    }
-    
-    .file-upload-btn {
+    /* استایل‌های کارت‌های نوع مجری */
+    .dealer-type-card-list {
         display: flex;
-        border-radius: 5px;
-        overflow: hidden;
+        flex-wrap: nowrap;
+        gap: 6px;
+        justify-content: flex-start;
+    }
+
+    .dealer-type-card {
+        position: relative;
+        width: calc(16.66% - 5px);
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        padding: 4px;
         cursor: pointer;
-        border: 1px solid #ccc;
-    }
-    
-    .file-name-display {
-        flex-grow: 1;
-        padding: 10px 15px;
-        background: white;
-        color: #666;
-        text-align: right;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .file-select-btn {
-        padding: 10px 15px;
-        background-color: #3498db;
-        color: white;
-        font-weight: bold;
-        min-width: 110px;
         text-align: center;
+        transition: all 0.3s ease;
+        background-color: #fff;
+        min-height: 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .dealer-type-card.selected {
+        box-shadow: 0 0 6px rgba(2, 140, 50, 0.3);
+        border-color: #028c32;
+    }
+
+    .dealer-type-card .icon-wrapper {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        margin: 0 auto 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dealer-type-card img {
+        width: 14px;
+        height: 14px;
+    }
+
+    .dealer-type-card h5 {
+        font-weight: bold;
+        margin: 0;
+        font-size: 10px;
+        line-height: 1;
+    }
+
+    .dealer-type-card .checkmark {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        font-size: 10px;
+        color: #028c32;
+        display: none;
+    }
+
+    .dealer-type-card.selected .checkmark {
+        display: block;
+    }
+
+    /* برای موبایل */
+    @media (max-width: 768px) {
+        .dealer-type-card {
+            width: calc(33.33% - 4px);
+            min-width: 80px;
+            min-height: 45px;
+            flex-shrink: 0;
+        }
+        
+        .dealer-type-card h5 {
+            font-size: 7px;
+        }
+        
+        .dealer-type-card img {
+            width: 12px;
+            height: 12px;
+        }
+        
+        .dealer-type-card .icon-wrapper {
+            width: 16px;
+            height: 16px;
+        }
     }
 
     .portfolio-item {
@@ -179,110 +169,60 @@
         width: auto;
     }
 
-    /* استایل برای کارت‌های نوع مجری */
-    .dealer-type-card-list {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 6px; /* کاهش gap */
-        justify-content: flex-start;
+    .custom-file-upload {
+        margin-top: 5px;
     }
-
-    .dealer-type-card {
-        position: relative;
-        width: calc(16.66% - 5px); /* تغییر از 20% به 16.66% (تقریباً 6 کارت در سطر) */
-        border: 2px solid #ddd;
-        border-radius: 6px;
-        padding: 4px; /* کاهش padding */
+    
+    .file-upload-btn {
+        display: flex;
+        border-radius: 5px;
+        overflow: hidden;
         cursor: pointer;
-        text-align: center;
-        transition: all 0.3s ease;
-        background-color: #fff;
-        min-height: 50px; /* کاهش ارتفاع */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex-shrink: 0;
+        border: 1px solid #ccc;
     }
-
-    .dealer-type-card.selected {
-        box-shadow: 0 0 6px rgba(2, 140, 50, 0.3);
-        border-color: #028c32;
+    
+    .file-name-display {
+        flex-grow: 1;
+        padding: 8px 12px;
+        background: white;
+        color: #666;
+        text-align: right;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
     }
-
-    .dealer-type-card .icon-wrapper {
-        width: 20px; /* کاهش سایز */
-        height: 20px;
-        border-radius: 3px;
-        margin: 0 auto 2px; /* کاهش margin */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .dealer-type-card img {
-        width: 14px; /* کاهش سایز تصویر */
-        height: 14px;
-    }
-
-    .dealer-type-card h5 {
+    
+    .file-select-btn {
+        padding: 8px 12px;
+        background-color: #3498db;
+        color: white;
         font-weight: bold;
-        margin: 0;
-        font-size: 10px; /* کاهش سایز فونت */
-        line-height: 1;
+        min-width: 90px;
+        text-align: center;
+        font-size: 12px;
     }
 
-    .dealer-type-card .checkmark {
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        font-size: 10px;
-        color: #028c32;
-        display: none;
+    .char-counter {
+        font-size: 12px;
+        color: #666;
+        text-align: left;
+        margin-top: 5px;
     }
 
-    .dealer-type-card.selected .checkmark {
-        display: block;
+    .char-counter.over-limit {
+        color: #dc3545;
+        font-weight: bold;
     }
 
-    /* برای موبایل */
-    @media (max-width: 768px) {
-        .dealer-type-card-list {
-            flex-wrap: wrap; /* اجازه wrap شدن */
-            gap: 4px;
-        }
-        
-        .dealer-type-card {
-            width: calc(33.33% - 3px); /* 3 کارت در سطر */
-            min-height: 40px;
-            padding: 3px;
-        }
-        
-        .dealer-type-card h5 {
-            font-size: 7px;
-            line-height: 1;
-        }
-        
-        .dealer-type-card img {
-            width: 10px;
-            height: 10px;
-        }
-        
-        .dealer-type-card .icon-wrapper {
-            width: 14px;
-            height: 14px;
-            margin-bottom: 1px;
-        }
-    }
-
-    /* برای موبایل‌های خیلی کوچک */
-    @media (max-width: 480px) {
-        .dealer-type-card {
-            width: calc(50% - 2px); /* 2 کارت در سطر */
-        }
-        
-        .dealer-type-card h5 {
-            font-size: 8px;
-        }
+    .empty-message {
+        color: #666;
+        font-style: italic;
+        padding: 20px;
+        text-align: center;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border: 1px dashed #dee2e6;
     }
 </style>
 
@@ -295,31 +235,9 @@
 
         <div class="x_content">
             {% if resume %}
-                <div class="resume-status 
-                    {% if resume.status == 'pending' %}status-pending
-                    {% elif resume.status == 'under_review' %}status-under_review
-                    {% elif resume.status == 'needs_editing' %}status-needs_editing
-                    {% elif resume.status == 'approved' %}status-approved
-                    {% elif resume.status == 'rejected' %}status-rejected
-                    {% endif %}">
-                    
+                <div class="resume-status">
                     وضعیت رزومه: {{ resume.get_status_display }}
-                    
-                    {% if resume.status == 'needs_editing' %}
-                        <br><small>لطفاً رزومه خود را بر اساس نظرات مدیر ویرایش کنید.</small>
-                    {% elif resume.status == 'rejected' %}
-                        <br><small>رزومه شما رد شده است. می‌توانید رزومه جدیدی ارسال کنید.</small>
-                    {% elif resume.status == 'approved' %}
-                        <br><small>رزومه شما تایید شده و می‌توانید در کمپین‌ها شرکت کنید.</small>
-                    {% endif %}
                 </div>
-
-                {% if resume.manager_comment %}
-                    <div class="manager-comment">
-                        <strong>نظر مدیر:</strong>
-                        <p>{{ resume.manager_comment|linebreaksbr }}</p>
-                    </div>
-                {% endif %}
             {% endif %}
 
             <form method="post" enctype="multipart/form-data" class="resume-form" id="resume-form">
@@ -346,7 +264,7 @@
                     <input type="hidden" name="dealer_type" id="selected-dealer-type-id" value="{{ form.dealer_type.value }}">
                 </div>
 
-                <!-- دسته‌های تخصصی با radio -->
+                <!-- دسته‌های تخصصی -->
                 <div class="form-group">
                     <label>دسته‌های تخصصی</label>
                     <div id="specialty-categories-container">
@@ -363,12 +281,11 @@
                         انتخاب استان و شهر
                     </button>
                     <div id="selected-cities-summary" style="margin-top:10px;"></div>
-                    <!-- این input برای ارسال داده به سرور -->
                     <input type="hidden" name="service_area" id="service_area_input">
                 </div>
 
                 <div>
-                    <label for="id_describe">معرفی مختصر از خود (حداکثر 250 کاراکتر) *</label>
+                    <label for="id_describe">توضیحات (حداکثر 250 کاراکتر) *</label>
                     <textarea name="describe" id="id_describe" class="form-control" rows="3" 
                               maxlength="250" required>{{ form.describe.value|default:'' }}</textarea>
                     <div class="char-counter" id="describe-counter">0/250</div>
@@ -376,32 +293,29 @@
 
                 <div>
                     <label for="id_services">خدمات قابل ارائه (حداکثر 120 کاراکتر) *</label>
-                    <textarea name="services" id="id_services" class="form-control" 
-                            rows="2" placeholder="مانند 'طراحی گرافیکی، اجرای بیلبورد، تدوین ویدیو، اسپانسرشیپ ایونت'"
+                    <textarea name="services" id="id_services" class="form-control" rows="2" 
                               maxlength="120" required>{{ form.services.value|default:'' }}</textarea>
                     <div class="char-counter" id="services-counter">0/120</div>
                 </div>
 
                 <div class="row">
                     <div>
-                        <label for="id_socialmedia_and_sites">شبکه‌های اجتماعی و وب‌سایت‌ها (حداکثر 120 کاراکتر)</label>
+                        <label for="id_socialmedia_and_sites">شبکه‌های اجتماعی (حداکثر 120 کاراکتر)</label>
                         <textarea name="socialmedia_and_sites" id="id_socialmedia_and_sites" 
-                                placeholder="مانند 'اینستاگرام، لینکدین، وب‌سایت شخصی'"
-                                class="form-control" rows="2" maxlength="120">{{ form.socialmedia_and_sites.value|default:'' }}</textarea>
+                                  class="form-control" rows="2" maxlength="120">{{ form.socialmedia_and_sites.value|default:'' }}</textarea>
                         <div class="char-counter" id="socialmedia-counter">0/120</div>
                     </div>
                     <div>
                         <label for="id_tools_and_platforms">ابزارها و پلتفرم‌ها (حداکثر 120 کاراکتر)</label>
                         <textarea name="tools_and_platforms" id="id_tools_and_platforms" 
-                                placeholder="مانند 'فتوشاپ، ایلاستریتور، پریمیر'"
-                                class="form-control" rows="2" maxlength="120">{{ form.tools_and_platforms.value|default:'' }}</textarea>
+                                  class="form-control" rows="2" maxlength="120">{{ form.tools_and_platforms.value|default:'' }}</textarea>
                         <div class="char-counter" id="tools-counter">0/120</div>
                     </div>
                 </div>
 
-                <!-- بخش پورتفولیوها -->
+                <!-- بخش نمونه کارها -->
                 <div class="form-group">
-                    <label> نمونه کارها</label>
+                    <label>نمونه کارها</label>
                     <button type="button" id="open-portfolio-modal" class="btn btn-outline-primary" 
                             style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
                         انتخاب نمونه کار
@@ -410,18 +324,38 @@
                     <input type="hidden" name="portfolios" id="portfolios_input">
                 </div>
 
+                <!-- بخش مجوزها -->
+                <div class="form-group">
+                    <label>مجوزها و گواهینامه‌ها</label>
+                    <button type="button" id="open-permission-modal" class="btn btn-outline-primary" 
+                            style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
+                        مدیریت مجوزها
+                    </button>
+                    <div id="selected-permissions-summary" style="margin-top:10px;"></div>
+                    <input type="hidden" name="permissions" id="permissions_input">
+                </div>
+
+                <!-- بخش لینک‌های نمونه کار -->
+                <div class="form-group">
+                    <label>لینک‌های نمونه کار</label>
+                    <button type="button" id="open-worklink-modal" class="btn btn-outline-primary" 
+                            style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
+                        مدیریت لینک‌ها
+                    </button>
+                    <div id="selected-worklinks-summary" style="margin-top:10px;"></div>
+                    <input type="hidden" name="work_links" id="work_links_input">
+                </div>
+
                 <div class="row">
                     <div>
                         <label for="id_partner_brand">برندهای همکار (حداکثر 120 کاراکتر)</label>
                         <textarea name="partner_brand" id="id_partner_brand" class="form-control" 
-                                  placeholder="اسامی برندهایی که با آن‌ها همکاری شده"
                                   rows="2" maxlength="120">{{ form.partner_brand.value|default:'' }}</textarea>
                         <div class="char-counter" id="partner-counter">0/120</div>
                     </div>
                     <div>
                         <label for="id_bank_account">شماره حساب بانکی</label>
                         <input type="text" name="bank_account" id="id_bank_account" 
-                               placeholder="یک شماره شبا معتبر ۲۴ رقمی وارد کنید"
                                class="form-control" value="{{ form.bank_account.value|default:'' }}" 
                                maxlength="25">
                     </div>
@@ -430,7 +364,7 @@
                 <div style="margin-bottom: 20px;">
                     <label for="id_file">فایل رزومه (PDF یا ZIP - حداکثر 10MB)</label>
                     
-                    <!-- جدا کردن لینک دانلود -->
+                    <!-- لینک دانلود نمونه -->
                     <div style="margin-bottom: 10px; padding: 8px; background-color: #f0f8ff; border-radius: 5px; border: 1px solid #cce7ff;">
                         <a href="{% static 'advplatform/assets/files/sample_cv.pdf' %}" 
                            download="نمونه_رزومه.pdf" 
@@ -475,9 +409,7 @@
     <div style="background:#fff; max-width:500px; margin:40px auto; border-radius:10px; padding:20px; position:relative;">
         <h4 style="margin-bottom:10px;">انتخاب شهر</h4>
         <input type="text" id="city-search" placeholder="جستجو در شهرها..." class="form-control" style="margin-bottom:10px;">
-        <div id="province-list" style="max-height:350px; overflow-y:auto;">
-            <!-- استان‌ها و شهرها اینجا با جاوااسکریپت ساخته می‌شوند -->
-        </div>
+        <div id="province-list" style="max-height:350px; overflow-y:auto;"></div>
         <div style="margin-top:20px; text-align:left;">
             <button type="button" class="btn btn-success" id="city-modal-confirm">تایید</button>
             <button type="button" class="btn btn-secondary" id="city-modal-cancel">انصراف</button>
@@ -487,35 +419,199 @@
 
 <!-- مدال انتخاب نمونه کار -->
 <div class="modal" id="portfolioModal" tabindex="-1" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3);">
-    <div style="background:#fff; max-width:600px; margin:40px auto; border-radius:10px; padding:20px; position:relative;">
+    <div style="background:#fff; max-width:700px; margin:40px auto; border-radius:10px; padding:20px; position:relative;">
         <h4 style="margin-bottom:10px;">انتخاب نمونه کار</h4>
-        <div id="portfolio-list" style="max-height:350px; overflow-y:auto;">
-            <!-- نمونه کارها با جاوااسکریپت ساخته می‌شوند -->
-        </div>
+        <div id="portfolio-list" style="max-height:350px; overflow-y:auto;"></div>
         <hr>
         <h5>افزودن نمونه کار جدید</h5>
         <form id="portfolio-add-form">
             {% csrf_token %}
-            <input type="text" name="subject" placeholder="عنوان نمونه کار" class="form-control" style="margin-bottom:5px;" required>
-            <textarea name="description" placeholder="شرح نمونه کار" class="form-control" style="margin-bottom:5px;"></textarea>
-            <input type="file" name="image" class="form-control" style="margin-bottom:5px;">
-            <input type="date" name="done_time" class="form-control" style="margin-bottom:5px;" required>
-            <button type="submit" class="btn btn-success" style="margin-bottom:5px;">افزودن</button>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="portfolio_subject">عنوان نمونه کار *</label>
+                <input type="text" name="subject" id="portfolio_subject" 
+                       placeholder="عنوان نمونه کار" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="portfolio_description">شرح نمونه کار</label>
+                <textarea name="description" id="portfolio_description" 
+                          placeholder="شرح نمونه کار" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="portfolio_done_time">تاریخ انجام *</label>
+                <input type="date" name="done_time" id="portfolio_done_time" 
+                       class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="portfolio_image">فایل نمونه کار</label>
+                <div class="custom-file-upload">
+                    <input type="file" name="image" id="portfolio_image" 
+                           class="form-control" accept="image/*,.pdf" style="display: none;">
+                    <div class="file-upload-btn" id="portfolio-file-upload-button">
+                        <div class="file-name-display" id="portfolio-file-name-display">فایل مورد نظر را انتخاب نمایید</div>
+                        <div class="file-select-btn">انتخاب فایل</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-success" style="margin-bottom:10px;">افزودن نمونه کار</button>
         </form>
+        
         <div style="margin-top:20px; text-align:left;">
-            <button type="button" class="btn btn-success" id="portfolio-modal-confirm">تایید</button>
+            <button type="button" class="btn btn-success" id="portfolio-modal-confirm">تایید انتخاب</button>
             <button type="button" class="btn btn-secondary" id="portfolio-modal-cancel">انصراف</button>
+        </div>
+    </div>
+</div>
+
+<!-- مدال مجوزها -->
+<div class="modal" id="permissionModal" tabindex="-1" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3);">
+    <div style="background:#fff; max-width:700px; margin:40px auto; border-radius:10px; padding:20px; position:relative;">
+        <h4 style="margin-bottom:10px;">مدیریت مجوزها</h4>
+        <div id="permission-list" style="max-height:300px; overflow-y:auto;"></div>
+        <hr>
+        <h5>افزودن مجوز جدید</h5>
+        <form id="permission-add-form">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="permission_title">عنوان مجوز *</label>
+                <input type="text" name="title" id="permission_title" 
+                       placeholder="مثل: مجوز کسب، گواهینامه" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="permission_description">توضیحات</label>
+                <textarea name="description" id="permission_description" 
+                          placeholder="توضیحات اضافی" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="permission_issue_date">تاریخ صدور *</label>
+                <input type="date" name="issue_date" id="permission_issue_date" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="permission_expiry_date">تاریخ انقضا *</label>
+                <input type="date" name="expiry_date" id="permission_expiry_date" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="permission_issuing_authority">مرجع صادرکننده *</label>
+                <input type="text" name="issuing_authority" id="permission_issuing_authority" class="form-control" required>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="permission_file">فایل مجوز *</label>
+                <input type="file" name="file" id="permission_file" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-success" style="margin-bottom:10px;">افزودن مجوز</button>
+        </form>
+        
+        <div style="margin-top:20px; text-align:left;">
+            <button type="button" class="btn btn-secondary" id="permission-modal-close">بستن</button>
+        </div>
+    </div>
+</div>
+
+<!-- مدال لینک‌های نمونه کار -->
+<div class="modal" id="worklinkModal" tabindex="-1" 
+     style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3);">
+    <div style="background:#fff; max-width:700px; margin:40px auto; border-radius:10px; padding:20px; position:relative;">
+        <h4 style="margin-bottom:10px;">مدیریت لینک‌های نمونه کار</h4>
+        <div id="worklink-list" style="max-height:300px; overflow-y:auto;"></div>
+        <hr>
+        <h5>افزودن لینک جدید</h5>
+        <form id="worklink-add-form">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="worklink_title">عنوان نمونه کار *</label>
+                <input type="text" name="title" id="worklink_title" 
+                       placeholder="عنوان نمونه کار" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="worklink_url">آدرس لینک *</label>
+                <input type="url" name="url" id="worklink_url" 
+                       placeholder="https://example.com" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="worklink_description">توضیحات</label>
+                <textarea name="description" id="worklink_description" 
+                          placeholder="توضیحات نمونه کار" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="worklink_category">دسته‌بندی</label>
+                <input type="text" name="category" id="worklink_category" 
+                       placeholder="نوع نمونه کار (مثل: وب‌سایت، اپلیکیشن، طراحی گرافیک)" class="form-control">
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="worklink_completion_date">تاریخ تکمیل</label>
+                <input type="date" name="completion_date" id="worklink_completion_date" class="form-control">
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="worklink_is_featured">نمونه کار برجسته</label>
+               <input type="checkbox" name="is_featured" id="worklink_is_featured" class="form-control"> 
+               آیا این نمونه کار برجسته است؟ 
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label for="worklink_order">ترتیب نمایش</label>
+                <input type="number" name="order" id="worklink_order" class="form-control" min="1" value="1">
+            </div>
+
+            <button type="submit" class="btn btn-success" style="margin-bottom:10px;">افزودن لینک</button>
+        </form>
+        
+        <div style="margin-top:20px; text-align:left;">
+            <button type="button" class="btn btn-secondary" id="worklink-modal-close">بستن</button>
         </div>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // داده‌ها از سرور (همان کد قبلی)
+    console.log('DOM loaded successfully');
+    
+    // داده‌ها از سرور
     const provinces = {{ provinces|safe }};
     const selectedCityIds = {{ selected_cities|safe }};
     let userPortfolios = {{ user_portfolios|safe }};
     const selectedPortfolioIds = {{ selected_portfolios|safe }};
+
+    console.log('Provinces:', provinces);
+    console.log('User Portfolios:', userPortfolios);
+
+    // متغیرهای جدید برای مجوزها و لینک‌ها
+    let userPermissions = [];
+    let userWorkLinks = [];
+
+    // تابع شمارش کاراکتر
+    function setupCharacterCounter(fieldId, counterId, maxLength) {
+        const field = document.getElementById(fieldId);
+        const counter = document.getElementById(counterId);
+        
+        if (!field || !counter) return;
+        
+        function updateCounter() {
+            const currentLength = field.value.length;
+            counter.textContent = `${currentLength}/${maxLength}`;
+            
+            if (currentLength > maxLength) {
+                counter.classList.add('over-limit');
+            } else {
+                counter.classList.remove('over-limit');
+            }
+        }
+        
+        field.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+    
+    // راه‌اندازی شمارنده‌های کاراکتر
+    setupCharacterCounter('id_describe', 'describe-counter', 250);
+    setupCharacterCounter('id_services', 'services-counter', 120);
+    setupCharacterCounter('id_socialmedia_and_sites', 'socialmedia-counter', 120);
+    setupCharacterCounter('id_tools_and_platforms', 'tools-counter', 120);
+    setupCharacterCounter('id_partner_brand', 'partner-counter', 120);
 
     // مدیریت کارت‌های نوع مجری تبلیغات
     const dealerTypeCards = document.querySelectorAll(".dealer-type-card");
@@ -571,58 +667,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     dealerTypeCards.forEach(card => {
         card.addEventListener("click", () => {
+            console.log('Card clicked:', card.dataset.id);
             resetDealerCardStyles();
             card.classList.add("selected");
             const color = card.dataset.color || "#028c32";
             card.style.borderColor = color;
             hiddenDealerInput.value = card.dataset.id;
-            
-            // بارگذاری دسته‌های تخصصی
             loadSpecialtyCategories(card.dataset.id);
         });
 
-        // اگر کارت از قبل انتخاب شده باشد
         if (card.classList.contains("selected")) {
             const color = card.dataset.color || "#028c32";
             card.style.borderColor = color;
-            // بارگذاری دسته‌های تخصصی برای انتخاب اولیه
             loadSpecialtyCategories(card.dataset.id);
         }
     });
 
-    // اگر مقدار از قبل انتخاب شده باشد (برای حالت ویرایش)
     if (hiddenDealerInput.value) {
         loadSpecialtyCategories(hiddenDealerInput.value);
     }
-
-    // باقی کدهای قبلی (شمارنده کاراکتر، مدال‌ها و...)
-    
-    // تابع شمارش کاراکتر
-    function setupCharacterCounter(fieldId, counterId, maxLength) {
-        const field = document.getElementById(fieldId);
-        const counter = document.getElementById(counterId);
-        
-        function updateCounter() {
-            const currentLength = field.value.length;
-            counter.textContent = `${currentLength}/${maxLength}`;
-            
-            if (currentLength > maxLength) {
-                counter.classList.add('over-limit');
-            } else {
-                counter.classList.remove('over-limit');
-            }
-        }
-        
-        field.addEventListener('input', updateCounter);
-        updateCounter();
-    }
-    
-    // راه‌اندازی شمارنده‌های کاراکتر
-    setupCharacterCounter('id_describe', 'describe-counter', 250);
-    setupCharacterCounter('id_services', 'services-counter', 120);
-    setupCharacterCounter('id_socialmedia_and_sites', 'socialmedia-counter', 120);
-    setupCharacterCounter('id_tools_and_platforms', 'tools-counter', 120);
-    setupCharacterCounter('id_partner_brand', 'partner-counter', 120);
 
     // مدیریت مدال شهرها
     function renderProvinceList(filter="") {
@@ -673,37 +736,50 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.getElementById('open-city-modal').onclick = function() {
-        document.getElementById('cityModal').style.display = "block";
-        renderProvinceList();
-    };
+    const openCityModalBtn = document.getElementById('open-city-modal');
+    if (openCityModalBtn) {
+        openCityModalBtn.onclick = function() {
+            console.log('Opening city modal');
+            document.getElementById('cityModal').style.display = "block";
+            renderProvinceList();
+        };
+    }
 
-    document.getElementById('city-modal-cancel').onclick = function() {
-        document.getElementById('cityModal').style.display = "none";
-    };
+    const cityModalCancel = document.getElementById('city-modal-cancel');
+    if (cityModalCancel) {
+        cityModalCancel.onclick = function() {
+            document.getElementById('cityModal').style.display = "none";
+        };
+    }
 
-    document.getElementById('city-search').oninput = function() {
-        renderProvinceList(this.value.trim());
-    };
+    const citySearch = document.getElementById('city-search');
+    if (citySearch) {
+        citySearch.oninput = function() {
+            renderProvinceList(this.value.trim());
+        };
+    }
 
-    document.getElementById('city-modal-confirm').onclick = function() {
-        const checkedCities = [];
-        document.querySelectorAll('.city-checkbox:checked').forEach(cb => {
-            checkedCities.push(parseInt(cb.getAttribute('data-city')));
-        });
-        
-        document.getElementById('service_area_input').value = checkedCities.join(',');
-        
-        const selectedNames = [];
-        provinces.forEach(province => {
-            province.cities.forEach(city => {
-                if (checkedCities.includes(city.id)) selectedNames.push(city.name);
+    const cityModalConfirm = document.getElementById('city-modal-confirm');
+    if (cityModalConfirm) {
+        cityModalConfirm.onclick = function() {
+            const checkedCities = [];
+            document.querySelectorAll('.city-checkbox:checked').forEach(cb => {
+                checkedCities.push(parseInt(cb.getAttribute('data-city')));
             });
-        });
-        
-        document.getElementById('selected-cities-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
-        document.getElementById('cityModal').style.display = "none";
-    };
+            
+            document.getElementById('service_area_input').value = checkedCities.join(',');
+            
+            const selectedNames = [];
+            provinces.forEach(province => {
+                province.cities.forEach(city => {
+                    if (checkedCities.includes(city.id)) selectedNames.push(city.name);
+                });
+            });
+            
+            document.getElementById('selected-cities-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
+            document.getElementById('cityModal').style.display = "none";
+        };
+    }
 
     // مدیریت مدال نمونه کارها
     function renderPortfolioList() {
@@ -732,46 +808,259 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.getElementById('open-portfolio-modal').onclick = function() {
-        document.getElementById('portfolioModal').style.display = "block";
-        renderPortfolioList();
-    };
+    const openPortfolioModalBtn = document.getElementById('open-portfolio-modal');
+    if (openPortfolioModalBtn) {
+        openPortfolioModalBtn.onclick = function() {
+            console.log('Opening portfolio modal');
+            document.getElementById('portfolioModal').style.display = "block";
+            renderPortfolioList();
+            setupPortfolioFileUpload();
+        };
+    }
 
-    document.getElementById('portfolio-modal-cancel').onclick = function() {
-        document.getElementById('portfolioModal').style.display = "none";
-    };
+    const portfolioModalCancel = document.getElementById('portfolio-modal-cancel');
+    if (portfolioModalCancel) {
+        portfolioModalCancel.onclick = function() {
+            document.getElementById('portfolioModal').style.display = "none";
+        };
+    }
 
-    document.getElementById('portfolio-modal-confirm').onclick = function() {
-        const checkedPortfolios = [];
-        document.querySelectorAll('.portfolio-checkbox-input:checked').forEach(cb => {
-            checkedPortfolios.push(parseInt(cb.getAttribute('data-portfolio')));
-        });
+    const portfolioModalConfirm = document.getElementById('portfolio-modal-confirm');
+    if (portfolioModalConfirm) {
+        portfolioModalConfirm.onclick = function() {
+            const checkedPortfolios = [];
+            document.querySelectorAll('.portfolio-checkbox-input:checked').forEach(cb => {
+                checkedPortfolios.push(parseInt(cb.getAttribute('data-portfolio')));
+            });
+            
+            document.getElementById('portfolios_input').value = checkedPortfolios.join(',');
+            
+            const selectedNames = [];
+            userPortfolios.forEach(portfolio => {
+                if (checkedPortfolios.includes(portfolio.id)) selectedNames.push(portfolio.subject || 'بدون عنوان');
+            });
+            
+            document.getElementById('selected-portfolios-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ نمونه کاری انتخاب نشده است';
+            document.getElementById('portfolioModal').style.display = "none";
+        };
+    }
+
+    function setupPortfolioFileUpload() {
+        const fileInput = document.getElementById('portfolio_image');
+        const fileUploadButton = document.getElementById('portfolio-file-upload-button');
+        const fileNameDisplay = document.getElementById('portfolio-file-name-display');
         
-        document.getElementById('portfolios_input').value = checkedPortfolios.join(',');
-        
-        const selectedNames = [];
-        userPortfolios.forEach(portfolio => {
-            if (checkedPortfolios.includes(portfolio.id)) selectedNames.push(portfolio.subject || 'بدون عنوان');
-        });
-        
-        document.getElementById('selected-portfolios-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ نمونه کاری انتخاب نشده است';
-        document.getElementById('portfolioModal').style.display = "none";
-    };
+        if (fileUploadButton && fileInput && fileNameDisplay) {
+            fileUploadButton.onclick = function() {
+                fileInput.click();
+            };
+            
+            fileInput.onchange = function() {
+                if (this.files && this.files.length > 0) {
+                    fileNameDisplay.textContent = this.files[0].name;
+                } else {
+                    fileNameDisplay.textContent = 'فایل مورد نظر را انتخاب نمایید';
+                }
+            };
+        }
+    }
 
-    // مدیریت انتخاب فایل
-    const fileInput = document.getElementById('id_file');
-    const fileUploadButton = document.getElementById('file-upload-button');
-    const fileNameDisplay = document.getElementById('file-name-display');
-
-    if (fileUploadButton) {
-        fileUploadButton.addEventListener('click', function(e) {
+    // افزودن نمونه کار جدید
+    const portfolioAddForm = document.getElementById('portfolio-add-form');
+    if (portfolioAddForm) {
+        portfolioAddForm.onsubmit = function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            fileInput.click();
+            const formData = new FormData(this);
+            
+            const subject = formData.get('subject');
+            const doneTime = formData.get('done_time');
+            
+            if (!subject || !doneTime) {
+                alert('عنوان و تاریخ انجام الزامی است.');
+                return;
+            }
+            
+            fetch('/account/portfolio/ajax-add/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    userPortfolios.push(data.portfolio);
+                    renderPortfolioList();
+                    this.reset();
+                    const fileNameDisplay = document.getElementById('portfolio-file-name-display');
+                    if (fileNameDisplay) {
+                        fileNameDisplay.textContent = 'فایل مورد نظر را انتخاب نمایید';
+                    }
+                    alert('نمونه کار جدید با موفقیت اضافه شد');
+                } else {
+                    alert(data.error || 'خطا در افزودن نمونه کار');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('خطا در افزودن نمونه کار');
+            });
+        };
+    }
+
+    // مدیریت مدال مجوزها
+    const openPermissionModalBtn = document.getElementById('open-permission-modal');
+    if (openPermissionModalBtn) {
+        openPermissionModalBtn.onclick = function() {
+            console.log('Opening permission modal');
+            document.getElementById('permissionModal').style.display = "block";
+            renderPermissionList();
+        };
+    }
+
+    const permissionModalClose = document.getElementById('permission-modal-close');
+    if (permissionModalClose) {
+        permissionModalClose.onclick = function() {
+            document.getElementById('permissionModal').style.display = "none";
+        };
+    }
+
+    function renderPermissionList() {
+        const container = document.getElementById('permission-list');
+        container.innerHTML = "";
+        
+        if (userPermissions.length === 0) {
+            container.innerHTML = '<div class="empty-message">هیچ مجوزی اضافه نشده است.</div>';
+            return;
+        }
+        
+        userPermissions.forEach((permission, index) => {
+            const div = document.createElement('div');
+            div.className = "portfolio-item";
+            div.innerHTML = `
+                <div style="flex:1;">
+                    <strong>${permission.title}</strong><br>
+                    <small>${permission.description || ''}</small>
+                </div>
+                <button type="button" onclick="removePermission(${index})" style="background:red;color:white;border:none;padding:5px 10px;border-radius:3px;">حذف</button>
+            `;
+            container.appendChild(div);
         });
     }
 
-    if (fileInput) {
+    window.removePermission = function(index) {
+        userPermissions.splice(index, 1);
+        renderPermissionList();
+    };
+
+    const permissionAddForm = document.getElementById('permission-add-form');
+    if (permissionAddForm) {
+        permissionAddForm.onsubmit = function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            const title = formData.get('title');
+            if (!title) {
+                alert('عنوان مجوز الزامی است.');
+                return;
+            }
+            
+            const permission = {
+                title: title,
+                description: formData.get('description')
+            };
+            
+            userPermissions.push(permission);
+            renderPermissionList();
+            this.reset();
+            alert('مجوز جدید اضافه شد');
+        };
+    }
+
+    // مدیریت مدال لینک‌های نمونه کار
+    const openWorklinkModalBtn = document.getElementById('open-worklink-modal');
+    if (openWorklinkModalBtn) {
+        openWorklinkModalBtn.onclick = function() {
+            console.log('Opening worklink modal');
+            document.getElementById('worklinkModal').style.display = "block";
+            renderWorkLinkList();
+        };
+    }
+
+    const worklinkModalClose = document.getElementById('worklink-modal-close');
+    if (worklinkModalClose) {
+        worklinkModalClose.onclick = function() {
+            document.getElementById('worklinkModal').style.display = "none";
+        };
+    }
+
+    function renderWorkLinkList() {
+        const container = document.getElementById('worklink-list');
+        container.innerHTML = "";
+        
+        if (userWorkLinks.length === 0) {
+            container.innerHTML = '<div class="empty-message">هیچ لینک نمونه کاری اضافه نشده است.</div>';
+            return;
+        }
+        
+        userWorkLinks.forEach((worklink, index) => {
+            const div = document.createElement('div');
+            div.className = "portfolio-item";
+            div.innerHTML = `
+                <div style="flex:1;">
+                    <strong>${worklink.title}</strong><br>
+                    <small><a href="${worklink.url}" target="_blank">${worklink.url}</a></small><br>
+                    <small>${worklink.description || ''}</small>
+                </div>
+                <button type="button" onclick="removeWorkLink(${index})" style="background:red;color:white;border:none;padding:5px 10px;border-radius:3px;">حذف</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    window.removeWorkLink = function(index) {
+        userWorkLinks.splice(index, 1);
+        renderWorkLinkList();
+    };
+
+    const worklinkAddForm = document.getElementById('worklink-add-form');
+    if (worklinkAddForm) {
+        worklinkAddForm.onsubmit = function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            const title = formData.get('title');
+            const url = formData.get('url');
+            
+            if (!title || !url) {
+                alert('عنوان و آدرس لینک الزامی است.');
+                return;
+            }
+            
+            const worklink = {
+                title: title,
+                url: url,
+                description: formData.get('description')
+            };
+            
+            userWorkLinks.push(worklink);
+            renderWorkLinkList();
+            this.reset();
+            alert('لینک نمونه کار جدید اضافه شد');
+        };
+    }
+
+    // مدیریت انتخاب فایل اصلی
+    const fileInput = document.getElementById('id_file');
+    const fileUploadButton = document.getElementById('file-upload-button');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    
+    if (fileUploadButton && fileInput && fileNameDisplay) {
+        fileUploadButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
         fileInput.addEventListener('change', function() {
             if (this.files && this.files.length > 0) {
                 fileNameDisplay.textContent = this.files[0].name;
@@ -781,41 +1070,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // جلوگیری از click event در لینک دانلود
-    document.addEventListener('click', function(e) {
-        if (e.target.matches('a[download]')) {
-            e.stopPropagation();
-        }
-    });
-
-    // افزودن نمونه کار جدید
-    document.getElementById('portfolio-add-form').onsubmit = function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        
-        fetch('/account/portfolio/ajax-add/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                userPortfolios.push(data.portfolio);
-                renderPortfolioList();
-                this.reset();
-                alert('نمونه کار جدید اضافه شد');
-            } else {
-                alert(data.error || 'خطا در افزودن نمونه کار');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('خطا در افزودن نمونه کار');
-        });
-    };
+    console.log('All event handlers set up successfully');
 });
 </script>
 
