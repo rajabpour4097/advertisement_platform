@@ -198,6 +198,41 @@
         border-radius: 5px;
         border: 1px dashed #dee2e6;
     }
+
+    /* استایل‌های قبلی */
+    
+    /* استایل جدید برای انتخاب فایل */
+    .custom-file-upload {
+        margin-top: 5px;
+    }
+    
+    .file-upload-btn {
+        display: flex;
+        border-radius: 5px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 1px solid #ccc;
+    }
+    
+    .file-name-display {
+        flex-grow: 1;
+        padding: 10px 15px;
+        background: white;
+        color: #666;
+        text-align: right;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .file-select-btn {
+        padding: 10px 15px;
+        background-color: #3498db;
+        color: white;
+        font-weight: bold;
+        min-width: 110px;
+        text-align: center;
+    }
 </style>
 
 <div class="container-fluid">
@@ -345,12 +380,18 @@
                     </div>
                 </div>
 
-                <div>
+                <div style="margin-bottom: 20px;">
                     <label for="id_file">فایل رزومه (PDF یا ZIP - حداکثر 10MB)</label>
-                    <input type="file" name="file" id="id_file" class="form-control" 
-                           accept=".pdf,.zip">
+                    <div class="custom-file-upload">
+                        <input type="file" name="file" id="id_file" class="form-control" 
+                               accept=".pdf,.zip" style="display: none;">
+                        <div class="file-upload-btn" id="file-upload-button">
+                            <div class="file-name-display" id="file-name-display">فایل مورد نظر را انتخاب نمایید</div>
+                            <div class="file-select-btn">انتخاب فایل</div>
+                        </div>
+                    </div>
                     {% if resume and resume.file %}
-                        <p>فایل فعلی: <a href="{{ resume.file.url }}" target="_blank">مشاهده فایل</a></p>
+                        <p style="margin-top: 5px; font-size: 12px;">فایل فعلی: <a href="{{ resume.file.url }}" target="_blank">مشاهده فایل</a></p>
                     {% endif %}
                 </div>
 
@@ -620,6 +661,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // به‌روزرسانی مقدار input مخفی
         serviceAreaInput.value = selectedCities.join(',');
     }
+    
+    // مدیریت انتخاب فایل
+    const fileInput = document.getElementById('id_file');
+    const fileUploadBtn = document.querySelector('.file-upload-btn');
+    const fileNameDisplay = document.querySelector('.file-name-display');
+    
+    fileUploadBtn.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+            fileNameDisplay.textContent = fileInput.files[0].name;
+        } else {
+            fileNameDisplay.textContent = 'فایل مورد نظر را انتخاب نمایید';
+        }
+    });
 });
 </script>
 
@@ -725,6 +783,31 @@ document.getElementById('city-modal-confirm').onclick = function() {
     document.getElementById('selected-cities-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
     document.getElementById('cityModal').style.display = "none";
 };
+</script>
+
+<script>
+// کد مدیریت انتخاب فایل - جدا از سایر کدها
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('id_file');
+    const fileUploadButton = document.getElementById('file-upload-button');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    
+    if (fileUploadButton) {
+        fileUploadButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+    }
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.textContent = this.files[0].name;
+            } else {
+                fileNameDisplay.textContent = 'فایل مورد نظر را انتخاب نمایید';
+            }
+        });
+    }
+});
 </script>
 
 {% endblock %}
