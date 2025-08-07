@@ -280,17 +280,29 @@
                         <input type="text" name="title" id="id_title" class="form-control" 
                                value="{{ form.title.value|default:'' }}" maxlength="100">
                     </div>
-                    <div>
-                        <label for="id_dealer_type">نوع مجری تبلیغات *</label>
-                        <select name="dealer_type" id="id_dealer_type" class="form-control" required>
-                            <option value="">انتخاب کنید...</option>
-                            {% for topic in parent_topics %}
-                                <option value="{{ topic.id }}" 
-                                    {% if form.dealer_type.value == topic.id %}selected{% endif %}>
-                                    {{ topic.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                </div>
+
+                <!-- نوع مجری تبلیغات با radio -->
+                <div class="form-group">
+                    <label>نوع مجری تبلیغات *</label>
+                    <div id="dealer-type-radio-group">
+                        {% for topic in parent_topics %}
+                            <label style="margin-left:15px;">
+                                <input type="radio" name="dealer_type" value="{{ topic.id }}"
+                                    {% if form.dealer_type.value == topic.id %}checked{% endif %}>
+                                {{ topic.name }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- دسته‌های تخصصی با radio -->
+                <div class="form-group">
+                    <label>دسته‌های تخصصی</label>
+                    <div id="specialty-categories-container">
+                        <div class="empty-message">
+                            ابتدا نوع مجری تبلیغات را انتخاب کنید.
+                        </div>
                     </div>
                 </div>
 
@@ -303,16 +315,6 @@
                     <div id="selected-cities-summary" style="margin-top:10px;"></div>
                     <!-- این input برای ارسال داده به سرور -->
                     <input type="hidden" name="service_area" id="service_area_input">
-                </div>
-
-                <!-- بخش دسته‌های تخصصی -->
-                <div class="form-group">
-                    <label>دسته‌های تخصصی</label>
-                    <div id="specialty-categories-container" class="specialty-grid">
-                        <div class="empty-message">
-                            ابتدا نوع مجری تبلیغات را انتخاب کنید.
-                        </div>
-                    </div>
                 </div>
 
                 <div>
@@ -346,7 +348,7 @@
 
                 <!-- بخش پورتفولیوها -->
                 <div class="form-group">
-                    <label>انتخاب پورتفولیوهای مرتبط</label>
+                    <label> نمونه کارها</label>
                     <div class="portfolios-grid">
                         {% if user_portfolios %}
                             {% for portfolio in user_portfolios %}
@@ -492,61 +494,55 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // مدیریت دسته‌های تخصصی بر اساس نوع مجری
-    const dealerTypeSelect = document.getElementById('id_dealer_type');
+    const dealerTypeRadios = document.querySelectorAll('input[name="dealer_type"]');
     const specialtyCategoriesContainer = document.getElementById('specialty-categories-container');
-    
+
     function loadSpecialtyCategories(dealerTypeId) {
         if (!dealerTypeId) {
             specialtyCategoriesContainer.innerHTML = '<div class="empty-message">ابتدا نوع مجری تبلیغات را انتخاب کنید.</div>';
             return;
         }
-        
-        // نمایش loading
         specialtyCategoriesContainer.innerHTML = '<div class="empty-message">در حال بارگذاری...</div>';
-        
         fetch(`/account/get-specialty-categories/?dealer_type_id=${dealerTypeId}`)
             .then(response => response.json())
             .then(data => {
                 specialtyCategoriesContainer.innerHTML = '';
-                
                 if (data.categories && data.categories.length > 0) {
                     data.categories.forEach(category => {
                         const div = document.createElement('div');
-                        div.className = 'specialty-checkbox';
+                        div.style.marginLeft = "15px";
                         div.innerHTML = `
-                            <input type="checkbox" name="specialty_categories" value="${category.id}" 
-                                   id="specialty_${category.id}">
-                            <label for="specialty_${category.id}">${category.name}</label>
+                            <label>
+                                <input type="radio" name="specialty_categories" value="${category.id}">
+                                ${category.name}
+                            </label>
                         `;
                         specialtyCategoriesContainer.appendChild(div);
                     });
-                    
-                    // بازیابی انتخاب‌های قبلی
-                    const selectedCategories = {{ selected_specialty_categories|safe }};
-                    selectedCategories.forEach(categoryId => {
-                        const checkbox = document.getElementById(`specialty_${categoryId}`);
-                        if (checkbox) {
-                            checkbox.checked = true;
-                        }
-                    });
+                    // انتخاب قبلی را بازیابی کن
+                    const selectedCategory = {{ selected_specialty_categories|safe }};
+                    if (selectedCategory.length > 0) {
+                        const radio = specialtyCategoriesContainer.querySelector(`input[value="${selectedCategory[0]}"]`);
+                        if (radio) radio.checked = true;
+                    }
                 } else {
                     specialtyCategoriesContainer.innerHTML = '<div class="empty-message">دسته‌بندی تخصصی برای این نوع مجری وجود ندارد.</div>';
                 }
             })
             .catch(error => {
-                console.error('Error loading specialty categories:', error);
                 specialtyCategoriesContainer.innerHTML = '<div class="empty-message">خطا در بارگذاری دسته‌بندی‌ها</div>';
             });
     }
-    
-    dealerTypeSelect.addEventListener('change', function() {
-        loadSpecialtyCategories(this.value);
+
+    dealerTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            loadSpecialtyCategories(this.value);
+        });
+        // بارگذاری اولیه اگر انتخاب شده باشد
+        if (radio.checked) {
+            loadSpecialtyCategories(radio.value);
+        }
     });
-    
-    // بارگذاری اولیه
-    if (dealerTypeSelect.value) {
-        loadSpecialtyCategories(dealerTypeSelect.value);
-    }
 
     // مدیریت انتخاب استان و شهر با مدال
     const openCityModalButton = document.getElementById('open-city-modal');

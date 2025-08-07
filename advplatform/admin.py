@@ -110,7 +110,6 @@ class ResumeAdmin(admin.ModelAdmin):
     list_filter = ['status', 'dealer_type', 'created_at', 'is_seen_by_manager']
     search_fields = ['user__username', 'user__first_name', 'user__last_name', 'title']
     readonly_fields = ['created_at', 'updated_at']
-    filter_horizontal = ['service_area', 'specialty_categories', 'portfolios']
     inlines = [PermissionInline, WorkLinkInline]
     
     fieldsets = (
