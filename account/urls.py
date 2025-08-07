@@ -38,7 +38,8 @@ from account.views import (
     SelectCampaignWinnerView,
     SubmitResumeView,
     WinnedProposalDetail,
-    MyResumeView,  # View جدید برای مشاهده رزومه کاربر
+    MyResumeView,
+    ajax_add_portfolio,  # View جدید برای مشاهده رزومه کاربر
     get_specialty_categories,  # View جدید برای دریافت دسته‌بندی‌های تخصصی
     )
 from advplatform.views import custom_404_view
@@ -87,4 +88,5 @@ urlpatterns = [
     path('resume/review/', ResumeReviewListView.as_view(), name='review_resumes'),  # برای مدیران
     path('resume/review/<int:resume_id>/', ResumeDetailView.as_view(), name='resume_detail'),  # برای مدیران
     path('get-specialty-categories/', get_specialty_categories, name='get_specialty_categories'),
+    path('portfolio/ajax-add/', ajax_add_portfolio, name='portfolio_ajax_add'),
 ]

@@ -42,7 +42,7 @@ from account.mixins import (
                             PortfolioEditMixin,
                             StaffUserMixin
                             )
-from advplatform.models import Campaign, CustomUser, Portfolio, Resume, UsersImages, Topic, Province, City
+from advplatform.models import Campaign, CustomUser, Portfolio, PortfolioImages, Resume, UsersImages, Topic, Province, City
 from django.contrib.auth import logout
 from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
@@ -51,6 +51,7 @@ from django.utils import timezone
 from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_campaign_winner, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change, notify_resume_review
 from .utils.send_sms import send_activation_sms, send_campaign_winner_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms, send_resume_review_sms
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.core.serializers.json import DjangoJSONEncoder
 import json
@@ -1238,7 +1239,15 @@ class MyResumeView(DealerUserMixin, View):
         parent_topics = Topic.objects.filter(parent__isnull=True)
         
         # دریافت پورتفولیوهای کاربر
-        user_portfolios = Portfolio.objects.filter(dealer=request.user, is_active=True)
+        user_portfolios_qs = Portfolio.objects.filter(dealer=request.user, is_active=True)
+        user_portfolios = [
+            {
+                "id": p.id,
+                "subject": p.subject,
+                "description": p.description,
+            }
+            for p in user_portfolios_qs
+        ]
             
         return render(request, self.template_name, {
             'form': form,
@@ -1246,7 +1255,7 @@ class MyResumeView(DealerUserMixin, View):
             'is_edit_mode': is_edit_mode,
             'provinces': json.dumps(provinces, cls=DjangoJSONEncoder),
             'parent_topics': parent_topics,
-            'user_portfolios': user_portfolios,
+            'user_portfolios': json.dumps(user_portfolios, cls=DjangoJSONEncoder),
             'selected_cities': selected_cities,
             'selected_specialty_categories': selected_specialty_categories,
             'selected_portfolios': selected_portfolios,
@@ -1339,3 +1348,42 @@ def get_specialty_categories(request):
             pass
     
     return JsonResponse({'categories': []})
+
+@csrf_exempt
+@login_required
+def ajax_add_portfolio(request):
+    if request.method == 'POST':
+        subject = request.POST.get('subject')
+        description = request.POST.get('description')
+        done_time = request.POST.get('done_time')
+        
+        if not subject or not done_time:
+            return JsonResponse({'success': False, 'error': 'عنوان و زمان انجام الزامی است.'})
+        
+        try:
+            # فرض می‌کنیم اولین Topic را انتخاب می‌کنیم یا از فرم دریافت می‌کنیم
+            topic = Topic.objects.first()  # یا از request دریافت کنید
+            
+            portfolio = Portfolio.objects.create(
+                dealer=request.user,
+                subject=subject,
+                description=description,
+                done_time=done_time,
+                topic=topic,
+                is_active=True
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'portfolio': {
+                    'id': portfolio.id,
+                    'subject': portfolio.subject,
+                    'description': portfolio.description,
+                }
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'درخواست نامعتبر'})
+
+
