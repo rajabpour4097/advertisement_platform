@@ -397,7 +397,7 @@ class Resume(models.Model):
                                     related_name='resumes',
                                     help_text='شهرهایی که در آن‌ها خدمات ارائه می‌دهید'
                                     )
-    describe = models.TextField(verbose_name='توضیحات')
+    describe = models.TextField(verbose_name='معرفی مختصر از خود')
     specialty_categories = models.ForeignKey(Topic, 
                                                   verbose_name='دسته‌های تخصصی', 
                                                   related_name='specialty_categories',

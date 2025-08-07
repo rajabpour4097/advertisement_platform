@@ -178,6 +178,112 @@
         margin-left: 10px;
         width: auto;
     }
+
+    /* استایل برای کارت‌های نوع مجری */
+    .dealer-type-card-list {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 6px; /* کاهش gap */
+        justify-content: flex-start;
+    }
+
+    .dealer-type-card {
+        position: relative;
+        width: calc(16.66% - 5px); /* تغییر از 20% به 16.66% (تقریباً 6 کارت در سطر) */
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        padding: 4px; /* کاهش padding */
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+        background-color: #fff;
+        min-height: 50px; /* کاهش ارتفاع */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .dealer-type-card.selected {
+        box-shadow: 0 0 6px rgba(2, 140, 50, 0.3);
+        border-color: #028c32;
+    }
+
+    .dealer-type-card .icon-wrapper {
+        width: 20px; /* کاهش سایز */
+        height: 20px;
+        border-radius: 3px;
+        margin: 0 auto 2px; /* کاهش margin */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dealer-type-card img {
+        width: 14px; /* کاهش سایز تصویر */
+        height: 14px;
+    }
+
+    .dealer-type-card h5 {
+        font-weight: bold;
+        margin: 0;
+        font-size: 10px; /* کاهش سایز فونت */
+        line-height: 1;
+    }
+
+    .dealer-type-card .checkmark {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        font-size: 10px;
+        color: #028c32;
+        display: none;
+    }
+
+    .dealer-type-card.selected .checkmark {
+        display: block;
+    }
+
+    /* برای موبایل */
+    @media (max-width: 768px) {
+        .dealer-type-card-list {
+            flex-wrap: wrap; /* اجازه wrap شدن */
+            gap: 4px;
+        }
+        
+        .dealer-type-card {
+            width: calc(33.33% - 3px); /* 3 کارت در سطر */
+            min-height: 40px;
+            padding: 3px;
+        }
+        
+        .dealer-type-card h5 {
+            font-size: 7px;
+            line-height: 1;
+        }
+        
+        .dealer-type-card img {
+            width: 10px;
+            height: 10px;
+        }
+        
+        .dealer-type-card .icon-wrapper {
+            width: 14px;
+            height: 14px;
+            margin-bottom: 1px;
+        }
+    }
+
+    /* برای موبایل‌های خیلی کوچک */
+    @media (max-width: 480px) {
+        .dealer-type-card {
+            width: calc(50% - 2px); /* 2 کارت در سطر */
+        }
+        
+        .dealer-type-card h5 {
+            font-size: 8px;
+        }
+    }
 </style>
 
 <div class="container-fluid">
@@ -219,18 +325,25 @@
             <form method="post" enctype="multipart/form-data" class="resume-form" id="resume-form">
                 {% csrf_token %}
 
-                <!-- نوع مجری تبلیغات با radio -->
+                <!-- نوع مجری تبلیغات با کارت -->
                 <div class="form-group">
                     <label>نوع مجری تبلیغات *</label>
-                    <div id="dealer-type-radio-group">
+                    <div class="dealer-type-card-list">
                         {% for topic in parent_topics %}
-                            <label style="margin-left:15px;">
-                                <input type="radio" name="dealer_type" value="{{ topic.id }}"
-                                    {% if form.dealer_type.value == topic.id %}checked{% endif %}>
-                                {{ topic.name }}
-                            </label>
+                            <div class="dealer-type-card {% if form.dealer_type.value == topic.id %}selected{% endif %}" 
+                                 data-id="{{ topic.id }}" 
+                                 data-color="{{ topic.color|default:'#028c32' }}">
+                                {% if topic.icon %}
+                                    <div class="icon-wrapper">
+                                        <img src="{{ topic.icon.url }}" alt="{{ topic.name }}" />
+                                    </div>
+                                {% endif %}
+                                <h5>{{ topic.name }}</h5>
+                                <div class="checkmark">✔</div>
+                            </div>
                         {% endfor %}
                     </div>
+                    <input type="hidden" name="dealer_type" id="selected-dealer-type-id" value="{{ form.dealer_type.value }}">
                 </div>
 
                 <!-- دسته‌های تخصصی با radio -->
@@ -255,7 +368,7 @@
                 </div>
 
                 <div>
-                    <label for="id_describe">توضیحات (حداکثر 250 کاراکتر) *</label>
+                    <label for="id_describe">معرفی مختصر از خود (حداکثر 250 کاراکتر) *</label>
                     <textarea name="describe" id="id_describe" class="form-control" rows="3" 
                               maxlength="250" required>{{ form.describe.value|default:'' }}</textarea>
                     <div class="char-counter" id="describe-counter">0/250</div>
@@ -263,7 +376,8 @@
 
                 <div>
                     <label for="id_services">خدمات قابل ارائه (حداکثر 120 کاراکتر) *</label>
-                    <textarea name="services" id="id_services" class="form-control" rows="2" 
+                    <textarea name="services" id="id_services" class="form-control" 
+                            rows="2" placeholder="مانند 'طراحی گرافیکی، اجرای بیلبورد، تدوین ویدیو، اسپانسرشیپ ایونت'"
                               maxlength="120" required>{{ form.services.value|default:'' }}</textarea>
                     <div class="char-counter" id="services-counter">0/120</div>
                 </div>
@@ -272,13 +386,15 @@
                     <div>
                         <label for="id_socialmedia_and_sites">شبکه‌های اجتماعی و وب‌سایت‌ها (حداکثر 120 کاراکتر)</label>
                         <textarea name="socialmedia_and_sites" id="id_socialmedia_and_sites" 
-                                  class="form-control" rows="2" maxlength="120">{{ form.socialmedia_and_sites.value|default:'' }}</textarea>
+                                placeholder="مانند 'اینستاگرام، لینکدین، وب‌سایت شخصی'"
+                                class="form-control" rows="2" maxlength="120">{{ form.socialmedia_and_sites.value|default:'' }}</textarea>
                         <div class="char-counter" id="socialmedia-counter">0/120</div>
                     </div>
                     <div>
                         <label for="id_tools_and_platforms">ابزارها و پلتفرم‌ها (حداکثر 120 کاراکتر)</label>
                         <textarea name="tools_and_platforms" id="id_tools_and_platforms" 
-                                  class="form-control" rows="2" maxlength="120">{{ form.tools_and_platforms.value|default:'' }}</textarea>
+                                placeholder="مانند 'فتوشاپ، ایلاستریتور، پریمیر'"
+                                class="form-control" rows="2" maxlength="120">{{ form.tools_and_platforms.value|default:'' }}</textarea>
                         <div class="char-counter" id="tools-counter">0/120</div>
                     </div>
                 </div>
@@ -286,7 +402,8 @@
                 <!-- بخش پورتفولیوها -->
                 <div class="form-group">
                     <label> نمونه کارها</label>
-                    <button type="button" id="open-portfolio-modal" class="btn btn-outline-primary" style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
+                    <button type="button" id="open-portfolio-modal" class="btn btn-outline-primary" 
+                            style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
                         انتخاب نمونه کار
                     </button>
                     <div id="selected-portfolios-summary" style="margin-top:10px;"></div>
@@ -297,12 +414,14 @@
                     <div>
                         <label for="id_partner_brand">برندهای همکار (حداکثر 120 کاراکتر)</label>
                         <textarea name="partner_brand" id="id_partner_brand" class="form-control" 
+                                  placeholder="اسامی برندهایی که با آن‌ها همکاری شده"
                                   rows="2" maxlength="120">{{ form.partner_brand.value|default:'' }}</textarea>
                         <div class="char-counter" id="partner-counter">0/120</div>
                     </div>
                     <div>
                         <label for="id_bank_account">شماره حساب بانکی</label>
                         <input type="text" name="bank_account" id="id_bank_account" 
+                               placeholder="یک شماره شبا معتبر ۲۴ رقمی وارد کنید"
                                class="form-control" value="{{ form.bank_account.value|default:'' }}" 
                                maxlength="25">
                     </div>
@@ -310,6 +429,21 @@
 
                 <div style="margin-bottom: 20px;">
                     <label for="id_file">فایل رزومه (PDF یا ZIP - حداکثر 10MB)</label>
+                    
+                    <!-- جدا کردن لینک دانلود -->
+                    <div style="margin-bottom: 10px; padding: 8px; background-color: #f0f8ff; border-radius: 5px; border: 1px solid #cce7ff;">
+                        <a href="{% static 'advplatform/assets/files/sample_cv.pdf' %}" 
+                           download="نمونه_رزومه.pdf" 
+                           target="_blank"
+                           onclick="event.stopPropagation();"
+                           style="color: #007bff; text-decoration: none; font-size: 14px; font-weight: bold; cursor: pointer;">
+                            📄 دریافت نمونه PDF
+                        </a>
+                        <small style="color: #666; margin-right: 10px;">
+                            (برای مشاهده فرمت استاندارد رزومه)
+                        </small>
+                    </div>
+                    
                     <div class="custom-file-upload">
                         <input type="file" name="file" id="id_file" class="form-control" 
                                accept=".pdf,.zip" style="display: none;">
@@ -377,45 +511,24 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // داده‌ها از سرور
+    // داده‌ها از سرور (همان کد قبلی)
     const provinces = {{ provinces|safe }};
     const selectedCityIds = {{ selected_cities|safe }};
-    const userPortfolios = {{ user_portfolios|safe }};
+    let userPortfolios = {{ user_portfolios|safe }};
     const selectedPortfolioIds = {{ selected_portfolios|safe }};
 
-    console.log('Provinces:', provinces);
-    console.log('User Portfolios:', userPortfolios);
-
-    // تابع شمارش کاراکتر
-    function setupCharacterCounter(fieldId, counterId, maxLength) {
-        const field = document.getElementById(fieldId);
-        const counter = document.getElementById(counterId);
-        
-        function updateCounter() {
-            const currentLength = field.value.length;
-            counter.textContent = `${currentLength}/${maxLength}`;
-            
-            if (currentLength > maxLength) {
-                counter.classList.add('over-limit');
-            } else {
-                counter.classList.remove('over-limit');
-            }
-        }
-        
-        field.addEventListener('input', updateCounter);
-        updateCounter();
-    }
-    
-    // راه‌اندازی شمارنده‌های کاراکتر
-    setupCharacterCounter('id_describe', 'describe-counter', 250);
-    setupCharacterCounter('id_services', 'services-counter', 120);
-    setupCharacterCounter('id_socialmedia_and_sites', 'socialmedia-counter', 120);
-    setupCharacterCounter('id_tools_and_platforms', 'tools-counter', 120);
-    setupCharacterCounter('id_partner_brand', 'partner-counter', 120);
-
-    // مدیریت دسته‌های تخصصی
-    const dealerTypeRadios = document.querySelectorAll('input[name="dealer_type"]');
+    // مدیریت کارت‌های نوع مجری تبلیغات
+    const dealerTypeCards = document.querySelectorAll(".dealer-type-card");
+    const hiddenDealerInput = document.getElementById("selected-dealer-type-id");
     const specialtyCategoriesContainer = document.getElementById('specialty-categories-container');
+
+    function resetDealerCardStyles() {
+        dealerTypeCards.forEach(card => {
+            card.classList.remove("selected");
+            card.style.borderColor = "#ddd";
+            card.style.backgroundColor = "#fff";
+        });
+    }
 
     function loadSpecialtyCategories(dealerTypeId) {
         if (!dealerTypeId) {
@@ -456,14 +569,60 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    dealerTypeRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            loadSpecialtyCategories(this.value);
+    dealerTypeCards.forEach(card => {
+        card.addEventListener("click", () => {
+            resetDealerCardStyles();
+            card.classList.add("selected");
+            const color = card.dataset.color || "#028c32";
+            card.style.borderColor = color;
+            hiddenDealerInput.value = card.dataset.id;
+            
+            // بارگذاری دسته‌های تخصصی
+            loadSpecialtyCategories(card.dataset.id);
         });
-        if (radio.checked) {
-            loadSpecialtyCategories(radio.value);
+
+        // اگر کارت از قبل انتخاب شده باشد
+        if (card.classList.contains("selected")) {
+            const color = card.dataset.color || "#028c32";
+            card.style.borderColor = color;
+            // بارگذاری دسته‌های تخصصی برای انتخاب اولیه
+            loadSpecialtyCategories(card.dataset.id);
         }
     });
+
+    // اگر مقدار از قبل انتخاب شده باشد (برای حالت ویرایش)
+    if (hiddenDealerInput.value) {
+        loadSpecialtyCategories(hiddenDealerInput.value);
+    }
+
+    // باقی کدهای قبلی (شمارنده کاراکتر، مدال‌ها و...)
+    
+    // تابع شمارش کاراکتر
+    function setupCharacterCounter(fieldId, counterId, maxLength) {
+        const field = document.getElementById(fieldId);
+        const counter = document.getElementById(counterId);
+        
+        function updateCounter() {
+            const currentLength = field.value.length;
+            counter.textContent = `${currentLength}/${maxLength}`;
+            
+            if (currentLength > maxLength) {
+                counter.classList.add('over-limit');
+            } else {
+                counter.classList.remove('over-limit');
+            }
+        }
+        
+        field.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+    
+    // راه‌اندازی شمارنده‌های کاراکتر
+    setupCharacterCounter('id_describe', 'describe-counter', 250);
+    setupCharacterCounter('id_services', 'services-counter', 120);
+    setupCharacterCounter('id_socialmedia_and_sites', 'socialmedia-counter', 120);
+    setupCharacterCounter('id_tools_and_platforms', 'tools-counter', 120);
+    setupCharacterCounter('id_partner_brand', 'partner-counter', 120);
 
     // مدیریت مدال شهرها
     function renderProvinceList(filter="") {
@@ -574,7 +733,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     document.getElementById('open-portfolio-modal').onclick = function() {
-        console.log('Opening portfolio modal');
         document.getElementById('portfolioModal').style.display = "block";
         renderPortfolioList();
     };
@@ -604,13 +762,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('id_file');
     const fileUploadButton = document.getElementById('file-upload-button');
     const fileNameDisplay = document.getElementById('file-name-display');
-    
+
     if (fileUploadButton) {
-        fileUploadButton.addEventListener('click', function() {
+        fileUploadButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             fileInput.click();
         });
     }
-    
+
     if (fileInput) {
         fileInput.addEventListener('change', function() {
             if (this.files && this.files.length > 0) {
@@ -620,6 +780,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // جلوگیری از click event در لینک دانلود
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('a[download]')) {
+            e.stopPropagation();
+        }
+    });
 
     // افزودن نمونه کار جدید
     document.getElementById('portfolio-add-form').onsubmit = function(e) {
