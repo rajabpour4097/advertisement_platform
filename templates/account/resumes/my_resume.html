@@ -453,13 +453,17 @@
             <h2>رزومه من</h2>
             <div class="clearfix"></div>
         </div>
-        {% for error in form.non_field_errors %}
-            <div class="x_content">
-                <div class="alert alert-danger">
-                    {{ error }}
-                </div>
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
             </div>
-        {% endfor %}
+        {% endif %}
         <div class="x_content">
             {% if resume %}
                 <div class="resume-status">
