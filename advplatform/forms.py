@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser, Resume, Topic
+from .models import CustomUser, Resume, Topic, Portfolio, City  # افزودن Portfolio و City
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.contrib.auth.backends import ModelBackend
@@ -103,25 +103,54 @@ class ResumeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # تبدیل اولیه داده های خام hidden ها به فرمت قابل قبول قبل از validation
+        if self.data:
+            mutable_data = self.data.copy()
+
+            def normalize_m2m_field(field_name):
+                raw = mutable_data.get(field_name, None)
+                if raw is None:
+                    return
+                raw = raw.strip()
+                if raw == '':
+                    # باید به لیست خالی ست شود تا ModelMultipleChoiceField خطا ندهد
+                    mutable_data.setlist(field_name, [])
+                else:
+                    ids = [x.strip() for x in raw.split(',') if x.strip().isdigit()]
+                    mutable_data.setlist(field_name, ids)
+
+            normalize_m2m_field('portfolios')
+            normalize_m2m_field('service_area')
+
+            self.data = mutable_data  # اعمال داده نرمال‌شده
+
         self.fields['dealer_type'].queryset = Topic.objects.filter(parent__isnull=True)
         self.fields['dealer_type'].empty_label = "انتخاب کنید..."
 
-        # پیش‌فرض: خالی
         self.fields['specialty_categories'].queryset = Topic.objects.none()
         self.fields['specialty_categories'].empty_label = "انتخاب کنید..."
 
-        # اگر در حال ویرایش هستیم
+        self.fields['portfolios'].required = False
+        self.fields['service_area'].required = False
+
         instance = kwargs.get('instance')
         if instance and instance.dealer_type:
             self.fields['specialty_categories'].queryset = Topic.objects.filter(parent=instance.dealer_type)
 
-        # اگر در حال ارسال فرم (POST) و dealer_type انتخاب شده:
         dealer_type_id = self.data.get('dealer_type') or (instance.dealer_type_id if instance else None)
         if dealer_type_id:
             try:
                 self.fields['specialty_categories'].queryset = Topic.objects.filter(parent_id=int(dealer_type_id))
             except (ValueError, TypeError):
                 pass
+
+    # در صورت تمایل می‌توانید متدهای clean_service_area / clean_portfolios را حذف کنید
+    def clean_service_area(self):
+        # حالا مقدار ورودی یک لیست از آیدی‌هاست و ModelMultipleChoiceField خودش queryset می‌سازد
+        return self.cleaned_data.get('service_area')
+
+    def clean_portfolios(self):
+        return self.cleaned_data.get('portfolios')
     
     def clean_file(self):
         file = self.cleaned_data.get('file')

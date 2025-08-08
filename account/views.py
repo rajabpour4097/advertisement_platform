@@ -937,7 +937,7 @@ class SelectCampaignWinnerView(EditCampaignUserMixin, View):
             return redirect('account:finished_campaign_proposals', pk=campaign_id)
         
         return render(request, self.template_name, {
-            'campaign': campaign,
+           
             'dealer': dealer
         })
 

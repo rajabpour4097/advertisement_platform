@@ -401,7 +401,6 @@ class Resume(models.Model):
                                                   verbose_name='دسته‌های تخصصی', 
                                                   related_name='specialty_categories',
                                                   on_delete=models.PROTECT,
-                                                  blank=True, null=True
                                                   ) #four subcategories
     services = models.TextField(verbose_name='خدمات قابل ارائه')
     socialmedia_and_sites = models.TextField(blank=True, null=True, verbose_name='شبکه‌های اجتماعی و وب‌سایت‌ها')
