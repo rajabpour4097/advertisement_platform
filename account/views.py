@@ -1322,16 +1322,44 @@ class MyResumeView(DealerUserMixin, View):
         work_link_ids = parse_ids(work_links_raw)
         permission_ids = parse_ids(permissions_raw)
 
+        # اگر رزومه موجود است، مقادیر قبلی را برای مقایسه نگه داریم
+        original_resume = resume if is_edit_mode else None
+        if original_resume:
+            original_city_ids = set(original_resume.service_area.values_list('id', flat=True))
+            original_portfolio_ids = set(original_resume.portfolios.values_list('id', flat=True))
+            original_featured_worklink_ids = set(original_resume.work_links.filter(is_featured=True).values_list('id', flat=True))
+            original_selected_permission_ids = set(original_resume.permission_files.filter(is_selected=True).values_list('id', flat=True))
+        else:
+            original_city_ids = original_portfolio_ids = original_featured_worklink_ids = original_selected_permission_ids = set()
+
         if form.is_valid():
             resume_instance = form.save(commit=False)
             resume_instance.user = request.user
 
-            # اگر رزومه قبلی وجود دارد و واقعاً تغییری انجام شده باشد، وضعیت به "در حال بررسی" برگردد
-            if is_edit_mode and form.has_changed():
-                # فقط در صورتی که قبلاً تایید/رد/نیاز به ویرایش بوده یا هر وضعیتی غیر از under_review
+            # تشخیص تغییرات دستی (خارج از فرم یا M2M بعدی)
+            changed_scalar = form.has_changed()  # فیلدهای داخل فرم
+            changed_cities = set(city_ids) != original_city_ids
+            changed_portfolios = set(portfolio_ids_list) != original_portfolio_ids
+            changed_worklinks = set(work_link_ids) != original_featured_worklink_ids
+            changed_permissions = set(permission_ids) != original_selected_permission_ids
+            changed_specialty = False
+            if specialty_categories_id and original_resume and original_resume.specialty_categories_id != specialty_categories_id:
+                changed_specialty = True
+
+            any_change = any([
+                changed_scalar,
+                changed_cities,
+                changed_portfolios,
+                changed_worklinks,
+                changed_permissions,
+                changed_specialty,
+            ])
+
+            # اگر ویرایش و هر تغییری رخ داده → بازگشت وضعیت
+            if is_edit_mode and any_change:
                 if resume.status != 'under_review':
                     resume_instance.status = 'under_review'
-                    resume_instance.is_seen_by_manager = False  # تا دوباره برای مدیر برجسته شود
+                    resume_instance.is_seen_by_manager = False
 
             if specialty_categories_id:
                 resume_instance.specialty_categories_id = specialty_categories_id
