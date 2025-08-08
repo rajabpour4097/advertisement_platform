@@ -506,16 +506,17 @@
                 </div>
 
                 <div>
+                   
                     <label for="id_describe">معرفی کوتاه خود (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <textarea name="describe" id="id_describe" class="form-control" rows="3" 
-                              maxlength="250" required>{{ form.describe.value|default:'' }}</textarea>
-                    <div class="char-counter" id="describe-counter">0/250</div>
+                              maxlength="300">{{ form.describe.value|default:'' }}</textarea>
+                    <div class="char-counter" id="describe-counter">0/300</div>
                 </div>
 
                 <div>
                     <label for="id_services">خدمات قابل ارائه (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <textarea name="services" id="id_services" class="form-control" rows="2" 
-                              maxlength="120" required>{{ form.services.value|default:'' }}</textarea>
+                              maxlength="120">{{ form.services.value|default:'' }}</textarea>
                     <div class="char-counter" id="services-counter">0/120</div>
                 </div>
 

@@ -79,7 +79,6 @@ class ResumeForm(forms.ModelForm):
         label='شماره حساب بانکی',
         error_messages={
             'required': 'لطفاً شماره شباحساب بانکی خود را وارد کنید!',
-            'max_length': 'شماره شبا نمی‌تواند بیش از 24 کاراکتر باشد!',
         }
     )
 
