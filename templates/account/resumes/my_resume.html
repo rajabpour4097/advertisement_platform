@@ -453,7 +453,13 @@
             <h2>رزومه من</h2>
             <div class="clearfix"></div>
         </div>
-
+        {% for error in form.non_field_errors %}
+            <div class="x_content">
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+            </div>
+        {% endfor %}
         <div class="x_content">
             {% if resume %}
                 <div class="resume-status">
@@ -967,7 +973,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Opening city modal');
             document.getElementById('cityModal').style.display = "block";
             renderProvinceList();
-            renderCityModal(); // انتخاب خودکار شهرهای قبلی
+            renderCityModal(); // حتماً این خط را اضافه کنید
         };
     }
 
@@ -1009,7 +1015,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderCityModal() {
         document.querySelectorAll('.city-checkbox').forEach(cb => {
-            cb.checked = selectedCityIds.includes(parseInt(cb.getAttribute('data-city')));
+            const cityId = parseInt(cb.getAttribute('data-city'));
+            cb.checked = selectedCityIds.includes(cityId);
+        });
+        
+        // تنظیم وضعیت checkbox استان‌ها بر اساس انتخاب همه شهرهای آن
+        document.querySelectorAll('.province-all').forEach(provinceCheckbox => {
+            const provinceId = provinceCheckbox.getAttribute('data-province');
+            const cityCheckboxes = document.querySelectorAll(`.city-checkbox[data-province="${provinceId}"]`);
+            const allSelected = Array.from(cityCheckboxes).every(cb => cb.checked);
+            provinceCheckbox.checked = allSelected && cityCheckboxes.length > 0;
         });
     }
 
@@ -1323,6 +1338,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // بازیابی شهرهای انتخاب شده
     if (selectedCityIds && selectedCityIds.length > 0) {
         console.log('Auto-selecting cities:', selectedCityIds);
+        // نمایش شهرهای انتخاب شده در خلاصه
+        const selectedNames = []; // این متغیر را اضافه کنید
+        provinces.forEach(province => {
+            province.cities.forEach(city => {
+                if (selectedCityIds.includes(city.id)) selectedNames.push(city.name);
+            });
+        });
         document.getElementById('selected-cities-summary').innerText = selectedNames.length ? 
             selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
         document.getElementById('service_area_input').value = selectedCityIds.join(',');
