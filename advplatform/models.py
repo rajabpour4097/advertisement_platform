@@ -504,6 +504,7 @@ class Permission(BaseModel):
         null=True, 
         verbose_name='مرجع صادرکننده'
     )
+    is_selected = models.BooleanField(default=False, verbose_name='انتخاب شده برای نمایش')
 
     class Meta:
         verbose_name = 'مجوز'
@@ -590,7 +591,7 @@ class WorkLink(BaseModel):
         import re
         url_pattern = re.compile(
             r'^https?://'  # http:// یا https://
-            r'(?:(?:[A-Z0-9](?:[A ز0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain
+            r'(?:(?:[A-Z0-9](?:[A ز0-9-]{0,61}[A-Z0-9])?\.)+[A ز]{2,6}\.?|'  # domain
             r'localhost|'  # localhost
             r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # IP
             r'(?::\d+)?'  # پورت اختیاری

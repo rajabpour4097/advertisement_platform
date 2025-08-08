@@ -42,7 +42,7 @@ from account.mixins import (
                             PortfolioEditMixin,
                             StaffUserMixin
                             )
-from advplatform.models import Campaign, CustomUser, Portfolio, PortfolioImages, Resume, UsersImages, Topic, Province, City
+from advplatform.models import Campaign, CustomUser, Portfolio, PortfolioImages, Resume, UsersImages, Topic, Province, City, Permission, WorkLink
 from django.contrib.auth import logout
 from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
@@ -55,6 +55,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.core.serializers.json import DjangoJSONEncoder
 import json
+from django.utils.dateparse import parse_date
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 
 
@@ -1248,7 +1251,35 @@ class MyResumeView(DealerUserMixin, View):
             }
             for p in user_portfolios_qs
         ]
-            
+        
+        work_links_qs = []
+        if resume:
+            work_links_qs = [
+                {
+                    "id": wl.id,
+                    "title": wl.title,
+                    "url": wl.url,
+                    "description": wl.description or "",
+                    "category": wl.category or "",
+                    "completion_date": wl.completion_date.isoformat() if wl.completion_date else "",
+                    "is_featured": wl.is_featured,
+                    "order": wl.order,
+                } for wl in resume.work_links.all()
+            ]
+        permissions_qs = []
+        if resume:
+            permissions_qs = [
+                {
+                    "id": pm.id,
+                    "title": pm.title,
+                    "description": pm.description or "",
+                    "issue_date": pm.issue_date.isoformat() if pm.issue_date else "",
+                    "expiry_date": pm.expiry_date.isoformat() if pm.expiry_date else "",
+                    "issuing_authority": pm.issuing_authority or "",
+                    "file_url": pm.file.url,
+                    "is_selected": pm.is_selected,
+                } for pm in resume.permission_files.all()
+            ]
         return render(request, self.template_name, {
             'form': form,
             'resume': resume,
@@ -1259,6 +1290,8 @@ class MyResumeView(DealerUserMixin, View):
             'selected_cities': selected_cities,
             'selected_specialty_categories': selected_specialty_categories,
             'selected_portfolios': selected_portfolios,
+            'work_links_json': json.dumps(work_links_qs, cls=DjangoJSONEncoder),
+            'permissions_json': json.dumps(permissions_qs, cls=DjangoJSONEncoder),
         })
     
     def post(self, request):
@@ -1277,6 +1310,8 @@ class MyResumeView(DealerUserMixin, View):
         # پردازش ورودی‌های مخفی (رشته کاما جدا)
         service_area_raw = request.POST.get('service_area', '')
         portfolio_raw = request.POST.get('portfolios', '')
+        work_links_raw = request.POST.get('work_links', '')
+        permissions_raw = request.POST.get('permissions', '')
 
         def parse_ids(raw):
             return [int(x) for x in raw.split(',') if x.strip().isdigit()]
@@ -1284,6 +1319,8 @@ class MyResumeView(DealerUserMixin, View):
         city_ids = parse_ids(service_area_raw)
         portfolio_ids_list = parse_ids(portfolio_raw)
         specialty_categories_id = int(specialty_category_id) if specialty_category_id.isdigit() else None
+        work_link_ids = parse_ids(work_links_raw)
+        permission_ids = parse_ids(permissions_raw)
 
         if form.is_valid():
             resume_instance = form.save(commit=False)
@@ -1310,6 +1347,21 @@ class MyResumeView(DealerUserMixin, View):
                 resume_instance.portfolios.set(portfolio_ids_list)
             else:
                 resume_instance.portfolios.clear()
+
+            # به‌روزرسانی انتخاب لینک‌های نمونه کار (is_featured)
+            if resume_instance.pk:
+                if work_link_ids:
+                    resume_instance.work_links.filter(id__in=work_link_ids).update(is_featured=True)
+                    resume_instance.work_links.exclude(id__in=work_link_ids).update(is_featured=False)
+                else:
+                    resume_instance.work_links.update(is_featured=False)
+
+                # به‌روزرسانی انتخاب مجوزها
+                if permission_ids:
+                    resume_instance.permission_files.filter(id__in=permission_ids).update(is_selected=True)
+                    resume_instance.permission_files.exclude(id__in=permission_ids).update(is_selected=False)
+                else:
+                    resume_instance.permission_files.update(is_selected=False)
 
             messages.success(request, 'رزومه شما با موفقیت ذخیره شد.')
             return redirect('account:my_resume')
@@ -1399,5 +1451,119 @@ def ajax_add_portfolio(request):
             return JsonResponse({'success': False, 'error': str(e)})
     
     return JsonResponse({'success': False, 'error': 'درخواست نامعتبر'})
+
+@login_required
+@require_POST
+def ajax_add_permission(request):
+    resume = getattr(request.user, 'resume', None)
+    if not resume:
+        return JsonResponse({'ok': False, 'error': 'رزومه‌ای برای شما ثبت نشده است'}, status=400)
+
+    title = (request.POST.get('title') or '').strip()
+    raw_issue_date = (request.POST.get('issue_date') or '').strip()
+    raw_expiry_date = (request.POST.get('expiry_date') or '').strip()
+    issuing_authority = (request.POST.get('issuing_authority') or '').strip()
+    description = (request.POST.get('description') or '').strip()
+    file_obj = request.FILES.get('file')
+
+    if not title or not file_obj:
+        return JsonResponse({'ok': False, 'error': 'عنوان و فایل الزامی است'}, status=400)
+
+    issue_date = parse_date(raw_issue_date) if raw_issue_date else None
+    expiry_date = parse_date(raw_expiry_date) if raw_expiry_date else None
+
+    if raw_issue_date and issue_date is None:
+        return JsonResponse({'ok': False, 'error': 'تاریخ صدور نامعتبر است.'}, status=400)
+    if raw_expiry_date and expiry_date is None:
+        return JsonResponse({'ok': False, 'error': 'تاریخ انقضا نامعتبر است.'}, status=400)
+    if issue_date and expiry_date and expiry_date < issue_date:
+        return JsonResponse({'ok': False, 'error': 'تاریخ انقضا نمی‌تواند قبل از تاریخ صدور باشد.'}, status=400)
+
+    try:
+        perm = Permission.objects.create(
+            resume=resume,
+            title=title,
+            file=file_obj,
+            description=description or '',
+            issue_date=issue_date,
+            expiry_date=expiry_date,
+            issuing_authority=issuing_authority or '',
+            is_selected=True  # مجوز تازه افزوده‌شده پیش‌فرض انتخاب شود
+        )
+        return JsonResponse({
+            'ok': True,
+            'permission': {
+                'id': perm.id,
+                'title': perm.title,
+                'description': perm.description or '',
+                'issue_date': perm.issue_date.isoformat() if perm.issue_date else '',
+                'expiry_date': perm.expiry_date.isoformat() if perm.expiry_date else '',
+                'issuing_authority': perm.issuing_authority or '',
+                'file_url': perm.file.url,
+                'is_selected': perm.is_selected,
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+@login_required
+@require_POST
+def ajax_add_worklink(request):
+    resume = getattr(request.user, 'resume', None)
+    if not resume:
+        return JsonResponse({'ok': False, 'error': 'ابتدا رزومه را ایجاد کنید.'}, status=400)
+
+    title = (request.POST.get('title') or '').strip()
+    url = (request.POST.get('url') or '').strip()
+    description = (request.POST.get('description') or '').strip()
+    category = (request.POST.get('category') or '').strip()
+    raw_completion_date = (request.POST.get('completion_date') or '').strip()
+    is_featured = request.POST.get('is_featured') in ['on', 'true', '1']
+    order_raw = request.POST.get('order') or '0'
+
+    if not title or not url:
+        return JsonResponse({'ok': False, 'error': 'عنوان و لینک الزامی است.'}, status=400)
+
+    # اعتبارسنجی URL
+    validator = URLValidator()
+    try:
+        validator(url)
+    except ValidationError:
+        return JsonResponse({'ok': False, 'error': 'آدرس لینک نامعتبر است.'}, status=400)
+
+    completion_date = parse_date(raw_completion_date) if raw_completion_date else None
+    try:
+        order = int(order_raw)
+        if order < 0:
+            order = 0
+    except ValueError:
+        order = 0
+
+    try:
+        wl = WorkLink.objects.create(
+            resume=resume,
+            title=title,
+            url=url,
+            description=description or '',
+            category=category or '',
+            completion_date=completion_date,
+            is_featured=is_featured,
+            order=order,
+        )
+        return JsonResponse({
+            'ok': True,
+            'worklink': {
+                'id': wl.id,
+                'title': wl.title,
+                'url': wl.url,
+                'description': wl.description or '',
+                'category': wl.category or '',
+                'completion_date': wl.completion_date.isoformat() if wl.completion_date else '',
+                'is_featured': wl.is_featured,
+                'order': wl.order,
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
 
 

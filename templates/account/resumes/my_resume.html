@@ -267,7 +267,7 @@
         .resume-form textarea,
         .resume-form select {
             padding: 12px;
-            font-size: 16px; /* جلوگیری از zoom در iOS */
+            font-size: 16px;
         }
 
         .resume-form button {
@@ -570,8 +570,12 @@
                             style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
                         مدیریت لینک‌ها
                     </button>
-                    <div id="selected-worklinks-summary" style="margin-top:10px;"></div>
-                    <input type="hidden" name="work_links" id="work_links_input">
+                    <!-- خلاصه لینک‌های انتخاب‌شده -->
+                    <div class="form-group" style="margin-top:15px;">
+                        <label>لینک‌های نمونه کار انتخاب‌شده</label>
+                        <div id="selected-worklinks-summary" style="font-size:13px;color:#555;">هیچ لینکی انتخاب نشده است</div>
+                        <input type="hidden" name="work_links" id="work_links_input">
+                    </div>
                 </div>
 
                 <div class="row">
@@ -688,8 +692,8 @@
 
             <button type="submit" class="btn btn-success" style="width:100%; margin-bottom:15px;">افزودن مجوز</button>
         </form>
-        
-        <div style="margin-top:20px; text-align:center;">
+        <div style="margin-top:15px; text-align:center;">
+            <button type="button" class="btn btn-success" id="permission-modal-confirm">تایید انتخاب</button>
             <button type="button" class="btn btn-secondary" id="permission-modal-close">بستن</button>
         </div>
     </div>
@@ -794,67 +798,65 @@
         </form>
         
         <div style="margin-top:20px; text-align:left;">
-            <button type="button" class="btn btn-secondary" id="worklink-modal-close">بستن</button>
+            <button type="button" class="btn btn-success" id="worklink-modal-confirm">تایید انتخاب</button>
+            <button type="button" class="btn btn-secondary" id="worklink-modal-cancel">انصراف</button>
         </div>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // فقط یک بار متغیرها را تعریف کنید
+    // داده‌های اولیه از سرور
     const provinces = {{ provinces|safe }};
-    const selectedCityIds = {{ selected_cities|safe }};
+    let selectedCityIds = {{ selected_cities|safe }};
     let userPortfolios = {{ user_portfolios|safe }};
-    const selectedPortfolioIds = {{ selected_portfolios|safe }};
+    let selectedPortfolioIds = {{ selected_portfolios|safe }};
     const dealerTypeId = "{{ dealer_type_id|escapejs }}";
+    const selectedSpecialty = {{ selected_specialty_categories|safe }};
 
-    console.log('Provinces:', provinces);
-    console.log('User Portfolios:', userPortfolios);
+    // آرایه‌های مجوز و لینک‌ها (در صورت نیاز بعداً با AJAX پر می‌شوند)
+    let userPermissions = {{ permissions_json|default:"[]"|safe }};
+    let selectedPermissionIds = userPermissions.filter(p => p.is_selected).map(p => p.id);
+    let userWorkLinks = {{ work_links_json|default:"[]"|safe }};
+    let selectedWorkLinkIds = userWorkLinks.filter(w => w.is_featured).map(w => w.id);  // اگر می‌خواهید ابتدا همه انتخاب نباشند: []
 
-    // متغیرهای جدید برای مجوزها و لینک‌ها
-    let userPermissions = [];
-    let userWorkLinks = [];
+    // عناصر مخفی
+    const serviceAreaHidden = document.getElementById('service_area_input');
+    const portfoliosHidden = document.getElementById('portfolios_input');
+    const permissionsHidden = document.getElementById('permissions_input');
+    const workLinksHidden = document.getElementById('work_links_input');
 
-    // تابع شمارش کاراکتر
+    // اگر کاربر قبلاً شهرها را ارسال کرده
+    if (serviceAreaHidden && serviceAreaHidden.value.trim() !== '') {
+        selectedCityIds = serviceAreaHidden.value.split(',').filter(x => x).map(x => parseInt(x));
+    }
+
+    /* ---------- شمارنده کاراکتر ---------- */
     function setupCharacterCounter(fieldId, counterId, maxLength) {
         const field = document.getElementById(fieldId);
         const counter = document.getElementById(counterId);
-        
         if (!field || !counter) return;
-        
-        function updateCounter() {
-            const currentLength = field.value.length;
-            counter.textContent = `${currentLength}/${maxLength}`;
-            
-            if (currentLength > maxLength) {
-                counter.classList.add('over-limit');
-            } else {
-                counter.classList.remove('over-limit');
-            }
+        function update() {
+            const l = field.value.length;
+            counter.textContent = l + '/' + maxLength;
+            counter.classList.toggle('over-limit', l > maxLength);
         }
-        
-        field.addEventListener('input', updateCounter);
-        updateCounter();
+        field.addEventListener('input', update);
+        update();
     }
-    
-    // راه‌اندازی شمارنده‌های کاراکتر
     setupCharacterCounter('id_describe', 'describe-counter', 250);
     setupCharacterCounter('id_services', 'services-counter', 120);
     setupCharacterCounter('id_socialmedia_and_sites', 'socialmedia-counter', 120);
     setupCharacterCounter('id_tools_and_platforms', 'tools-counter', 120);
     setupCharacterCounter('id_partner_brand', 'partner-counter', 120);
 
-    // مدیریت کارت‌های نوع مجری تبلیغات
+    /* ---------- نوع مجری و دسته تخصصی ---------- */
     const dealerTypeCards = document.querySelectorAll(".dealer-type-card");
     const hiddenDealerInput = document.getElementById("selected-dealer-type-id");
     const specialtyCategoriesContainer = document.getElementById('specialty-categories-container');
 
-    function resetDealerCardStyles() {
-        dealerTypeCards.forEach(card => {
-            card.classList.remove("selected");
-            card.style.borderColor = "#ddd";
-            card.style.backgroundColor = "#fff";
-        });
+    function resetDealerCards() {
+        dealerTypeCards.forEach(c => c.classList.remove('selected'));
     }
 
     function loadSpecialtyCategories(dealerTypeId) {
@@ -863,504 +865,491 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         specialtyCategoriesContainer.innerHTML = '<div class="empty-message">در حال بارگذاری...</div>';
-        
         fetch(`/account/get-specialty-categories/?dealer_type_id=${dealerTypeId}`)
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
+                if (!data.categories || data.categories.length === 0) {
+                    specialtyCategoriesContainer.innerHTML = '<div class="empty-message">دسته‌بندی تخصصی وجود ندارد.</div>';
+                    return;
+                }
                 specialtyCategoriesContainer.innerHTML = '';
-                if (data.categories && data.categories.length > 0) {
-                    data.categories.forEach(category => {
-                        const div = document.createElement('div');
-                        div.style.marginLeft = "15px";
-                        div.innerHTML = `
-                            <label>
-                                <input type="radio" name="specialty_categories" value="${category.id}">
-                                ${category.name}
-                            </label>
-                        `;
-                        specialtyCategoriesContainer.appendChild(div);
-                    });
-                    
-                    const selectedCategory = {{ selected_specialty_categories|safe }};
-                    if (selectedCategory.length > 0) {
-                        const radio = specialtyCategoriesContainer.querySelector(`input[value="${selectedCategory[0]}"]`);
-                        if (radio) radio.checked = true;
-                    }
-                } else {
-                    specialtyCategoriesContainer.innerHTML = '<div class="empty-message">دسته‌بندی تخصصی برای این نوع مجری وجود ندارد.</div>';
+                data.categories.forEach(cat => {
+                    const div = document.createElement('div');
+                    div.style.marginLeft = '15px';
+                    div.innerHTML = `
+                        <label>
+                            <input type="radio" name="specialty_categories" value="${cat.id}">
+                            ${cat.name}
+                        </label>
+                    `;
+                    specialtyCategoriesContainer.appendChild(div);
+                });
+                if (selectedSpecialty.length) {
+                    const r = specialtyCategoriesContainer.querySelector(`input[value="${selectedSpecialty[0]}"]`);
+                    if (r) r.checked = true;
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                specialtyCategoriesContainer.innerHTML = '<div class="empty-message">خطا در بارگذاری دسته‌بندی‌ها</div>';
+            .catch(() => {
+                specialtyCategoriesContainer.innerHTML = '<div class="empty-message">خطا در بارگذاری.</div>';
             });
     }
 
     dealerTypeCards.forEach(card => {
-        card.addEventListener("click", () => {
-            console.log('Card clicked:', card.dataset.id);
-            resetDealerCardStyles();
-            card.classList.add("selected");
-            const color = card.dataset.color || "#028c32";
-            card.style.borderColor = color;
+        card.addEventListener('click', () => {
+            resetDealerCards();
+            card.classList.add('selected');
             hiddenDealerInput.value = card.dataset.id;
             loadSpecialtyCategories(card.dataset.id);
         });
-
-        if (card.classList.contains("selected")) {
-            const color = card.dataset.color || "#028c32";
-            card.style.borderColor = color;
+        if (card.classList.contains('selected')) {
             loadSpecialtyCategories(card.dataset.id);
         }
     });
+    if (hiddenDealerInput.value) loadSpecialtyCategories(hiddenDealerInput.value);
 
-    if (hiddenDealerInput.value) {
-        loadSpecialtyCategories(hiddenDealerInput.value);
+    /* ---------- مدیریت شهرها ---------- */
+    function updateProvinceCheckboxStates() {
+        provinces.forEach(prov => {
+            const cb = document.querySelector(`.province-all[data-province="${prov.id}"]`);
+            if (!cb) return;
+            const ids = prov.cities.map(c => c.id);
+            const selectedIn = ids.filter(id => selectedCityIds.includes(id));
+            if (selectedIn.length === 0) {
+                cb.checked = false;
+                cb.indeterminate = false;
+            } else if (selectedIn.length === ids.length) {
+                cb.checked = true;
+                cb.indeterminate = false;
+            } else {
+                cb.checked = false;
+                cb.indeterminate = true;
+            }
+        });
     }
 
-    // مدیریت مدال شهرها
-    function renderProvinceList(filter="") {
+    function renderProvinceList(filter = "") {
         const container = document.getElementById('province-list');
-        container.innerHTML = "";
-        
-        provinces.forEach(province => {
-            const filteredCities = province.cities.filter(city => city.name.includes(filter));
-            if (filter && filteredCities.length === 0 && !province.name.includes(filter)) return;
-
-            const provinceDiv = document.createElement('div');
-            provinceDiv.style.marginBottom = "10px";
-            provinceDiv.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
-                    <div>
-                        <input type="checkbox" class="province-all" data-province="${province.id}">
-                        <span style="font-weight:bold;">${province.name}</span>
-                    </div>
-                    <span class="toggle-cities" data-province="${province.id}" style="font-size:18px;cursor:pointer;">&#x25BC;</span>
+        container.innerHTML = '';
+        provinces.forEach(prov => {
+            const filteredCities = prov.cities.filter(c => c.name.includes(filter));
+            if (filter && filteredCities.length === 0 && !prov.name.includes(filter)) return;
+            const wrap = document.createElement('div');
+            wrap.style.marginBottom = '10px';
+            wrap.innerHTML = `
+              <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                <div>
+                  <input type="checkbox" class="province-all" data-province="${prov.id}">
+                  <span style="font-weight:bold;">${prov.name}</span>
                 </div>
-                <div class="cities-list" id="cities-list-${province.id}" style="display:none; margin-right:20px; margin-top:5px;"></div>
+                <span class="toggle-cities" data-province="${prov.id}" style="font-size:18px;cursor:pointer;">&#x25BC;</span>
+              </div>
+              <div class="cities-list" id="cities-list-${prov.id}" style="display:none; margin-right:20px; margin-top:5px;"></div>
             `;
-            container.appendChild(provinceDiv);
-
-            const citiesList = provinceDiv.querySelector(`#cities-list-${province.id}`);
-            province.cities.forEach(city => {
-                const checked = selectedCityIds.includes(city.id) ? "checked" : "";
-                const cityDiv = document.createElement('div');
-                cityDiv.innerHTML = `
-                    <label style="display:flex;align-items:center;">
-                        <input type="checkbox" class="city-checkbox" data-city="${city.id}" data-province="${province.id}" ${checked}>
-                        <span>${city.name}</span>
-                    </label>
-                `;
-                citiesList.appendChild(cityDiv);
+            container.appendChild(wrap);
+            const citiesList = wrap.querySelector('.cities-list');
+            prov.cities.forEach(city => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                  <label style="display:flex;align-items:center;">
+                    <input type="checkbox" class="city-checkbox" data-city="${city.id}" data-province="${prov.id}" ${selectedCityIds.includes(city.id) ? 'checked' : ''}>
+                    <span>${city.name}</span>
+                  </label>`;
+                citiesList.appendChild(div);
             });
-
-            provinceDiv.querySelector('.toggle-cities').onclick = function() {
-                const list = provinceDiv.querySelector('.cities-list');
-                list.style.display = list.style.display === "none" ? "block" : "none";
-                this.innerHTML = list.style.display === "none" ? "&#x25BC;" : "&#x25B2;";
+            wrap.querySelector('.toggle-cities').onclick = function() {
+                citiesList.style.display = citiesList.style.display === 'none' ? 'block' : 'none';
+                this.innerHTML = citiesList.style.display === 'none' ? '&#x25BC;' : '&#x25B2;';
             };
-
-            provinceDiv.querySelector('.province-all').onclick = function() {
+            wrap.querySelector('.province-all').onclick = function() {
                 const checked = this.checked;
-                citiesList.querySelectorAll('.city-checkbox').forEach(cb => cb.checked = checked);
+                citiesList.querySelectorAll('.city-checkbox').forEach(cb => {
+                    const cid = parseInt(cb.dataset.city);
+                    cb.checked = checked;
+                    if (checked && !selectedCityIds.includes(cid)) selectedCityIds.push(cid);
+                    if (!checked) selectedCityIds = selectedCityIds.filter(id => id !== cid);
+                });
+                updateProvinceCheckboxStates();
             };
         });
+        updateProvinceCheckboxStates();
     }
 
-    const openCityModalBtn = document.getElementById('open-city-modal');
-    if (openCityModalBtn) {
-        openCityModalBtn.onclick = function() {
-            console.log('Opening city modal');
-            document.getElementById('cityModal').style.display = "block";
-            renderProvinceList();
-            renderCityModal(); // حتماً این خط را اضافه کنید
-        };
+    function syncCitySummary() {
+        const names = [];
+        provinces.forEach(p => p.cities.forEach(c => {
+            if (selectedCityIds.includes(c.id)) names.push(c.name);
+        }));
+        document.getElementById('selected-cities-summary').textContent =
+            names.length ? names.join('، ') : 'هیچ شهری انتخاب نشده است';
+        serviceAreaHidden.value = selectedCityIds.join(',');
     }
 
-    const cityModalCancel = document.getElementById('city-modal-cancel');
-    if (cityModalCancel) {
-        cityModalCancel.onclick = function() {
-            document.getElementById('cityModal').style.display = "none";
-        };
-    }
-
-    const citySearch = document.getElementById('city-search');
-    if (citySearch) {
-        citySearch.oninput = function() {
-            renderProvinceList(this.value.trim());
-        };
-    }
-
-    const cityModalConfirm = document.getElementById('city-modal-confirm');
-    if (cityModalConfirm) {
-        cityModalConfirm.onclick = function() {
-            const checkedCities = [];
-            document.querySelectorAll('.city-checkbox:checked').forEach(cb => {
-                checkedCities.push(parseInt(cb.getAttribute('data-city')));
-            });
-            
-            document.getElementById('service_area_input').value = checkedCities.join(',');
-            
-            const selectedNames = [];
-            provinces.forEach(province => {
-                province.cities.forEach(city => {
-                    if (checkedCities.includes(city.id)) selectedNames.push(city.name);
-                });
-            });
-            
-            document.getElementById('selected-cities-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
-            document.getElementById('cityModal').style.display = "none";
-        };
-    }
-
-    function renderCityModal() {
-        document.querySelectorAll('.city-checkbox').forEach(cb => {
-            const cityId = parseInt(cb.getAttribute('data-city'));
-            cb.checked = selectedCityIds.includes(cityId);
+    document.getElementById('open-city-modal')?.addEventListener('click', () => {
+        document.getElementById('cityModal').style.display = 'block';
+        renderProvinceList();
+    });
+    document.getElementById('city-modal-cancel')?.addEventListener('click', () => {
+        document.getElementById('cityModal').style.display = 'none';
+    });
+    document.getElementById('city-search')?.addEventListener('input', function() {
+        renderProvinceList(this.value.trim());
+    });
+    document.getElementById('city-modal-confirm')?.addEventListener('click', () => {
+        // جمع‌آوری از چک‌باکس‌ها
+        const arr = [];
+        document.querySelectorAll('.city-checkbox:checked').forEach(cb => {
+            arr.push(parseInt(cb.dataset.city));
         });
-        
-        // تنظیم وضعیت checkbox استان‌ها بر اساس انتخاب همه شهرهای آن
-        document.querySelectorAll('.province-all').forEach(provinceCheckbox => {
-            const provinceId = provinceCheckbox.getAttribute('data-province');
-            const cityCheckboxes = document.querySelectorAll(`.city-checkbox[data-province="${provinceId}"]`);
-            const allSelected = Array.from(cityCheckboxes).every(cb => cb.checked);
-            provinceCheckbox.checked = allSelected && cityCheckboxes.length > 0;
-        });
-    }
+        selectedCityIds = arr;
+        syncCitySummary();
+        document.getElementById('cityModal').style.display = 'none';
+    });
+    document.addEventListener('change', e => {
+        if (e.target.classList.contains('city-checkbox')) {
+            const cid = parseInt(e.target.dataset.city);
+            if (e.target.checked) {
+                if (!selectedCityIds.includes(cid)) selectedCityIds.push(cid);
+            } else {
+                selectedCityIds = selectedCityIds.filter(id => id !== cid);
+            }
+            updateProvinceCheckboxStates();
+        }
+    });
 
-    // مدیریت مدال نمونه کارها
+    // مقدار اولیه شهرها
+    syncCitySummary();
+
+    /* ---------- نمونه کار ---------- */
     function renderPortfolioList() {
         const container = document.getElementById('portfolio-list');
-        container.innerHTML = "";
-        
+        container.innerHTML = '';
         if (userPortfolios.length === 0) {
             container.innerHTML = '<div class="empty-message">شما هنوز نمونه کاری ندارید.</div>';
             return;
         }
-        
-        userPortfolios.forEach(portfolio => {
-            const checked = selectedPortfolioIds.includes(portfolio.id) ? "checked" : "";
+        userPortfolios.forEach(p => {
             const div = document.createElement('div');
-            div.className = "portfolio-item";
+            div.className = 'portfolio-item';
             div.innerHTML = `
-                <label>
-                    <input type="checkbox" class="portfolio-checkbox-input" data-portfolio="${portfolio.id}" ${checked}>
-                    <div>
-                        <strong>${portfolio.subject || 'بدون عنوان'}</strong><br>
-                        <small>${portfolio.description || ''}</small>
-                    </div>
-                </label>
-            `;
+              <label>
+                <input type="checkbox" class="portfolio-checkbox-input" data-portfolio="${p.id}" ${selectedPortfolioIds.includes(p.id) ? 'checked' : ''}>
+                <div>
+                  <strong>${p.subject || 'بدون عنوان'}</strong><br>
+                  <small>${p.description || ''}</small>
+                </div>
+              </label>`;
             container.appendChild(div);
         });
     }
 
-    const openPortfolioModalBtn = document.getElementById('open-portfolio-modal');
-    if (openPortfolioModalBtn) {
-        openPortfolioModalBtn.onclick = function() {
-            console.log('Opening portfolio modal');
-            document.getElementById('portfolioModal').style.display = "block";
-            renderPortfolioList();
-            setupPortfolioFileUpload();
-        };
+    function syncPortfolioSummary() {
+        const names = [];
+        userPortfolios.forEach(p => {
+            if (selectedPortfolioIds.includes(p.id)) names.push(p.subject || 'بدون عنوان');
+        });
+        document.getElementById('selected-portfolios-summary').textContent =
+            names.length ? names.join('، ') : 'هیچ نمونه کاری انتخاب نشده است';
+        portfoliosHidden.value = selectedPortfolioIds.join(',');
     }
 
-    const portfolioModalCancel = document.getElementById('portfolio-modal-cancel');
-    if (portfolioModalCancel) {
-        portfolioModalCancel.onclick = function() {
-            document.getElementById('portfolioModal').style.display = "none";
-        };
-    }
+    document.getElementById('open-portfolio-modal')?.addEventListener('click', () => {
+        document.getElementById('portfolioModal').style.display = 'block';
+        renderPortfolioList();
+    });
+    document.getElementById('portfolio-modal-cancel')?.addEventListener('click', () => {
+        document.getElementById('portfolioModal').style.display = 'none';
+    });
+    document.getElementById('portfolio-modal-confirm')?.addEventListener('click', () => {
+        const arr = [];
+        document.querySelectorAll('.portfolio-checkbox-input:checked').forEach(cb => {
+            arr.push(parseInt(cb.dataset.portfolio));
+        });
+        selectedPortfolioIds = arr;
+        syncPortfolioSummary();
+        document.getElementById('portfolioModal').style.display = 'none';
+    });
 
-    const portfolioModalConfirm = document.getElementById('portfolio-modal-confirm');
-    if (portfolioModalConfirm) {
-        portfolioModalConfirm.onclick = function() {
-            const checkedPortfolios = [];
-            document.querySelectorAll('.portfolio-checkbox-input:checked').forEach(cb => {
-                checkedPortfolios.push(parseInt(cb.getAttribute('data-portfolio')));
-            });
-            
-            document.getElementById('portfolios_input').value = checkedPortfolios.join(',');
-            
-            const selectedNames = [];
-            userPortfolios.forEach(portfolio => {
-                if (checkedPortfolios.includes(portfolio.id)) selectedNames.push(portfolio.subject || 'بدون عنوان');
-            });
-            
-            document.getElementById('selected-portfolios-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ نمونه کاری انتخاب نشده است';
-            document.getElementById('portfolioModal').style.display = "none";
-        };
-    }
-
-    function setupPortfolioFileUpload() {
-        const fileInput = document.getElementById('portfolio_image');
-        const fileUploadButton = document.getElementById('portfolio-file-upload-button');
-        const fileNameDisplay = document.getElementById('portfolio-file-name-display');
-        
-        if (fileUploadButton && fileInput && fileNameDisplay) {
-            fileUploadButton.onclick = function() {
-                fileInput.click();
-            };
-            
-            fileInput.onchange = function() {
-                if (this.files && this.files.length > 0) {
-                    fileNameDisplay.textContent = this.files[0].name;
-                } else {
-                    fileNameDisplay.textContent = 'فایل مورد نظر را انتخاب نمایید';
-                }
-            };
-        }
-    }
-
-    // افزودن نمونه کار جدید
+    // افزودن نمونه کار جدید (AJAX)
     const portfolioAddForm = document.getElementById('portfolio-add-form');
     if (portfolioAddForm) {
-        portfolioAddForm.onsubmit = function(e) {
+        portfolioAddForm.addEventListener('submit', e => {
             e.preventDefault();
-            const formData = new FormData(this);
-            
-            const subject = formData.get('subject');
-            const doneTime = formData.get('done_time');
-            
-            if (!subject || !doneTime) {
+            const fd = new FormData(portfolioAddForm);
+            if (!fd.get('subject') || !fd.get('done_time')) {
                 alert('عنوان و تاریخ انجام الزامی است.');
                 return;
             }
-            
             fetch('/account/portfolio/ajax-add/', {
                 method: 'POST',
-                body: formData,
+                body: fd,
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
             })
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
                 if (data.success) {
                     userPortfolios.push(data.portfolio);
                     renderPortfolioList();
-                    this.reset();
-                    const fileNameDisplay = document.getElementById('portfolio-file-name-display');
-                    if (fileNameDisplay) {
-                        fileNameDisplay.textContent = 'فایل مورد نظر را انتخاب نمایید';
-                    }
-                    alert('نمونه کار جدید با موفقیت اضافه شد');
+                    portfolioAddForm.reset();
+                    document.getElementById('portfolio-file-name-display').textContent = 'فایل مورد نظر را انتخاب نمایید';
+                    alert('نمونه کار اضافه شد.');
                 } else {
                     alert(data.error || 'خطا در افزودن نمونه کار');
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('خطا در افزودن نمونه کار');
-            });
-        };
+            .catch(() => alert('خطای شبکه'));
+        });
     }
+    syncPortfolioSummary();
 
-    // مدیریت مدال مجوزها
-    const openPermissionModalBtn = document.getElementById('open-permission-modal');
-    if (openPermissionModalBtn) {
-        openPermissionModalBtn.onclick = function() {
-            console.log('Opening permission modal');
-            document.getElementById('permissionModal').style.display = "block";
-            renderPermissionList();
-        };
-    }
-
-    const permissionModalClose = document.getElementById('permission-modal-close');
-    if (permissionModalClose) {
-        permissionModalClose.onclick = function() {
-            document.getElementById('permissionModal').style.display = "none";
-        };
-    }
-
+    /* ---------- مجوزها (فرانت فقط) ---------- */
     function renderPermissionList() {
         const container = document.getElementById('permission-list');
-        container.innerHTML = "";
-        
+        container.innerHTML = '';
         if (userPermissions.length === 0) {
             container.innerHTML = '<div class="empty-message">هیچ مجوزی اضافه نشده است.</div>';
             return;
         }
-        
-        userPermissions.forEach((permission, index) => {
+        userPermissions.forEach((perm, idx) => {
             const div = document.createElement('div');
-            div.className = "portfolio-item";
+            div.className = 'portfolio-item';
             div.innerHTML = `
+              <label style="display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;">
+                <input type="checkbox" class="permission-checkbox" data-permission="${perm.id}" ${selectedPermissionIds.includes(perm.id) ? 'checked' : ''} style="width:auto;">
                 <div style="flex:1;">
-                    <strong>${permission.title}</strong><br>
-                    <small>${permission.description || ''}</small>
+                  <strong>${perm.title}</strong><br>
+                  <small>${perm.description || ''}</small>
                 </div>
-                <button type="button" onclick="removePermission(${index})" style="background:red;color:white;border:none;padding:5px 10px;border-radius:3px;">حذف</button>
-            `;
+                <button type="button" class="btn btn-sm btn-danger permission-remove-btn" data-index="${idx}" style="min-width:60px;">حذف</button>
+              </label>`;
             container.appendChild(div);
         });
     }
-
-    window.removePermission = function(index) {
-        userPermissions.splice(index, 1);
+    function syncPermissions() {
+        permissionsHidden.value = selectedPermissionIds.join(',');
+        const sum = document.getElementById('selected-permissions-summary');
+        if (!sum) return;
+        if (!selectedPermissionIds.length) {
+            sum.textContent = 'هیچ مجوزی انتخاب نشده است';
+            return;
+        }
+        const names = userPermissions.filter(p => selectedPermissionIds.includes(p.id)).map(p => p.title);
+        sum.textContent = names.join('، ');
+    }
+    document.getElementById('open-permission-modal')?.addEventListener('click', () => {
+        document.getElementById('permissionModal').style.display = 'block';
         renderPermissionList();
-    };
-
+    });
+    document.getElementById('permission-modal-close')?.addEventListener('click', () => {
+        document.getElementById('permissionModal').style.display = 'none';
+    });
+    document.getElementById('permission-modal-confirm')?.addEventListener('click', () => {
+        syncPermissions();
+        document.getElementById('permissionModal').style.display = 'none';
+    });
+    document.addEventListener('change', e => {
+        if (e.target.classList.contains('permission-checkbox')) {
+            const id = parseInt(e.target.dataset.permission);
+            if (e.target.checked) {
+                if (!selectedPermissionIds.includes(id)) selectedPermissionIds.push(id);
+            } else {
+                selectedPermissionIds = selectedPermissionIds.filter(x => x !== id);
+            }
+            syncPermissions();
+        }
+    });
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('permission-remove-btn')) {
+            const idx = parseInt(e.target.dataset.index);
+            const removed = userPermissions.splice(idx, 1)[0];
+            selectedPermissionIds = selectedPermissionIds.filter(x => x !== removed.id);
+            renderPermissionList();
+            syncPermissions();
+        }
+    });
     const permissionAddForm = document.getElementById('permission-add-form');
     if (permissionAddForm) {
-        permissionAddForm.onsubmit = function(e) {
+        permissionAddForm.addEventListener('submit', e => {
             e.preventDefault();
-            const formData = new FormData(this);
-            
-            const title = formData.get('title');
-            if (!title) {
-                alert('عنوان مجوز الزامی است.');
-                return;
-            }
-            
-            const permission = {
-                title: title,
-                description: formData.get('description')
-            };
-            
-            userPermissions.push(permission);
-            renderPermissionList();
-            this.reset();
-            alert('مجوز جدید اضافه شد');
-        };
+            const fd = new FormData(permissionAddForm);
+            fetch("{% url 'account:permission_ajax_add' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: fd
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.ok) {
+                    alert(data.error || 'خطا در ثبت مجوز');
+                    return;
+                }
+                const perm = data.permission;
+                userPermissions.unshift(perm);
+                if (!selectedPermissionIds.includes(perm.id)) selectedPermissionIds.push(perm.id);
+                renderPermissionList();
+                syncPermissions();
+                permissionAddForm.reset();
+                alert('مجوز با موفقیت ذخیره شد');
+            })
+            .catch(() => alert('خطای شبکه'));
+        });
     }
+    syncPermissions();
 
-    // مدیریت مدال لینک‌های نمونه کار
-    const openWorklinkModalBtn = document.getElementById('open-worklink-modal');
-    if (openWorklinkModalBtn) {
-        openWorklinkModalBtn.onclick = function() {
-            console.log('Opening worklink modal');
-            document.getElementById('worklinkModal').style.display = "block";
-            renderWorkLinkList();
-        };
-    }
-
-    const worklinkModalClose = document.getElementById('worklink-modal-close');
-    if (worklinkModalClose) {
-        worklinkModalClose.onclick = function() {
-            document.getElementById('worklinkModal').style.display = "none";
-        };
-    }
-
+    /* ---------- لینک‌های نمونه کار (فرانت) ---------- */
     function renderWorkLinkList() {
         const container = document.getElementById('worklink-list');
-        container.innerHTML = "";
-        
+        if (!container) return;
+        container.innerHTML = '';
         if (userWorkLinks.length === 0) {
             container.innerHTML = '<div class="empty-message">هیچ لینک نمونه کاری اضافه نشده است.</div>';
             return;
         }
-        
-        userWorkLinks.forEach((worklink, index) => {
-            const div = document.createElement('div');
-            div.className = "portfolio-item";
-            div.innerHTML = `
-                <div style="flex:1;">
-                    <strong>${worklink.title}</strong><br>
-                    <small><a href="${worklink.url}" target="_blank">${worklink.url}</a></small><br>
-                    <small>${worklink.description || ''}</small>
-                </div>
-                <button type="button" onclick="removeWorkLink(${index})" style="background:red;color:white;border:none;padding:5px 10px;border-radius:3px;">حذف</button>
-            `;
-            container.appendChild(div);
+        userWorkLinks
+            .sort((a,b)=> (a.order||0) - (b.order||0) || a.id - b.id)
+            .forEach((wl, idx) => {
+                const checked = selectedWorkLinkIds.includes(wl.id) ? 'checked' : '';
+                const div = document.createElement('div');
+                div.className = 'portfolio-item';
+                div.style.display = 'flex';
+                div.style.alignItems = 'flex-start';
+                div.style.gap = '10px';
+                div.innerHTML = `
+                  <label style="margin:0;display:flex;align-items:flex-start;gap:8px;cursor:pointer;flex:1;">
+                    <input type="checkbox" class="worklink-checkbox" data-worklink="${wl.id}" ${checked} style="margin-top:4px;">
+                    <div style="flex:1;">
+                        <strong>${wl.title}</strong>
+                        ${wl.is_featured ? '<span style="color:#d58512;font-size:11px;">(برجسته)</span>' : ''}
+                        <br>
+                        <small><a href="${wl.url}" target="_blank">${wl.url}</a></small><br>
+                        ${wl.category ? `<small>دسته: ${wl.category}</small><br>` : ''}
+                        ${wl.completion_date ? `<small>تاریخ: ${wl.completion_date}</small><br>` : ''}
+                        ${wl.description ? `<small>${wl.description}</small>` : ''}
+                    </div>
+                  </label>
+                  <button type="button" class="btn btn-sm btn-danger worklink-remove-btn" data-index="${idx}">حذف</button>
+                `;
+                container.appendChild(div);
+            });
+    }
+
+    function syncWorkLinks() {
+        // فقط آیدی‌های انتخاب‌شده را در hidden نگه داریم
+        const hidden = document.getElementById('work_links_input');
+        if (hidden) hidden.value = selectedWorkLinkIds.join(',');
+        const sum = document.getElementById('selected-worklinks-summary');
+        if (sum) {
+            if (!selectedWorkLinkIds.length) {
+                sum.textContent = 'هیچ لینکی انتخاب نشده است';
+            } else {
+                const titles = userWorkLinks
+                    .filter(w => selectedWorkLinkIds.includes(w.id))
+                    .map(w => w.title);
+                sum.textContent = titles.join('، ');
+            }
+        }
+    }
+
+    // رویداد تغییر تیک لینک
+    document.addEventListener('change', e => {
+        if (e.target.classList.contains('worklink-checkbox')) {
+            const id = parseInt(e.target.getAttribute('data-worklink'));
+            if (e.target.checked) {
+                if (!selectedWorkLinkIds.includes(id)) selectedWorkLinkIds.push(id);
+            } else {
+                selectedWorkLinkIds = selectedWorkLinkIds.filter(x => x !== id);
+            }
+            syncWorkLinks();
+        }
+    });
+
+    // هنگام افزودن لینک جدید از AJAX
+    // داخل then(data => { ... }) بعد از push(wl):
+    // if (!selectedWorkLinkIds.includes(wl.id)) selectedWorkLinkIds.push(wl.id);
+    // renderWorkLinkList(); syncWorkLinks();
+
+    // پس از بارگذاری اولیه
+    renderWorkLinkList();
+    syncWorkLinks();
+
+    /* ---------- آپلود فایل رزومه ---------- */
+    const fileInput = document.getElementById('id_file');
+    const fileUploadBtn = document.getElementById('file-upload-button');
+    const fileNameDisp = document.getElementById('file-name-display');
+    if (fileUploadBtn && fileInput) {
+        fileUploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => {
+            fileNameDisp.textContent = fileInput.files?.[0]?.name || 'فایل مورد نظر را انتخاب نمایید';
         });
     }
 
-    window.removeWorkLink = function(index) {
-        userWorkLinks.splice(index, 1);
-        renderWorkLinkList();
-    };
+    /* ---------- مقدار اولیه خلاصه‌ها ---------- */
+    syncPortfolioSummary();
+    syncPermissions();
+    syncWorkLinks();
 
+    // --- رویدادهای مدال لینک‌های نمونه کار ---
+    const openWorkLinkModalBtn = document.getElementById('open-worklink-modal');
+    const workLinkModal = document.getElementById('worklinkModal');
+    const workLinkConfirmBtn = document.getElementById('worklink-modal-confirm');
+    const workLinkCancelBtn = document.getElementById('worklink-modal-cancel');
+
+    if (openWorkLinkModalBtn && workLinkModal) {
+        openWorkLinkModalBtn.addEventListener('click', () => {
+            renderWorkLinkList();
+            workLinkModal.style.display = 'block';
+        });
+    }
+
+    if (workLinkCancelBtn && workLinkModal) {
+        workLinkCancelBtn.addEventListener('click', () => {
+            workLinkModal.style.display = 'none';
+        });
+    }
+
+    if (workLinkConfirmBtn && workLinkModal) {
+        workLinkConfirmBtn.addEventListener('click', () => {
+            // جمع‌آوری انتخاب‌ها (در صورت تغییر دستی)
+            const arr = [];
+            document.querySelectorAll('.worklink-checkbox:checked').forEach(cb => {
+                arr.push(parseInt(cb.dataset.worklink));
+            });
+            selectedWorkLinkIds = arr;
+            syncWorkLinks();
+            workLinkModal.style.display = 'none';
+        });
+    }
+
+    // فرم افزودن لینک جدید با AJAX (اگر قبلاً ندارید)
     const worklinkAddForm = document.getElementById('worklink-add-form');
     if (worklinkAddForm) {
-        worklinkAddForm.onsubmit = function(e) {
+        worklinkAddForm.addEventListener('submit', e => {
             e.preventDefault();
-            const formData = new FormData(this);
-            
-            const title = formData.get('title');
-            const url = formData.get('url');
-            
-            if (!title || !url) {
-                alert('عنوان و آدرس لینک الزامی است.');
-                return;
-            }
-            
-            const worklink = {
-                title: title,
-                url: url,
-                description: formData.get('description')
-            };
-            
-            userWorkLinks.push(worklink);
-            renderWorkLinkList();
-            this.reset();
-            alert('لینک نمونه کار جدید اضافه شد');
-        };
-    }
-
-    // مدیریت انتخاب فایل اصلی
-    const fileInput = document.getElementById('id_file');
-    const fileUploadButton = document.getElementById('file-upload-button');
-    const fileNameDisplay = document.getElementById('file-name-display');
-    
-    if (fileUploadButton && fileInput && fileNameDisplay) {
-        fileUploadButton.addEventListener('click', function() {
-            fileInput.click();
+            const fd = new FormData(worklinkAddForm);
+            fetch("{% url 'account:worklink_ajax_add' %}", {
+                method: 'POST',
+                headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                body: fd
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.ok) {
+                    alert(data.error || 'خطا در ثبت لینک');
+                    return;
+                }
+                const wl = data.worklink;
+                userWorkLinks.push(wl);
+                if (!selectedWorkLinkIds.includes(wl.id)) selectedWorkLinkIds.push(wl.id);
+                renderWorkLinkList();
+                syncWorkLinks();
+                worklinkAddForm.reset();
+                alert('لینک ذخیره شد');
+            })
+            .catch(()=>alert('خطای شبکه'));
         });
-        
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files.length > 0) {
-                fileNameDisplay.textContent = this.files[0].name;
-            } else {
-                fileNameDisplay.textContent = 'فایل مورد نظر را انتخاب نمایید';
-            }
-        });
-    }
-
-    console.log('All event handlers set up successfully');
-
-    // بازیابی نوع مجری تبلیغات
-    if (dealerTypeId) {
-        console.log('Auto-selecting dealer type:', dealerTypeId);
-        dealerTypeCards.forEach(card => {
-            if (card.dataset.id === dealerTypeId) {
-                // شبیه‌سازی کلیک روی کارت
-                resetDealerCardStyles();
-                card.classList.add("selected");
-                const color = card.dataset.color || "#028c32";
-                card.style.borderColor = color;
-                hiddenDealerInput.value = dealerTypeId;
-                loadSpecialtyCategories(dealerTypeId);
-            }
-        });
-    }
-
-    // بازیابی شهرهای انتخاب شده
-    if (selectedCityIds && selectedCityIds.length > 0) {
-        console.log('Auto-selecting cities:', selectedCityIds);
-        // نمایش شهرهای انتخاب شده در خلاصه
-        const selectedNames = []; // این متغیر را اضافه کنید
-        provinces.forEach(province => {
-            province.cities.forEach(city => {
-                if (selectedCityIds.includes(city.id)) selectedNames.push(city.name);
-            });
-        });
-        document.getElementById('selected-cities-summary').innerText = selectedNames.length ? 
-            selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
-        document.getElementById('service_area_input').value = selectedCityIds.join(',');
-    }
-
-    // بازیابی نمونه کارهای انتخاب شده
-    if (selectedPortfolioIds && selectedPortfolioIds.length > 0) {
-        console.log('Auto-selecting portfolios:', selectedPortfolioIds);
-        // نمایش نمونه کارهای انتخاب شده در خلاصه
-        const selectedNames = [];
-        userPortfolios.forEach(portfolio => {
-            if (selectedPortfolioIds.includes(portfolio.id)) selectedNames.push(portfolio.subject || 'بدون عنوان');
-        });
-        document.getElementById('selected-portfolios-summary').innerText = selectedNames.length ? 
-            selectedNames.join('، ') : 'هیچ نمونه کاری انتخاب نشده است';
-        document.getElementById('portfolios_input').value = selectedPortfolioIds.join(',');
     }
 });
 </script>
