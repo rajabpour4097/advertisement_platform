@@ -1207,14 +1207,14 @@ class ResumeDeleteView(DealerUserMixin, DeleteView):
 
 class MyResumeView(DealerUserMixin, View):
     template_name = 'account/resumes/my_resume.html'
-    
+
     def get(self, request):
         try:
             resume = Resume.objects.get(user=request.user)
             form = ResumeForm(instance=resume)
             is_edit_mode = True
             selected_cities = list(resume.service_area.values_list('id', flat=True))
-            selected_specialty_categories = list(resume.specialty_categories.values_list('id', flat=True))
+            selected_specialty_categories = [resume.specialty_categories_id] if resume.specialty_categories_id else []
             selected_portfolios = list(resume.portfolios.values_list('id', flat=True))
         except Resume.DoesNotExist:
             form = ResumeForm()
@@ -1270,76 +1270,57 @@ class MyResumeView(DealerUserMixin, View):
             form = ResumeForm(request.POST, request.FILES)
             resume = None
             is_edit_mode = False
-        
-        # جمع‌آوری تمام داده‌های فرم (چه معتبر و چه نامعتبر)
-        dealer_type_id = request.POST.get('dealer_type', '')
-        service_area_ids = request.POST.get('service_area', '')
+
+        dealer_type_id = request.POST.get('dealer_type', '')  # برای بازیابی مجدد
         specialty_category_id = request.POST.get('specialty_categories', '')
-        portfolio_ids = request.POST.get('portfolios', '')
-        
-        # تبدیل رشته‌های جدا شده با کاما به لیست‌های عددی
-        try:
-            city_ids = [int(x) for x in service_area_ids.split(',') if x.strip()]
-        except ValueError:
-            city_ids = []
-        
-        try:
-            portfolio_ids_list = [int(x) for x in portfolio_ids.split(',') if x.strip()]
-        except ValueError:
-            portfolio_ids_list = []
-        
-        try:
-            specialty_categories_list = [int(specialty_category_id)] if specialty_category_id and specialty_category_id.isdigit() else []
-        except ValueError:
-            specialty_categories_list = []
-    
+
+        # پردازش ورودی‌های مخفی (رشته کاما جدا)
+        service_area_raw = request.POST.get('service_area', '')
+        portfolio_raw = request.POST.get('portfolios', '')
+
+        def parse_ids(raw):
+            return [int(x) for x in raw.split(',') if x.strip().isdigit()]
+
+        city_ids = parse_ids(service_area_raw)
+        portfolio_ids_list = parse_ids(portfolio_raw)
+        specialty_categories_id = int(specialty_category_id) if specialty_category_id.isdigit() else None
+
         if form.is_valid():
             resume_instance = form.save(commit=False)
             resume_instance.user = request.user
-            
-            # پردازش شهرهای انتخابی
+
+            if specialty_categories_id:
+                resume_instance.specialty_categories_id = specialty_categories_id
+
+            resume_instance.save()
+
             if city_ids:
-                resume_instance.save()  # ابتدا رزومه را ذخیره کنید
                 resume_instance.service_area.set(city_ids)
             else:
-                resume_instance.save()
-                
-            # پردازش دسته تخصصی
-            if specialty_categories_list:
-                resume_instance.specialty_categories.set(specialty_categories_list)
-                
-            # پردازش نمونه کارها
+                resume_instance.service_area.clear()
+
             if portfolio_ids_list:
                 resume_instance.portfolios.set(portfolio_ids_list)
-        
+            else:
+                resume_instance.portfolios.clear()
+
             messages.success(request, 'رزومه شما با موفقیت ذخیره شد.')
             return redirect('account:my_resume')
-    
-        # در صورت خطا، دوباره صفحه را بارگذاری کنید با حفظ تمام داده‌های قبلی
+
+        # در صورت خطا:
         provinces_qs = Province.objects.prefetch_related('cities').all()
         provinces = [
-            {
-                "id": p.id,
-                "name": p.name,
-                "cities": [{"id": c.id, "name": c.name} for c in p.cities.all()]
-            }
+            {"id": p.id, "name": p.name,
+             "cities": [{"id": c.id, "name": c.name} for c in p.cities.all()]}
             for p in provinces_qs
         ]
-        
         parent_topics = Topic.objects.filter(parent__isnull=True)
-        
-        # دریافت پورتفولیوهای کاربر به صورت کامل (به جای فقط ID)
         user_portfolios_qs = Portfolio.objects.filter(dealer=request.user, is_active=True)
         user_portfolios = [
-            {
-                "id": p.id,
-                "subject": p.subject,
-                "description": p.description,
-            }
+            {"id": p.id, "subject": p.subject, "description": p.description}
             for p in user_portfolios_qs
         ]
-    
-        # برگرداندن داده‌ها به قالب با فرمت مناسب برای جاوااسکریپت
+
         return render(request, self.template_name, {
             'form': form,
             'resume': resume,
@@ -1348,9 +1329,9 @@ class MyResumeView(DealerUserMixin, View):
             'parent_topics': parent_topics,
             'user_portfolios': json.dumps(user_portfolios, cls=DjangoJSONEncoder),
             'selected_cities': city_ids,
-            'selected_specialty_categories': specialty_categories_list,
+            'selected_specialty_categories': [specialty_categories_id] if specialty_categories_id else [],
             'selected_portfolios': portfolio_ids_list,
-            'dealer_type_id': dealer_type_id,  # اضافه کردن این مقدار برای بازیابی در جاوااسکریپت
+            'dealer_type_id': dealer_type_id,
         })
 
 # اضافه کردن AJAX view برای دریافت دسته‌های تخصصی:

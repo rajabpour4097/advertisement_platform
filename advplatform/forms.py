@@ -102,19 +102,26 @@ class ResumeForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # تنظیم انتخاب‌های نوع مجری تبلیغات (فقط والدین)
+
         self.fields['dealer_type'].queryset = Topic.objects.filter(parent__isnull=True)
         self.fields['dealer_type'].empty_label = "انتخاب کنید..."
-        
-        # تنظیم انتخاب‌های دسته‌های تخصصی (ابتدا خالی)
+
+        # پیش‌فرض: خالی
         self.fields['specialty_categories'].queryset = Topic.objects.none()
-        
-        # اگر instance موجود است، دسته‌های تخصصی مربوطه را بارگذاری کن
-        if 'instance' in kwargs and kwargs['instance'] and kwargs['instance'].dealer_type:
-            self.fields['specialty_categories'].queryset = Topic.objects.filter(
-                parent=kwargs['instance'].dealer_type
-            )
+        self.fields['specialty_categories'].empty_label = "انتخاب کنید..."
+
+        # اگر در حال ویرایش هستیم
+        instance = kwargs.get('instance')
+        if instance and instance.dealer_type:
+            self.fields['specialty_categories'].queryset = Topic.objects.filter(parent=instance.dealer_type)
+
+        # اگر در حال ارسال فرم (POST) و dealer_type انتخاب شده:
+        dealer_type_id = self.data.get('dealer_type') or (instance.dealer_type_id if instance else None)
+        if dealer_type_id:
+            try:
+                self.fields['specialty_categories'].queryset = Topic.objects.filter(parent_id=int(dealer_type_id))
+            except (ValueError, TypeError):
+                pass
     
     def clean_file(self):
         file = self.cleaned_data.get('file')
