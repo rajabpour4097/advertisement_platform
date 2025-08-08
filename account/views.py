@@ -1289,6 +1289,13 @@ class MyResumeView(DealerUserMixin, View):
             resume_instance = form.save(commit=False)
             resume_instance.user = request.user
 
+            # اگر رزومه قبلی وجود دارد و واقعاً تغییری انجام شده باشد، وضعیت به "در حال بررسی" برگردد
+            if is_edit_mode and form.has_changed():
+                # فقط در صورتی که قبلاً تایید/رد/نیاز به ویرایش بوده یا هر وضعیتی غیر از under_review
+                if resume.status != 'under_review':
+                    resume_instance.status = 'under_review'
+                    resume_instance.is_seen_by_manager = False  # تا دوباره برای مدیر برجسته شود
+
             if specialty_categories_id:
                 resume_instance.specialty_categories_id = specialty_categories_id
 

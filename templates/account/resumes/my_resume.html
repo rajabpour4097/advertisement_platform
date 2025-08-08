@@ -453,21 +453,17 @@
             <h2>رزومه من</h2>
             <div class="clearfix"></div>
         </div>
-        {% if form.errors %}
-            <div class="alert alert-danger">
-                <ul>
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li>{{ field }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endif %}
         <div class="x_content">
             {% if resume %}
                 <div class="resume-status">
-                    وضعیت رزومه: {{ resume.get_status_display }}
+                    وضعیت رزومه: <p style="display: inline; color: {% if resume.status == 'approved' %}green{% elif resume.status == 'rejected' %}red{% else %}orange{% endif %}">{{ resume.get_status_display }}</p>
                 </div>
             {% endif %}
 
