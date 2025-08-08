@@ -36,7 +36,6 @@ REQUEST_TYPE = [
 
 # وضعیت‌های جدید برای رزومه
 RESUME_STATUS_CHOICES = [
-    ('pending', 'در انتظار بررسی'),
     ('under_review', 'در حال بررسی'),
     ('needs_editing', 'نیاز به ویرایش'),
     ('approved', 'تایید شده'),

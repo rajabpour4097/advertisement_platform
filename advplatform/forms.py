@@ -74,11 +74,12 @@ class CustomUserChangeForm(UserChangeForm):
 class ResumeForm(forms.ModelForm):
     file = forms.FileField(label='فایل رزومه', required=False)
     bank_account = forms.CharField(
-        max_length=24, 
-        required=True, 
+        max_length=24,
+        min_length=24,
+        required=True,
         label='شماره حساب بانکی',
         error_messages={
-            'required': 'لطفاً شماره شباحساب بانکی خود را وارد کنید!',
+            'required': 'لطفاً شماره حساب بانکی خود را وارد کنید!',
         }
     )
 
@@ -170,6 +171,17 @@ class ResumeForm(forms.ModelForm):
             raise forms.ValidationError('حداکثر حجم فایل ۱۰ مگابایت است.')
 
         return file
+
+    def clean_bank_account(self):
+        value = self.cleaned_data.get('bank_account', '') or ''
+        value = value.replace(' ', '').strip()
+        if not value:
+            raise ValidationError('شماره حساب الزامی است.')
+        if not value.isdigit():
+            raise ValidationError('شماره حساب باید فقط شامل ارقام باشد.')
+        if len(value) != 24:
+            raise ValidationError('شماره حساب باید دقیقاً 24 رقم باشد.')
+        return value
 
 class ResumeReviewForm(forms.ModelForm):
     class Meta:

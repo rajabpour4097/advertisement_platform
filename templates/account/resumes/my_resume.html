@@ -586,10 +586,13 @@
                         <div class="char-counter" id="partner-counter">0/120</div>
                     </div>
                     <div>
+                        {% for error in form.bank_account.errors %}
+                            <p style="color: red;">{{ error }}</p>
+                        {% endfor %}
                         <label for="id_bank_account">شماره حساب بانکی (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                         <input type="text" name="bank_account" id="id_bank_account" 
                                class="form-control" value="{{ form.bank_account.value|default:'' }}" 
-                               maxlength="25">
+                               maxlength="24">
                     </div>
                 </div>
 
