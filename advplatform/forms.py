@@ -82,6 +82,22 @@ class ResumeForm(forms.ModelForm):
             'required': 'لطفاً شماره حساب بانکی خود را وارد کنید!',
         }
     )
+    describe = forms.CharField(
+        max_length=250,
+        required=True,
+        label='معرفی کوتاه خود',
+        error_messages={
+            'required': 'لطفاً یک معرفی کوتاه از خود را وارد کنید!',
+        }
+    )
+    services = forms.CharField(
+        max_length=120,
+        required=True,
+        label='خدمات قابل ارائه',
+        error_messages={
+            'required': 'لطفاً خدمات قابل ارائه خود را وارد کنید!',
+        }
+    )
 
     class Meta:
         model = Resume
@@ -173,8 +189,9 @@ class ResumeForm(forms.ModelForm):
         return file
 
     def clean_bank_account(self):
-        value = self.cleaned_data.get('bank_account', '') or ''
-        value = value.replace(' ', '').strip()
+        value = (self.cleaned_data.get('bank_account') or '').strip().upper()
+        value = value.replace('IR','')  # اگر کاربر اشتباهاً IR نوشت حذف شود
+        value = ''.join(ch for ch in value if ch.isdigit())
         if not value:
             raise ValidationError('شماره حساب الزامی است.')
         if not value.isdigit():

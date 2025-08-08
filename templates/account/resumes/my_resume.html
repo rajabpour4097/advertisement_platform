@@ -444,6 +444,43 @@
             padding: 14px;
         }
     }
+
+    .iban-wrapper{
+    display:inline-flex;
+    align-items:center;
+    border:1px solid #333;
+    border-radius:5px;
+    padding:2px 6px 2px 10px;
+    width:100%;
+    max-width:260px;
+    direction:ltr;              /* اضافه شد: ترتیب چپ به راست داخل فقط این باکس */
+}
+.iban-prefix{
+    /* اگر می‌خواهید کم‌تر به راست بچسبد می‌توانید margin-right تنظیم کنید */
+    margin-left:3px;
+    margin-right:3px;
+}
+.iban-input{
+    direction:ltr;
+    text-align:left;
+}
+#selected-permissions-summary { 
+    color:#4ac6e9ff; 
+    font-size: 12px;
+}
+#selected-worklinks-summary  {
+    color: #297aebff; 
+    font-size: 10px;
+}
+#selected-cities-summary       { 
+    color:#297aebff;
+    font-size: 12px;
+}
+#selected-portfolios-summary   { 
+    color:#4ac6e9ff; 
+    font-size: 12px;
+}
+
 </style>
 
 <!-- باقی HTML همان‌طور که هست -->
@@ -472,6 +509,9 @@
 
                 <!-- نوع مجری تبلیغات با کارت -->
                 <div class="form-group">
+                    {% for error in form.dealer_type.errors %}
+                        <p style="font-size: 10px; color: red;">{{ error }}</p>
+                    {% endfor %}
                     <label>نوع مجری تبلیغات (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <div class="dealer-type-card-list">
                         {% for topic in parent_topics %}
@@ -493,6 +533,9 @@
 
                 <!-- دسته‌های تخصصی -->
                 <div class="form-group">
+                    {% for error in form.specialty_categories.errors %}
+                        <p style="font-size: 10px; color: red;">{{ error }}</p>
+                    {% endfor %}
                     <label>دسته‌های تخصصی (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <div id="specialty-categories-container">
                         <div class="empty-message">
@@ -503,6 +546,9 @@
 
                 <!-- بخش انتخاب استان و شهرها -->
                 <div class="form-group">
+                    {% for error in form.service_area.errors %}
+                        <p style="font-size: 10px; color: red;">{{ error }}</p>
+                    {% endfor %}
                     <label>حوزه خدمات (استان‌ها و شهرها)(<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <button type="button" id="open-city-modal" style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
                         انتخاب استان و شهر
@@ -512,7 +558,9 @@
                 </div>
 
                 <div>
-                   
+                   {% for error in form.describe.errors %}
+                       <p style="font-size: 10px; color: red;">{{ error }}</p>
+                   {% endfor %}
                     <label for="id_describe">معرفی کوتاه خود (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <textarea name="describe" id="id_describe" class="form-control" rows="3" 
                               maxlength="300">{{ form.describe.value|default:'' }}</textarea>
@@ -520,6 +568,9 @@
                 </div>
 
                 <div>
+                    {% for error in form.services.errors %}
+                        <p style="font-size: 10px; color: red;">{{ error }}</p>
+                    {% endfor %}
                     <label for="id_services">خدمات قابل ارائه (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <textarea name="services" id="id_services" class="form-control" rows="2" 
                               maxlength="120">{{ form.services.value|default:'' }}</textarea>
@@ -587,13 +638,24 @@
                     </div>
                     <div>
                         {% for error in form.bank_account.errors %}
-                            <p style="color: red;">{{ error }}</p>
+                             <p style="color: red;">{{ error }}</p>
                         {% endfor %}
-                        <label for="id_bank_account">شماره حساب بانکی (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
-                        <input type="text" name="bank_account" id="id_bank_account" 
-                               class="form-control" value="{{ form.bank_account.value|default:'' }}" 
-                               maxlength="24">
+                    <label for="id_bank_account">
+                        شماره حساب بانکی (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)
+                    </label>
+                    <div class="iban-wrapper">
+                        <span class="iban-prefix">IR</span>
+                        <input type="text"
+                               name="bank_account"
+                               id="id_bank_account"
+                               class="form-control iban-input"
+                               value="{{ form.bank_account.value|default:'' }}"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               maxlength="24"
+                               placeholder="24 رقم">
                     </div>
+                </div>
                 </div>
 
                 <div style="margin-bottom: 20px;">
@@ -1352,6 +1414,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('لینک ذخیره شد');
             })
             .catch(()=>alert('خطای شبکه'));
+        });
+    }
+
+    const bankInput = document.getElementById('id_bank_account');
+    if (bankInput) {
+        function sanitizeBank(){
+            let v = bankInput.value.replace(/\D/g,''); // فقط رقم
+            if (v.length > 24) v = v.slice(0,24);
+            bankInput.value = v;
+        }
+        sanitizeBank();
+        bankInput.addEventListener('input', sanitizeBank);
+        bankInput.addEventListener('paste', e=>{
+            setTimeout(sanitizeBank,0);
         });
     }
 });
