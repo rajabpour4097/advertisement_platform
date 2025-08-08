@@ -409,7 +409,7 @@ class Resume(models.Model):
     tools_and_platforms = models.TextField(blank=True, null=True, verbose_name='ابزارها و پلتفرم‌ها')
     file = models.FileField(upload_to='resumes/files/', blank=True, null=True, verbose_name='فایل رزومه')
     #worklinks inline
-    portfolios = models.ManyToManyField(Portfolio, blank=True, verbose_name='پورتفولیوها')
+    portfolios = models.ManyToManyField(Portfolio, blank=True, null=True,verbose_name='پورتفولیوها')
     partner_brand = models.TextField(blank=True, null=True, verbose_name='برند همکار')
     #permissions inline
     bank_account = models.CharField(max_length=25, blank=True, null=True, verbose_name='شماره حساب بانکی')
