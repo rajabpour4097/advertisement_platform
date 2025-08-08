@@ -6,7 +6,7 @@
 
 {% block content %}
 <style>
-    /* همه استایل‌های قبلی + استایل‌های جدید */
+    /* استایل‌های پایه */
     .resume-form {
         max-width: 800px;
         margin: 0 auto;
@@ -59,25 +59,42 @@
         background-color: #026a24;
     }
 
-    /* استایل‌های کارت‌های نوع مجری */
+    /* استایل‌های کارت‌های نوع مجری - بهینه شده برای موبایل */
     .dealer-type-card-list {
         display: flex;
-        flex-wrap: nowrap;
-        gap: 6px;
-        justify-content: flex-start;
+        gap: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: #ccc transparent;
+    }
+
+    .dealer-type-card-list::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .dealer-type-card-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .dealer-type-card-list::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
     }
 
     .dealer-type-card {
         position: relative;
-        width: calc(16.66% - 5px);
+        min-width: 100px;
         border: 2px solid #ddd;
         border-radius: 6px;
-        padding: 4px;
+        padding: 8px;
         cursor: pointer;
         text-align: center;
         transition: all 0.3s ease;
         background-color: #fff;
-        min-height: 50px;
+        min-height: 60px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -90,32 +107,32 @@
     }
 
     .dealer-type-card .icon-wrapper {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
         border-radius: 3px;
-        margin: 0 auto 2px;
+        margin: 0 auto 4px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .dealer-type-card img {
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 18px;
     }
 
     .dealer-type-card h5 {
         font-weight: bold;
         margin: 0;
         font-size: 10px;
-        line-height: 1;
+        line-height: 1.2;
     }
 
     .dealer-type-card .checkmark {
         position: absolute;
-        top: 2px;
-        left: 2px;
-        font-size: 10px;
+        top: 3px;
+        left: 3px;
+        font-size: 12px;
         color: #028c32;
         display: none;
     }
@@ -124,28 +141,27 @@
         display: block;
     }
 
-    /* برای موبایل */
-    @media (max-width: 768px) {
-        .dealer-type-card {
-            width: calc(33.33% - 4px);
-            min-width: 80px;
-            min-height: 45px;
-            flex-shrink: 0;
-        }
-        
-        .dealer-type-card h5 {
-            font-size: 7px;
-        }
-        
-        .dealer-type-card img {
-            width: 12px;
-            height: 12px;
-        }
-        
-        .dealer-type-card .icon-wrapper {
-            width: 16px;
-            height: 16px;
-        }
+    /* استایل‌های مدال‌ها */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background: #fff;
+        margin: 20px auto;
+        border-radius: 10px;
+        padding: 20px;
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        overflow-y: auto;
     }
 
     .portfolio-item {
@@ -224,8 +240,213 @@
         border-radius: 5px;
         border: 1px dashed #dee2e6;
     }
+
+    /* بهینه‌سازی برای موبایل */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding: 10px;
+        }
+
+        .x_panel {
+            margin: 0;
+            padding: 15px;
+        }
+
+        .resume-form {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        /* فرم‌ها در موبایل */
+        .resume-form .row {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .resume-form input,
+        .resume-form textarea,
+        .resume-form select {
+            padding: 12px;
+            font-size: 16px; /* جلوگیری از zoom در iOS */
+        }
+
+        .resume-form button {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            margin-right: 0;
+        }
+
+        /* کارت‌های نوع مجری در موبایل - تغییر از اسکرولی به grid */
+        .dealer-type-card-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 ستون */
+            gap: 10px;
+            overflow-x: visible; /* حذف اسکرول افقی */
+            padding-bottom: 0;
+        }
+
+        .dealer-type-card {
+            min-width: auto; /* حذف min-width */
+            width: 100%; /* عرض کامل */
+            min-height: 80px;
+            padding: 8px;
+            flex-shrink: 1; /* اجازه کوچک شدن */
+        }
+
+        .dealer-type-card h5 {
+            font-size: 10px;
+            line-height: 1.2;
+        }
+        
+        .dealer-type-card img {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .dealer-type-card .icon-wrapper {
+            width: 22px;
+            height: 22px;
+            margin-bottom: 5px;
+        }
+
+        /* مدال‌ها در موبایل */
+        .modal-content {
+            margin: 10px;
+            max-width: calc(100% - 20px);
+            max-height: calc(100% - 20px);
+            padding: 15px;
+        }
+
+        .modal h4, .modal h5 {
+            font-size: 16px;
+        }
+
+        /* دکمه‌های مدیریت در موبایل */
+        button[id*="open-"] {
+            width: 100% !important;
+            padding: 12px !important;
+            font-size: 14px !important;
+            margin-bottom: 10px;
+        }
+
+        /* فایل آپلود در موبایل */
+        .file-upload-btn {
+            flex-direction: column;
+        }
+
+        .file-name-display {
+            text-align: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .file-select-btn {
+            min-width: auto;
+            width: 100%;
+            padding: 12px;
+        }
+
+        /* نمایش بهتر لیست‌ها در موبایل */
+        .portfolio-item {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 12px;
+        }
+
+        .portfolio-item label {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .portfolio-item input[type="checkbox"] {
+            margin: 0 0 8px 0;
+            width: auto;
+            align-self: flex-start;
+        }
+
+        /* تنظیمات اسکرول */
+        #province-list, 
+        #portfolio-list, 
+        #permission-list, 
+        #worklink-list {
+            max-height: 40vh !important;
+        }
+
+        /* شمارنده کاراکتر */
+        .char-counter {
+            font-size: 11px;
+        }
+
+        /* فاصله‌گذاری بهتر */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        /* دکمه‌های تایید/انصراف */
+        .modal .btn {
+            width: 48%;
+            margin: 1%;
+            padding: 12px;
+            font-size: 14px;
+        }
+    }
+
+    /* بهینه‌سازی برای تبلت */
+    @media (max-width: 992px) and (min-width: 769px) {
+        .dealer-type-card {
+            min-width: 110px;
+        }
+
+        .modal-content {
+            max-width: 80%;
+        }
+
+        button[id*="open-"] {
+            width: 50% !important;
+        }
+    }
+
+    /* بهینه‌سازی برای موبایل‌های کوچک */
+    @media (max-width: 480px) {
+        .x_panel {
+            padding: 10px;
+        }
+
+        /* در موبایل‌های خیلی کوچک، کارت‌ها کمی کوچک‌تر */
+        .dealer-type-card {
+            min-height: 75px;
+            padding: 6px;
+        }
+
+        .dealer-type-card h5 {
+            font-size: 9px;
+        }
+
+        .dealer-type-card img {
+            width: 16px;
+            height: 16px;
+        }
+
+        .dealer-type-card .icon-wrapper {
+            width: 20px;
+            height: 20px;
+        }
+
+        .modal-content {
+            margin: 5px;
+            padding: 12px;
+        }
+
+        .resume-form input,
+        .resume-form textarea {
+            padding: 14px;
+        }
+    }
 </style>
 
+<!-- باقی HTML همان‌طور که هست -->
 <div class="container-fluid">
     <div class="x_panel">
         <div class="x_title">
@@ -245,7 +466,7 @@
 
                 <!-- نوع مجری تبلیغات با کارت -->
                 <div class="form-group">
-                    <label>نوع مجری تبلیغات *</label>
+                    <label>نوع مجری تبلیغات (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <div class="dealer-type-card-list">
                         {% for topic in parent_topics %}
                             <div class="dealer-type-card {% if form.dealer_type.value == topic.id %}selected{% endif %}" 
@@ -266,7 +487,7 @@
 
                 <!-- دسته‌های تخصصی -->
                 <div class="form-group">
-                    <label>دسته‌های تخصصی</label>
+                    <label>دسته‌های تخصصی (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <div id="specialty-categories-container">
                         <div class="empty-message">
                             ابتدا نوع مجری تبلیغات را انتخاب کنید.
@@ -276,7 +497,7 @@
 
                 <!-- بخش انتخاب استان و شهرها -->
                 <div class="form-group">
-                    <label>حوزه خدمات (استان‌ها و شهرها)</label>
+                    <label>حوزه خدمات (استان‌ها و شهرها)(<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <button type="button" id="open-city-modal" style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
                         انتخاب استان و شهر
                     </button>
@@ -285,14 +506,14 @@
                 </div>
 
                 <div>
-                    <label for="id_describe">توضیحات (حداکثر 250 کاراکتر) *</label>
+                    <label for="id_describe">معرفی کوتاه خود (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <textarea name="describe" id="id_describe" class="form-control" rows="3" 
                               maxlength="250" required>{{ form.describe.value|default:'' }}</textarea>
                     <div class="char-counter" id="describe-counter">0/250</div>
                 </div>
 
                 <div>
-                    <label for="id_services">خدمات قابل ارائه (حداکثر 120 کاراکتر) *</label>
+                    <label for="id_services">خدمات قابل ارائه (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                     <textarea name="services" id="id_services" class="form-control" rows="2" 
                               maxlength="120" required>{{ form.services.value|default:'' }}</textarea>
                     <div class="char-counter" id="services-counter">0/120</div>
@@ -300,13 +521,13 @@
 
                 <div class="row">
                     <div>
-                        <label for="id_socialmedia_and_sites">شبکه‌های اجتماعی (حداکثر 120 کاراکتر)</label>
+                        <label for="id_socialmedia_and_sites">شبکه‌های مورد فعالیت (<p style="font-size: 10px; color: blue; display: inline;">اختیاری</p>)</label>
                         <textarea name="socialmedia_and_sites" id="id_socialmedia_and_sites" 
                                   class="form-control" rows="2" maxlength="120">{{ form.socialmedia_and_sites.value|default:'' }}</textarea>
                         <div class="char-counter" id="socialmedia-counter">0/120</div>
                     </div>
                     <div>
-                        <label for="id_tools_and_platforms">ابزارها و پلتفرم‌ها (حداکثر 120 کاراکتر)</label>
+                        <label for="id_tools_and_platforms">ابزارها و پلتفرم‌ها مورد استفاده (<p style="font-size: 10px; color: blue; display: inline;">اختیاری</p>)</label>
                         <textarea name="tools_and_platforms" id="id_tools_and_platforms" 
                                   class="form-control" rows="2" maxlength="120">{{ form.tools_and_platforms.value|default:'' }}</textarea>
                         <div class="char-counter" id="tools-counter">0/120</div>
@@ -315,7 +536,7 @@
 
                 <!-- بخش نمونه کارها -->
                 <div class="form-group">
-                    <label>نمونه کارها</label>
+                    <label>نمونه کارها (<p style="font-size: 10px; color: blue; display: inline;">اختیاری</p>)</label>
                     <button type="button" id="open-portfolio-modal" class="btn btn-outline-primary" 
                             style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
                         انتخاب نمونه کار
@@ -326,7 +547,7 @@
 
                 <!-- بخش مجوزها -->
                 <div class="form-group">
-                    <label>مجوزها و گواهینامه‌ها</label>
+                    <label>مجوزها و گواهینامه‌ها (<p style="font-size: 10px; color: blue; display: inline;">اختیاری</p>)</label>
                     <button type="button" id="open-permission-modal" class="btn btn-outline-primary" 
                             style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
                         مدیریت مجوزها
@@ -337,7 +558,7 @@
 
                 <!-- بخش لینک‌های نمونه کار -->
                 <div class="form-group">
-                    <label>لینک‌های نمونه کار</label>
+                    <label>لینک‌های نمونه کار (<p style="font-size: 10px; color: blue; display: inline;">اختیاری</p>)</label>
                     <button type="button" id="open-worklink-modal" class="btn btn-outline-primary" 
                             style="width: 20%; font-size: 12px; background-color: #86a7c9ff;">
                         مدیریت لینک‌ها
@@ -348,13 +569,13 @@
 
                 <div class="row">
                     <div>
-                        <label for="id_partner_brand">برندهای همکار (حداکثر 120 کاراکتر)</label>
+                        <label for="id_partner_brand">برندهای همکار (<p style="font-size: 10px; color: blue; display: inline;">اختیاری</p>)</label>
                         <textarea name="partner_brand" id="id_partner_brand" class="form-control" 
                                   rows="2" maxlength="120">{{ form.partner_brand.value|default:'' }}</textarea>
                         <div class="char-counter" id="partner-counter">0/120</div>
                     </div>
                     <div>
-                        <label for="id_bank_account">شماره حساب بانکی</label>
+                        <label for="id_bank_account">شماره حساب بانکی (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)</label>
                         <input type="text" name="bank_account" id="id_bank_account" 
                                class="form-control" value="{{ form.bank_account.value|default:'' }}" 
                                maxlength="25">
@@ -362,7 +583,7 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="id_file">فایل رزومه (PDF یا ZIP - حداکثر 10MB)</label>
+                    <label for="id_file">فایل رزومه (<p style="font-size: 10px; color: blue; display: inline;">اختیاری</p>)</label>
                     
                     <!-- لینک دانلود نمونه -->
                     <div style="margin-bottom: 10px; padding: 8px; background-color: #f0f8ff; border-radius: 5px; border: 1px solid #cce7ff;">
@@ -404,15 +625,65 @@
     </div>
 </div>
 
-<!-- مدال انتخاب استان و شهر -->
-<div class="modal" id="cityModal" tabindex="-1" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3);">
-    <div style="background:#fff; max-width:500px; margin:40px auto; border-radius:10px; padding:20px; position:relative;">
-        <h4 style="margin-bottom:10px;">انتخاب شهر</h4>
-        <input type="text" id="city-search" placeholder="جستجو در شهرها..." class="form-control" style="margin-bottom:10px;">
+<!-- مدال‌ها با کلاس جدید -->
+<div class="modal" id="cityModal">
+    <div class="modal-content" style="max-width:500px;">
+        <h4 style="margin-bottom:15px;">انتخاب شهر</h4>
+        <input type="text" id="city-search" placeholder="جستجو در شهرها..." class="form-control" style="margin-bottom:15px;">
         <div id="province-list" style="max-height:350px; overflow-y:auto;"></div>
-        <div style="margin-top:20px; text-align:left;">
+        <div style="margin-top:20px; text-align:center;">
             <button type="button" class="btn btn-success" id="city-modal-confirm">تایید</button>
             <button type="button" class="btn btn-secondary" id="city-modal-cancel">انصراف</button>
+        </div>
+    </div>
+</div>
+
+<!-- مدال مجوزها -->
+<div class="modal" id="permissionModal">
+    <div class="modal-content" style="max-width:700px;">
+        <h4 style="margin-bottom:15px;">مدیریت مجوزها</h4>
+        <div id="permission-list" style="max-height:300px; overflow-y:auto;"></div>
+        <hr>
+        <h5>افزودن مجوز جدید</h5>
+        <form id="permission-add-form">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="permission_title">عنوان مجوز *</label>
+                <input type="text" name="title" id="permission_title" 
+                       placeholder="مثل: مجوز کسب، گواهینامه" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="permission_description">توضیحات</label>
+                <textarea name="description" id="permission_description" 
+                          placeholder="توضیحات اضافی" class="form-control" rows="2"></textarea>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="permission_issue_date">تاریخ صدور *</label>
+                <input type="date" name="issue_date" id="permission_issue_date" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="permission_expiry_date">تاریخ انقضا *</label>
+                <input type="date" name="expiry_date" id="permission_expiry_date" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="permission_issuing_authority">مرجع صادرکننده *</label>
+                <input type="text" name="issuing_authority" id="permission_issuing_authority" class="form-control" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label for="permission_file">فایل مجوز *</label>
+                <input type="file" name="file" id="permission_file" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-success" style="width:100%; margin-bottom:15px;">افزودن مجوز</button>
+        </form>
+        
+        <div style="margin-top:20px; text-align:center;">
+            <button type="button" class="btn btn-secondary" id="permission-modal-close">بستن</button>
         </div>
     </div>
 </div>
@@ -462,52 +733,6 @@
         <div style="margin-top:20px; text-align:left;">
             <button type="button" class="btn btn-success" id="portfolio-modal-confirm">تایید انتخاب</button>
             <button type="button" class="btn btn-secondary" id="portfolio-modal-cancel">انصراف</button>
-        </div>
-    </div>
-</div>
-
-<!-- مدال مجوزها -->
-<div class="modal" id="permissionModal" tabindex="-1" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3);">
-    <div style="background:#fff; max-width:700px; margin:40px auto; border-radius:10px; padding:20px; position:relative;">
-        <h4 style="margin-bottom:10px;">مدیریت مجوزها</h4>
-        <div id="permission-list" style="max-height:300px; overflow-y:auto;"></div>
-        <hr>
-        <h5>افزودن مجوز جدید</h5>
-        <form id="permission-add-form">
-            {% csrf_token %}
-            <div class="form-group" style="margin-bottom:10px;">
-                <label for="permission_title">عنوان مجوز *</label>
-                <input type="text" name="title" id="permission_title" 
-                       placeholder="مثل: مجوز کسب، گواهینامه" class="form-control" required>
-            </div>
-            
-            <div class="form-group" style="margin-bottom:10px;">
-                <label for="permission_description">توضیحات</label>
-                <textarea name="description" id="permission_description" 
-                          placeholder="توضیحات اضافی" class="form-control" rows="2"></textarea>
-            </div>
-            <div class="form-group" style="margin-bottom:10px;">
-                <label for="permission_issue_date">تاریخ صدور *</label>
-                <input type="date" name="issue_date" id="permission_issue_date" class="form-control" required>
-            </div>
-            <div class="form-group" style="margin-bottom:10px;">
-                <label for="permission_expiry_date">تاریخ انقضا *</label>
-                <input type="date" name="expiry_date" id="permission_expiry_date" class="form-control" required>
-            </div>
-            <div class="form-group" style="margin-bottom:10px;">
-                <label for="permission_issuing_authority">مرجع صادرکننده *</label>
-                <input type="text" name="issuing_authority" id="permission_issuing_authority" class="form-control" required>
-            </div>
-            <div class="form-group" style="margin-bottom:10px;">
-                <label for="permission_file">فایل مجوز *</label>
-                <input type="file" name="file" id="permission_file" class="form-control" required>
-            </div>
-
-            <button type="submit" class="btn btn-success" style="margin-bottom:10px;">افزودن مجوز</button>
-        </form>
-        
-        <div style="margin-top:20px; text-align:left;">
-            <button type="button" class="btn btn-secondary" id="permission-modal-close">بستن</button>
         </div>
     </div>
 </div>

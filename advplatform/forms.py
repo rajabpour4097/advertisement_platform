@@ -73,6 +73,15 @@ class CustomUserChangeForm(UserChangeForm):
 
 class ResumeForm(forms.ModelForm):
     file = forms.FileField(label='فایل رزومه', required=False)
+    bank_account = forms.CharField(
+        max_length=24, 
+        required=True, 
+        label='شماره حساب بانکی',
+        error_messages={
+            'required': 'لطفاً شماره شباحساب بانکی خود را وارد کنید!',
+            'max_length': 'شماره شبا نمی‌تواند بیش از 24 کاراکتر باشد!',
+        }
+    )
 
     class Meta:
         model = Resume
