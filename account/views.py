@@ -1271,34 +1271,51 @@ class MyResumeView(DealerUserMixin, View):
             resume = None
             is_edit_mode = False
         
+        # جمع‌آوری تمام داده‌های فرم (چه معتبر و چه نامعتبر)
+        dealer_type_id = request.POST.get('dealer_type', '')
+        service_area_ids = request.POST.get('service_area', '')
+        specialty_category_id = request.POST.get('specialty_categories', '')
+        portfolio_ids = request.POST.get('portfolios', '')
+        
+        # تبدیل رشته‌های جدا شده با کاما به لیست‌های عددی
+        try:
+            city_ids = [int(x) for x in service_area_ids.split(',') if x.strip()]
+        except ValueError:
+            city_ids = []
+        
+        try:
+            portfolio_ids_list = [int(x) for x in portfolio_ids.split(',') if x.strip()]
+        except ValueError:
+            portfolio_ids_list = []
+        
+        try:
+            specialty_categories_list = [int(specialty_category_id)] if specialty_category_id and specialty_category_id.isdigit() else []
+        except ValueError:
+            specialty_categories_list = []
+    
         if form.is_valid():
             resume_instance = form.save(commit=False)
             resume_instance.user = request.user
             
             # پردازش شهرهای انتخابی
-            service_area_ids = request.POST.get('service_area', '')
-            if service_area_ids:
-                city_ids = [int(x) for x in service_area_ids.split(',') if x.strip()]
+            if city_ids:
                 resume_instance.save()  # ابتدا رزومه را ذخیره کنید
                 resume_instance.service_area.set(city_ids)
             else:
                 resume_instance.save()
                 
             # پردازش دسته تخصصی
-            specialty_category = request.POST.get('specialty_categories')
-            if specialty_category:
-                resume_instance.specialty_categories.set([int(specialty_category)])
+            if specialty_categories_list:
+                resume_instance.specialty_categories.set(specialty_categories_list)
                 
             # پردازش نمونه کارها
-            portfolio_ids = request.POST.get('portfolios', '')
-            if portfolio_ids:
-                portfolio_ids_list = [int(x) for x in portfolio_ids.split(',') if x.strip()]
+            if portfolio_ids_list:
                 resume_instance.portfolios.set(portfolio_ids_list)
-            
+        
             messages.success(request, 'رزومه شما با موفقیت ذخیره شد.')
             return redirect('account:my_resume')
-        
-        # در صورت خطا، دوباره صفحه را بارگذاری کنید
+    
+        # در صورت خطا، دوباره صفحه را بارگذاری کنید با حفظ تمام داده‌های قبلی
         provinces_qs = Province.objects.prefetch_related('cities').all()
         provinces = [
             {
@@ -1308,22 +1325,32 @@ class MyResumeView(DealerUserMixin, View):
             }
             for p in provinces_qs
         ]
-        parent_topics = Topic.objects.filter(parent__isnull=True)
-        user_portfolios = Portfolio.objects.filter(dealer=request.user, is_active=True)
-        selected_cities = request.POST.getlist('service_area')
-        selected_specialty_categories = request.POST.getlist('specialty_categories')
-        selected_portfolios = request.POST.getlist('portfolios')
         
+        parent_topics = Topic.objects.filter(parent__isnull=True)
+        
+        # دریافت پورتفولیوهای کاربر به صورت کامل (به جای فقط ID)
+        user_portfolios_qs = Portfolio.objects.filter(dealer=request.user, is_active=True)
+        user_portfolios = [
+            {
+                "id": p.id,
+                "subject": p.subject,
+                "description": p.description,
+            }
+            for p in user_portfolios_qs
+        ]
+    
+        # برگرداندن داده‌ها به قالب با فرمت مناسب برای جاوااسکریپت
         return render(request, self.template_name, {
             'form': form,
             'resume': resume,
             'is_edit_mode': is_edit_mode,
             'provinces': json.dumps(provinces, cls=DjangoJSONEncoder),
             'parent_topics': parent_topics,
-            'user_portfolios': user_portfolios,
-            'selected_cities': [int(x) for x in selected_cities if x],
-            'selected_specialty_categories': [int(x) for x in selected_specialty_categories if x],
-            'selected_portfolios': [int(x) for x in selected_portfolios if x],
+            'user_portfolios': json.dumps(user_portfolios, cls=DjangoJSONEncoder),
+            'selected_cities': city_ids,
+            'selected_specialty_categories': specialty_categories_list,
+            'selected_portfolios': portfolio_ids_list,
+            'dealer_type_id': dealer_type_id,  # اضافه کردن این مقدار برای بازیابی در جاوااسکریپت
         })
 
 # اضافه کردن AJAX view برای دریافت دسته‌های تخصصی:

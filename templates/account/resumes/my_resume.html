@@ -795,13 +795,12 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded successfully');
-    
-    // داده‌ها از سرور
+    // فقط یک بار متغیرها را تعریف کنید
     const provinces = {{ provinces|safe }};
     const selectedCityIds = {{ selected_cities|safe }};
     let userPortfolios = {{ user_portfolios|safe }};
     const selectedPortfolioIds = {{ selected_portfolios|safe }};
+    const dealerTypeId = "{{ dealer_type_id|escapejs }}";
 
     console.log('Provinces:', provinces);
     console.log('User Portfolios:', userPortfolios);
@@ -968,6 +967,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Opening city modal');
             document.getElementById('cityModal').style.display = "block";
             renderProvinceList();
+            renderCityModal(); // انتخاب خودکار شهرهای قبلی
         };
     }
 
@@ -1005,6 +1005,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('selected-cities-summary').innerText = selectedNames.length ? selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
             document.getElementById('cityModal').style.display = "none";
         };
+    }
+
+    function renderCityModal() {
+        document.querySelectorAll('.city-checkbox').forEach(cb => {
+            cb.checked = selectedCityIds.includes(parseInt(cb.getAttribute('data-city')));
+        });
     }
 
     // مدیریت مدال نمونه کارها
@@ -1297,6 +1303,43 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     console.log('All event handlers set up successfully');
+
+    // بازیابی نوع مجری تبلیغات
+    if (dealerTypeId) {
+        console.log('Auto-selecting dealer type:', dealerTypeId);
+        dealerTypeCards.forEach(card => {
+            if (card.dataset.id === dealerTypeId) {
+                // شبیه‌سازی کلیک روی کارت
+                resetDealerCardStyles();
+                card.classList.add("selected");
+                const color = card.dataset.color || "#028c32";
+                card.style.borderColor = color;
+                hiddenDealerInput.value = dealerTypeId;
+                loadSpecialtyCategories(dealerTypeId);
+            }
+        });
+    }
+
+    // بازیابی شهرهای انتخاب شده
+    if (selectedCityIds && selectedCityIds.length > 0) {
+        console.log('Auto-selecting cities:', selectedCityIds);
+        document.getElementById('selected-cities-summary').innerText = selectedNames.length ? 
+            selectedNames.join('، ') : 'هیچ شهری انتخاب نشده است';
+        document.getElementById('service_area_input').value = selectedCityIds.join(',');
+    }
+
+    // بازیابی نمونه کارهای انتخاب شده
+    if (selectedPortfolioIds && selectedPortfolioIds.length > 0) {
+        console.log('Auto-selecting portfolios:', selectedPortfolioIds);
+        // نمایش نمونه کارهای انتخاب شده در خلاصه
+        const selectedNames = [];
+        userPortfolios.forEach(portfolio => {
+            if (selectedPortfolioIds.includes(portfolio.id)) selectedNames.push(portfolio.subject || 'بدون عنوان');
+        });
+        document.getElementById('selected-portfolios-summary').innerText = selectedNames.length ? 
+            selectedNames.join('، ') : 'هیچ نمونه کاری انتخاب نشده است';
+        document.getElementById('portfolios_input').value = selectedPortfolioIds.join(',');
+    }
 });
 </script>
 
