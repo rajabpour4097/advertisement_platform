@@ -515,31 +515,33 @@ def notify_campaign_winner(campaign, winner, selector, staff_users, am_users):
         target=campaign
     )
     
-def notify_resume_review(resume, reviewer, old_status, new_status):
-    """ارسال اعلان برای بررسی رزومه"""
-    try:
-        from notifications.signals import notify
-        
-        status_messages = {
-            'under_review': 'رزومه شما در حال بررسی قرار گرفت',
-            'needs_editing': 'رزومه شما نیاز به ویرایش دارد',
-            'approved': 'رزومه شما تایید شد',
-            'rejected': 'رزومه شما رد شده است'
-        }
-        
-        verb = status_messages.get(new_status, 'وضعیت رزومه تغییر کرد')
-        
-        notify.send(
-            sender=reviewer,
-            recipient=resume.user,
-            verb=verb,
-            description=resume.manager_comment if resume.manager_comment else '',
-            target=resume
-        )
-        
-        return True, None
-    except Exception as e:
-        return False, str(e)
+def notify_resume_review(resume, reviewer, old_status, new_status, old_comment=None):
+    """
+    ارسال اعلان تغییر وضعیت یا تغییر نظر مدیر برای صاحب رزومه
+    """
+    status_messages = {
+        'under_review': 'رزومه شما در حال بررسی قرار گرفت.',
+        'needs_editing': 'رزومه شما نیاز به ویرایش دارد.',
+        'approved': 'رزومه شما تایید شد.',
+        'rejected': 'رزومه شما رد شد.'
+    }
+    if old_status == new_status and (resume.manager_comment or "") != (old_comment or ""):
+        base = "نظر مدیر درباره رزومه شما بروزرسانی شد."
+    else:
+        base = status_messages.get(new_status, "وضعیت رزومه شما بروزرسانی شد.")
+    if resume.manager_comment:
+        base += f"\nتوضیح مدیر: {resume.manager_comment}"
+
+    print(f"[notify_resume_review DEBUG] sending notification resume_id={resume.id} old={old_status} new={new_status}")
+    notify.send(
+        sender=reviewer,
+        recipient=resume.user,
+        verb="بروزرسانی رزومه",
+        description=base,
+        target=resume,
+        timestamp=timezone.now()
+    )
+    return True, None
 
 def notify_resume_actions(user, resume, action_type, staff_users, am_users):
     """

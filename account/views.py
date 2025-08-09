@@ -1139,49 +1139,102 @@ class ResumeDetailView(ManagerUserMixin, UpdateView):
 
     def get_object(self, queryset=None):
         resume = get_object_or_404(Resume, id=self.kwargs['resume_id'])
-        # تنها در صورت اولین مشاهده، وضعیت را تغییر دهید
+        # اگر اولین بار مدیر می‌بیند و وضعیت pending است → under_review + نوتیفیکیشن به کاربر
         if not resume.is_seen_by_manager and resume.status == 'pending':
+            old_status = resume.status
             resume.is_seen_by_manager = True
             resume.status = 'under_review'
             resume.save()
+            try:
+                # ارسال نوتیفیکیشن شروع بررسی
+                notify_resume_review(
+                    resume=resume,
+                    reviewer=self.request.user,
+                    old_status=old_status,
+                    new_status=resume.status,
+                    old_comment=None
+                )
+                print("Notify initial under_review success", resume.user, self.request.user, old_status, resume.status)
+            except Exception as e:
+                print("Notify initial under_review error:", e)
         return resume
 
     def form_valid(self, form):
+        # لاگ اولیه
+        print("[ResumeReview DEBUG] POST keys:", list(self.request.POST.keys()))
+        posted_status = self.request.POST.get('status')
+        print(f"[ResumeReview DEBUG] posted_status(raw)={posted_status}")
+
         old_status = self.object.status
-        response = super().form_valid(form)
+        old_comment = self.object.manager_comment
+
+        # اگر فیلد status در فرم نیست یا cleaned_data ندارد ولی در POST هست و با مقدار فعلی فرق دارد، اعمال دستی
+        if posted_status and posted_status != old_status:
+            if 'status' not in form.fields:
+                print(f"[ResumeReview DEBUG] status field missing in form. Forcing status change {old_status} -> {posted_status}")
+                self.object.status = posted_status
+            else:
+                # اگر در فرم هست ولی شاید disabled بوده (cleaned_data نداشته باشد)
+                try:
+                    cd_status = form.cleaned_data.get('status')
+                except Exception:
+                    cd_status = None
+                if (not cd_status) or (cd_status != posted_status):
+                    print(f"[ResumeReview DEBUG] status mismatch cleaned={cd_status} posted={posted_status} forcing assignment")
+                    self.object.status = posted_status
+
+        response = super().form_valid(form)  # ذخیره
+
         new_status = self.object.status
-        
-        # ارسال اعلان به کاربر در صورت تغییر وضعیت
-        if old_status != new_status:
-            # ارسال نوتیفیکیشن
-            notify_resume_review(
-                resume=self.object,
-                reviewer=self.request.user,
-                old_status=old_status,
-                new_status=new_status
-            )
-            
-            # ارسال پیامک
+        new_comment = self.object.manager_comment
+        status_changed = old_status != new_status
+        comment_changed = (old_comment or "") != (new_comment or "")
+
+        # اگر مدیر همان وضعیت نهایی را دوباره ثبت کند (مثلاً دوباره تایید کند) هم نوتی بفرست
+        force_status_notify = False
+        if posted_status and posted_status == old_status and posted_status in ['approved', 'rejected']:
+            force_status_notify = True
+            print(f"[ResumeReview DEBUG] force_status_notify=True (posted_status={posted_status})")
+
+        print(f"[ResumeReview DEBUG] resume_id={self.object.id} old_status={old_status} new_status={new_status} "
+              f"status_changed={status_changed} comment_changed={comment_changed} posted_status={posted_status} force={force_status_notify}")
+
+        if status_changed or comment_changed or force_status_notify:
             try:
-                success, error = send_resume_review_sms(self.object, new_status)
-                if not success:
-                    messages.warning(self.request, f"خطا در ارسال پیامک: {error}")
+                notify_resume_review(
+                    resume=self.object,
+                    reviewer=self.request.user,
+                    old_status=old_status,
+                    new_status=new_status,
+                    old_comment=old_comment
+                )
             except Exception as e:
-                messages.warning(self.request, f"خطا در ارسال پیامک: {str(e)}")
-            
-            # پیام موفقیت
-            status_messages = {
-                'under_review': 'رزومه در حال بررسی قرار گرفت.',
-                'needs_editing': 'درخواست ویرایش رزومه ارسال شد.',
-                'approved': 'رزومه تایید شد.',
-                'rejected': 'رزومه رد شد.'
-            }
-            
-            messages.success(
-                self.request, 
-                status_messages.get(new_status, 'وضعیت رزومه تغییر کرد.')
-            )
-        
+                print("Notify resume review error:", e)
+
+            if status_changed:
+                try:
+                    success, error = send_resume_review_sms(self.object, new_status)
+                    if not success:
+                        messages.warning(self.request, f"خطا در ارسال پیامک: {error}")
+                except Exception as e:
+                    messages.warning(self.request, f"خطا در ارسال پیامک: {str(e)}")
+
+                status_messages = {
+                    'under_review': 'رزومه در حال بررسی قرار گرفت.',
+                    'needs_editing': 'درخواست ویرایش رزومه ارسال شد.',
+                    'approved': 'رزومه تایید شد.',
+                    'rejected': 'رزومه رد شد.'
+                }
+                messages.success(
+                    self.request,
+                    status_messages.get(new_status, 'وضعیت رزومه تغییر کرد.')
+                )
+            elif comment_changed:
+                messages.success(self.request, 'نظر مدیر بروزرسانی شد.')
+            elif force_status_notify:
+                messages.success(self.request, 'اعلان وضعیت دوباره برای کاربر ارسال شد.')
+        else:
+            print(f"[ResumeReview DEBUG] No changes -> No notification for resume {self.object.id}")
         return response
 
     def get_context_data(self, **kwargs):
