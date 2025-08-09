@@ -97,12 +97,12 @@
         padding: 10px 30px;
     }
 
-    .permissions-list, .worklinks-list {
+    .permissions-list, .worklinks-list, .portfolio-list {
         list-style: none;
         padding: 0;
     }
 
-    .permissions-list li, .worklinks-list li {
+    .permissions-list li, .worklinks-list li, .portfolio-list li {
         background: #f1f3f4;
         margin: 10px 0;
         padding: 15px;
@@ -129,6 +129,10 @@
     }
     .image-logo {
         max-width: 60px;
+        border-radius: 5px;
+    }
+    .portfolio-image{
+        width: 100px;
         border-radius: 5px;
     }
 </style>
@@ -175,27 +179,27 @@
                     <div><strong>تاریخ ایجاد:</strong> {{ resume.created_at|jalali_timedate }}</div>
                     <div><strong>تاریخ آخرین ویرایش:</strong> {{ resume.updated_at|jalali_timedate }}</div>
                 </div>
-                {% if resume.describe %}
-                    <div><strong>توضیحات:</strong></div>
-                    <p>{{ resume.describe|linebreaksbr }}</p>
-                {% endif %}
+                
+                    <div>
+                        <strong>معرفی مختصر از خود:</strong>
+                        {% if resume.describe %}
+                            {{ resume.describe|linebreaksbr }}
+                        {% else %}
+                            چیزی ثبت نشده
+                        {% endif %}
+                    </div>
             </div>
 
             <!-- خدمات و تخصص -->
             <div class="info-section">
                 <h4>خدمات و تخصص</h4>
                 {% if resume.services %}
-                    <div><strong>خدمات قابل ارائه:</strong></div>
-                    <p>{{ resume.services|linebreaksbr }}</p>
+                    <div><strong>خدمات قابل ارائه: </strong>{{ resume.services|linebreaksbr }}</div>
+                    
                 {% endif %}
                 
                 {% if resume.specialty_categories.exists %}
-                    <div><strong>دسته‌های تخصصی:</strong></div>
-                    <ul>
-                        {% for category in resume.specialty_categories.all %}
-                            <li>{{ category.name }}</li>
-                        {% endfor %}
-                    </ul>
+                    <div><strong>دسته‌های تخصصی: </strong>{{ resume.specialty_categories }}</div>
                 {% endif %}
             </div>
 
@@ -216,38 +220,52 @@
             <div class="info-section">
                 <h4>اطلاعات تکمیلی</h4>
                 
-                    <div><strong>شبکه‌های اجتماعی و وب‌سایت‌ها:</strong></div>
-                    {% if resume.socialmedia_and_sites %}
-                        <p>{{ resume.socialmedia_and_sites|linebreaksbr }}</p>
-                    {% else %}
-                        <p>تعریف نشده</p>
-                    {% endif %}
-                    <div><strong>ابزارها و پلتفرم‌ها:</strong></div>
-                    {% if resume.tools_and_platforms %}
-                        <p>{{ resume.tools_and_platforms|linebreaksbr }}</p>
-                    {% else %}
-                        <p>تعریف نشده</p>
-                    {% endif %}
-                
-                {% if resume.partner_brand %}
-                    <div><strong>برندهای همکار:</strong></div>
-                    <p>{{ resume.partner_brand|linebreaksbr }}</p>
-                {% endif %}
-                
-                {% if resume.bank_account %}
-                    <div><strong>شماره حساب بانکی: IR </strong> {{ resume.bank_account }}</div>
-                {% endif %}
-                
-                {% if resume.file %}
-                    <div><strong>فایل رزومه:</strong> 
-                        <a href="{{ resume.file.url }}" target="_blank" class="file-link">مشاهده فایل</a>
+                    <div><strong>شبکه‌های اجتماعی و وب‌سایت‌ها: </strong>
+                        {% if resume.socialmedia_and_sites %}
+                        {{ resume.socialmedia_and_sites|linebreaksbr }}
+                        {% else %}
+                            چیزی ثبت نشده
+                        {% endif %}
                     </div>
-                {% endif %}
+                    <br>
+                    <div><strong>ابزارها و پلتفرم‌های مورد استفاده:</strong>
+                        {% if resume.tools_and_platforms %}
+                            {{ resume.tools_and_platforms|linebreaksbr }}
+                        {% else %}
+                            چیزی ثبت نشده
+                        {% endif %}
+                    </div>
+                    <br>
+                    <div><strong>برندهای همکار:</strong>
+                        {% if resume.partner_brand %}
+                            {{ resume.partner_brand|linebreaksbr }}
+                        {% else %}
+                            چیزی ثبت نشده
+                        {% endif %}
+                    </div>
+                    <br>
+                
+                    <div><strong>شماره حساب بانکی: IR </strong> 
+                        {% if resume.bank_account %}
+                            {{ resume.bank_account }}
+                        {% else %}
+                            تعریف نشده
+                        {% endif %}
+                    </div>
+                    <br>
+                    <div><strong>فایل رزومه:</strong> 
+                        {% if resume.file %}
+                            <a href="{{ resume.file.url }}" target="_blank" class="file-link">مشاهده فایل</a>
+                        {% else %}
+                            فایلی آپلود نشده
+                        {% endif %}
+                    </div>
             </div>
 
             <!-- مجوزها -->
-            {% if permissions %}
-                <div class="info-section">
+            
+            <div class="info-section">
+                {% if permissions %}
                     <h4>مجوزها و گواهی‌نامه‌ها ({{ permissions.count }})</h4>
                     <ul class="permissions-list">
                         {% for permission in permissions %}
@@ -270,13 +288,15 @@
                             </li>
                         {% endfor %}
                     </ul>
-                </div>
-            {% endif %}
+                {% else %}
+                    <p>هیچ مجوز یا گواهی‌نامه‌ای ثبت نشده.</p>
+                {% endif %}
+            </div>
 
             <!-- لینک‌های نمونه کار -->
-            {% if work_links %}
-                <div class="info-section">
-                    <h4>لینک‌های نمونه کارها ({{ work_links.count }})</h4>
+            <div class="info-section">
+                <h4>لینک‌های نمونه کارها ({{ work_links.count }})</h4>
+                {% if work_links %}
                     <ul class="worklinks-list">
                         {% for link in work_links %}
                             <li>
@@ -298,8 +318,35 @@
                             </li>
                         {% endfor %}
                     </ul>
-                </div>
-            {% endif %}
+                {% else %}
+                    <p>هیچ لینک نمونه کاری ثبت نشد.</p>
+                {% endif %}
+            </div>
+
+            <!-- نمونه کارها -->
+            <div class="info-section">
+                {% if resume.portfolios.all %}
+                    <h4>نمونه کارها ({{ resume.portfolios.count }})</h4>    
+                    <ul class="portfolio-list">
+                        {% for portfolio in resume.portfolios.all %}
+                            <li>
+                                <strongx>{{ portfolio.title }}</strongx>
+                                <p>{{ portfolio.description }}</p>
+                                <p>دسته‌بندی: {{ portfolio.topic.name }}</p>
+                                <p>تاریخ تکمیل: {{ portfolio.done_time | jalali_timedate }}</p>
+                                <br>
+                                {% for image in portfolio.portfolioimages.all %}
+                                    <a href="{{ image.image.url }}" target="_blank">
+                                        <img src="{{ image.image.url }}" class="portfolio-image">
+                                    </a>
+                                {% endfor %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>هیچ نمونه کاری ثبت نشد.</p>
+                {% endif %}
+            </div>
 
             <!-- فرم بررسی مدیر -->
             <div class="review-form">
