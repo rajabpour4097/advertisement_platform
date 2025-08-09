@@ -48,7 +48,7 @@ from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
-from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_campaign_winner, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change, notify_resume_review
+from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_campaign_winner, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change, notify_resume_review, notify_resume_actions
 from .utils.send_sms import send_activation_sms, send_campaign_winner_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms, send_resume_review_sms
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -1360,12 +1360,9 @@ class MyResumeView(DealerUserMixin, View):
                 if resume.status != 'under_review':
                     resume_instance.status = 'under_review'
                     resume_instance.is_seen_by_manager = False
-
             if specialty_categories_id:
                 resume_instance.specialty_categories_id = specialty_categories_id
-
             resume_instance.save()
-
             if city_ids:
                 resume_instance.service_area.set(city_ids)
             else:
@@ -1391,6 +1388,11 @@ class MyResumeView(DealerUserMixin, View):
                 else:
                     resume_instance.permission_files.update(is_selected=False)
 
+            # ارسال نوتیفیکیشن پس از ذخیره
+            if not is_edit_mode:
+                notify_resume_actions(request.user, resume_instance, 'create', staff_users, am_users)
+            elif is_edit_mode and any_change:
+                notify_resume_actions(request.user, resume_instance, 'edit', staff_users, am_users)
             messages.success(request, 'رزومه شما با موفقیت ذخیره شد.')
             return redirect('account:my_resume')
 

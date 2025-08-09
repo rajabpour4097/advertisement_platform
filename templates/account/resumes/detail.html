@@ -1,14 +1,36 @@
 {% extends "account/account_base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load account_tags %}
 
 {% block title %}بررسی رزومه - {{ resume.user.get_full_name }}{% endblock %}
 
 {% block content %}
 <style>
     .resume-detail {
-        max-width: 1000px;
+        max-width: 1100px;
         margin: 0 auto;
+    }
+    /* اضافه شده: قاب اسکرول برای محتوای طولانی */
+    .resume-scroll-wrapper {
+        max-height: calc(100vh - 220px); /* بر اساس ارتفاع هدر/فوتر قالب قابل تنظیم است */
+        overflow-y: auto;
+        padding-inline-end: 8px; /* جا برای اسکرول */
+    }
+    /* زیباسازی اسکرول (اختیاری) */
+    .resume-scroll-wrapper::-webkit-scrollbar {
+        width: 8px;
+    }
+    .resume-scroll-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    .resume-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    .resume-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #a0a0a0;
     }
 
     .status-badge {
@@ -105,6 +127,10 @@
         border-left: 4px solid #ffc107;
         margin: 15px 0;
     }
+    .image-logo {
+        max-width: 60px;
+        border-radius: 5px;
+    }
 </style>
 
 <div class="container-fluid resume-detail">
@@ -115,6 +141,7 @@
         </div>
 
         <div class="x_content">
+           <div class="resume-scroll-wrapper">
             <!-- نمایش وضعیت فعلی -->
             <div class="status-badge status-{{ resume.status }}">
                 وضعیت: {{ resume.get_status_display }}
@@ -132,12 +159,21 @@
             <div class="info-section">
                 <h4>اطلاعات اصلی</h4>
                 <div class="field-row">
-                    <div><strong>عنوان رزومه:</strong> {{ resume.title|default:"تعریف نشده" }}</div>
+                    <div><strong>نام مجری:</strong> {% if resume.user.get_full_name %}{{ resume.user.get_full_name }}{% else%} {{ resume.user.email }}{% endif %}</div>
                     <div><strong>نوع مجری:</strong> {{ resume.dealer_type|default:"تعریف نشده" }}</div>
                 </div>
                 <div class="field-row">
-                    <div><strong>تاریخ ایجاد:</strong> {{ resume.created_at|date:"Y/m/d H:i" }}</div>
-                    <div><strong>تاریخ آخرین ویرایش:</strong> {{ resume.updated_at|date:"Y/m/d H:i" }}</div>
+                    <div><strong>دسته تخصصی:</strong> {{ resume.specialty_categories|default:"تعریف نشده" }}</div>
+                    <div><strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong> 
+                        {% if resume.user.customuserimages.first.image.url %}
+                            <img class="image-logo" src="{{ resume.user.customuserimages.first.image.url }}" alt="">
+                        {% else %}
+                            <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="">
+                        {% endif %}</div>
+                </div>
+                <div class="field-row">
+                    <div><strong>تاریخ ایجاد:</strong> {{ resume.created_at|jalali_timedate }}</div>
+                    <div><strong>تاریخ آخرین ویرایش:</strong> {{ resume.updated_at|jalali_timedate }}</div>
                 </div>
                 {% if resume.describe %}
                     <div><strong>توضیحات:</strong></div>
@@ -161,9 +197,13 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-                
+            </div>
+
+            <!-- خدمات و تخصص -->
+            <div class="info-section">
+                <h4>حوزه خدمات</h4>
                 {% if resume.service_area.exists %}
-                    <div><strong>حوزه خدمات:</strong></div>
+                    <div><strong>لیست شهرها:</strong></div>
                     <ul>
                         {% for city in resume.service_area.all %}
                             <li>{{ city.name }} - {{ city.province.name }}</li>
@@ -176,15 +216,18 @@
             <div class="info-section">
                 <h4>اطلاعات تکمیلی</h4>
                 
-                {% if resume.socialmedia_and_sites %}
                     <div><strong>شبکه‌های اجتماعی و وب‌سایت‌ها:</strong></div>
-                    <p>{{ resume.socialmedia_and_sites|linebreaksbr }}</p>
-                {% endif %}
-                
-                {% if resume.tools_and_platforms %}
+                    {% if resume.socialmedia_and_sites %}
+                        <p>{{ resume.socialmedia_and_sites|linebreaksbr }}</p>
+                    {% else %}
+                        <p>تعریف نشده</p>
+                    {% endif %}
                     <div><strong>ابزارها و پلتفرم‌ها:</strong></div>
-                    <p>{{ resume.tools_and_platforms|linebreaksbr }}</p>
-                {% endif %}
+                    {% if resume.tools_and_platforms %}
+                        <p>{{ resume.tools_and_platforms|linebreaksbr }}</p>
+                    {% else %}
+                        <p>تعریف نشده</p>
+                    {% endif %}
                 
                 {% if resume.partner_brand %}
                     <div><strong>برندهای همکار:</strong></div>
@@ -192,7 +235,7 @@
                 {% endif %}
                 
                 {% if resume.bank_account %}
-                    <div><strong>شماره حساب بانکی:</strong> {{ resume.bank_account }}</div>
+                    <div><strong>شماره حساب بانکی: IR </strong> {{ resume.bank_account }}</div>
                 {% endif %}
                 
                 {% if resume.file %}
@@ -283,6 +326,7 @@
                     </div>
                 </form>
             </div>
+            </div>  {# پایان resume-scroll-wrapper #}
         </div>
     </div>
 </div>

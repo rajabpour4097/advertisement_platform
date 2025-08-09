@@ -541,3 +541,35 @@ def notify_resume_review(resume, reviewer, old_status, new_status):
     except Exception as e:
         return False, str(e)
 
+def notify_resume_actions(user, resume, action_type, staff_users, am_users):
+    """
+    ارسال اعلان برای رزومه (ایجاد یا ویرایش) فقط برای کاربران staff و AM
+    action_type: 'create' | 'edit'
+    """
+    from notifications.signals import notify
+
+    actions = {
+        'create': ('ارسال رزومه جدید', f"{user.get_full_name()} رزومه جدید ارسال کرد."),
+        'edit': ('ویرایش رزومه', f"{user.get_full_name()} رزومه خود را ویرایش کرد."),
+    }
+    if action_type not in actions:
+        return
+    verb, description = actions[action_type]
+
+    for staff in staff_users:
+        notify.send(
+            sender=user,
+            recipient=staff,
+            verb=verb,
+            description=description,
+            target=resume
+        )
+    for am in am_users:
+        notify.send(
+            sender=user,
+            recipient=am,
+            verb=verb,
+            description=description,
+            target=resume
+        )
+
