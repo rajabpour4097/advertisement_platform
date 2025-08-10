@@ -36,7 +36,8 @@ from account.views import (
     RunningCampaignParticipatedListView,
     FinishedCampaignProposalsListView,
     SelectCampaignWinnerView,
-    SubmitResumeView,
+    UserDetailView,
+    UsersList,
     WinnedProposalDetail,
     MyResumeView,
     ajax_add_permission,
@@ -93,4 +94,6 @@ urlpatterns = [
     path('portfolio/ajax-add/', ajax_add_portfolio, name='portfolio_ajax_add'),
     path('resume/permission/ajax-add/', ajax_add_permission, name='permission_ajax_add'),
     path('resume/worklink/ajax-add/', ajax_add_worklink, name='worklink_ajax_add'),
+    path('userslist/', UsersList.as_view(), name='userslist'),
+    path('userslist/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
 ]

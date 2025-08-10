@@ -135,6 +135,7 @@
         width: 100px;
         border-radius: 5px;
     }
+
 </style>
 
 <div class="container-fluid resume-detail">
@@ -163,7 +164,16 @@
             <div class="info-section">
                 <h4>اطلاعات اصلی</h4>
                 <div class="field-row">
-                    <div><strong>نام مجری:</strong> {% if resume.user.get_full_name %}{{ resume.user.get_full_name }}{% else%} {{ resume.user.email }}{% endif %}</div>
+                    <div><strong>نام مجری:</strong> {% if resume.user.get_full_name %}
+                                                        <a href="{% url 'account:user_detail' resume.user.id %}" title="{{resume.user.email}}">
+                                                            {{ resume.user.get_full_name }}
+                                                        </a>
+                                                    {% else%} 
+                                                        <a href="{% url 'account:user_detail' resume.user.id %}">
+                                                            {{ resume.user.email }}
+                                                        </a>
+                                                    {% endif %}
+                    </div>
                     <div><strong>نوع مجری:</strong> {{ resume.dealer_type|default:"تعریف نشده" }}</div>
                 </div>
                 <div class="field-row">

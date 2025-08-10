@@ -143,6 +143,7 @@ class CustomUser(AbstractUser):
     company_name = models.CharField(max_length=150, blank=True, null=True, verbose_name='نام شرکت')
     modified_time = models.DateTimeField(auto_now=True, verbose_name='آخرین تغییر پروفایل')
     is_am = models.BooleanField(default=False, verbose_name='مدیر تبلیغات')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
 
     # استفاده از CustomUserManager برای مدیریت کاربران
     objects = CustomUserManager()
@@ -174,8 +175,13 @@ class CustomUser(AbstractUser):
         if self.company_name:
             return f"شرکت {self.company_name}".strip()
         return f"{self.first_name} {self.last_name}".strip()
-       
-    
+
+    def get_user_status(self):
+        if self.is_active:
+            return "فعال"
+        return "غیرفعال"
+
+
 class Campaign(models.Model):
     customer = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE,

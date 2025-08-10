@@ -39,7 +39,7 @@
      {% block extra_head %}{% endblock %}
 </head>
 <!-- /header content -->
-{% if user.is_authenticated %}
+{% if request.user.is_authenticated %}
 <body class="nav-md">
 <div class="container body">
     <div class="main_container">
@@ -54,18 +54,18 @@
                 <!-- menu profile quick info -->
                 <div class="profile clearfix">
                     <div class="profile_pic">
-                        {% if user.customuserimages.first.image.url %}
-                            <img src="{{ user.customuserimages.first.image.url }}" alt="" class="img-circle profile_img">
+                        {% if request.user.customuserimages.first.image.url %}
+                            <img src="{{ request.user.customuserimages.first.image.url }}" alt="" class="img-circle profile_img">
                         {% else %}
                             <img src="{% static 'account/build/images/user.png' %}" alt="" class="img-circle profile_img">
                         {% endif %}
                     </div>
                     <div class="profile_info">
                         <span>خوش آمدید,</span>
-                        <h2>{% if user.get_full_name %}
-                            {{ user.get_full_name }} 
+                        <h2>{% if request.user.get_full_name %}
+                            {{ request.user.get_full_name }}
                             {% else %}
-                            {{ user.username }}{% endif %}</h2>
+                            {{ request.user.username }}{% endif %}</h2>
                     </div>
                 </div>
                 <!-- /menu profile quick info -->
@@ -104,17 +104,17 @@
                         <li class="">
                             <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown"
                                aria-expanded="false">
-                                           {% if user.customuserimages.first.image.url %}
-                                                <img src="{{ user.customuserimages.first.image.url }}" alt="">
+                                           {% if request.user.customuserimages.first.image.url %}
+                                                <img src="{{ request.user.customuserimages.first.image.url }}" alt="">
                                            {% else %}
                                                 <img src="{% static 'account/build/images/user.png' %}" alt="">
                                            {% endif %}
 
-                                           {% if user.get_full_name %}
-                                                {{ user.get_full_name }} 
+                                           {% if request.user.get_full_name %}
+                                                {{ request.user.get_full_name }}
                                            {% else %}
-                                                {{ user.username }}
-                                           {% endif %} 
+                                                {{ request.user.username }}
+                                           {% endif %}
                                 <span class=" fa fa-angle-down"></span>
                             </a>
                             <ul class="dropdown-menu dropdown-usermenu pull-right">
@@ -210,10 +210,10 @@
 <!-- page content -->
 <div class="right_col" role="main">
     <div class="col-md-12 text-center">
-        {% if not user.customuserimages.first.image.url %}
-            <p class="alert alert-danger">{% if user.cutomer_type == 'private' or user.cutomer_type == '' or not user.cutomer_type %}پروفایل کاربری{% elif user.cutomer_type == 'juridical' %} برند تجاری{% endif %}  شما تصویر ندارد. لطفاً برای تجربه بهتر در استفاده از سایت تصویر خود را بارگذاری کنید. <a href="{% url 'account:profile' %}">اینجا کلیک کنید</a></p>
+        {% if not request.user.customuserimages.first.image.url %}
+            <p class="alert alert-danger">{% if request.user.customer_type == 'private' or request.user.customer_type == '' or not request.user.customer_type %}پروفایل کاربری{% elif request.user.customer_type == 'juridical' %} برند تجاری{% endif %}  شما تصویر ندارد. لطفاً برای تجربه بهتر در استفاده از سایت تصویر خود را بارگذاری کنید. <a href="{% url 'account:profile' %}">اینجا کلیک کنید</a></p>
         {% endif %}
-        {% if user.user_type == 'dealer' and not user.resume %}
+        {% if request.user.user_type == 'dealer' and not request.user.resume %}
             <p class="alert alert-info">مجری تبلیغ عزیز، لطفاً رزومه خود را تکمیل کنید تا امکان شرکت در کمپین ها و ارائه پیشهاد برای شما امکان پذیر باشد. <a href="{% url 'account:my_resume' %}" style="color: blue;">اینجا کلیک کنید</a></p>
         {% endif %}
     </div>

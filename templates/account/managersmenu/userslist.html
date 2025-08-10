@@ -1,0 +1,139 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load account_tags %}
+
+{% block title %}لیست کاربران{% endblock %}
+
+
+{% block content %}
+<style>
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: sans-serif;
+}
+.table th, .table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+.table th {
+    background-color: #f9f9f9;
+}
+.avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+.status {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.8em;
+    font-weight: bold;
+    display: inline-block;
+}
+.status-active {
+    background-color: #d4edda;
+    color: #155724;
+}
+.status-inactive {
+    background-color: #fff3cd;
+    color: #856404;
+}
+.status-deleted {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.user-cell {
+    display: flex;
+    align-items: center;
+}
+.resume-link {
+    font-size: 0.9em;
+    color: #007bff;
+    text-decoration: none;
+}
+.resume-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+<h2 style="margin-top: 100px;">لیست کاربران</h2>
+{% if messages %}
+  <ul>
+    {% for message in messages %}
+      <li style="color: red;">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>کاربر</th>
+            <th>شماره تماس</th>
+            <th>آدرس ایمیل</th>
+            <th>تاریخ عضویت</th>
+            <th>آخرین تغییر</th>
+            <th>نوع کاربر</th>
+            <th>نوع مشتری</th>
+            <th>وضعیت</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+            <tr style="{% if user.status == 'pending' and not user.is_seen_by_manager and not user.user_type == 'dealer' %}background-color: #d2d1cfff; font-weight: bold;{% endif %}">
+            <!-- شماره سطر -->
+            <td>{{ forloop.counter }}</td>
+
+            <!-- کاربر -->
+            <td class="user-cell">
+                <img src="{% if user.customuserimages.first %}{{ user.customuserimages.first.image.url }}{% else %}{% static 'account/build/images/user.png' %}{% endif %}" class="avatar" alt="avatar">
+                <a href="{% url 'account:user_detail' pk=user.pk %}">
+                    {{ user.get_full_name|default:user.username }}
+                </a>
+            </td>
+
+            <!-- شماره تماس -->
+            <td>{{ user.phone_number }}</td>
+
+            <!-- آدرس ایمیل -->
+            <td>{{ user.email }}</td>
+
+            <!-- تاریخ عضویت -->
+            <td>{{ user.created_at|jalali_timedate }}</td>
+
+            <!-- تاریخ آخرین تغییر -->
+            <td>{{ user.modified_time|jalali_timedate }}</td>
+
+            <!-- نوع کاربر -->
+            <td>{{ user.get_user_type_display }}</td>
+
+            <!-- نوع مشتری -->
+            <td>{{ user.get_cutomer_type_display }}</td>
+
+             <td>
+                <span class="status 
+                    {% if user.is_active == True %}status-active
+                    {% elif user.is_active == False %}status-inactive
+                    {% else %}status-inactive{% endif %}">
+                     {{ user.get_user_status }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+        <div>
+            <a href="{% url 'account:user_list' %}">بازگشت</a>
+        </div>
+    </tbody>
+</table>
+
+
+{% endblock %}
+

@@ -1,0 +1,134 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load account_tags %}
+
+{% block title %}جزئیات کاربر - {{ object.get_full_name }}{% endblock %}
+
+{% block content %}
+
+<style>
+        body {
+            font-family: sans-serif;
+            direction: rtl;
+        }
+        .user-detail {
+            max-width: 600px;
+            margin: 40px auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .user-detail h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .field {
+            margin-bottom: 12px;
+            margin-top: 12px;
+        }
+        .label {
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        .value {
+            margin-right: 8px;
+            color: #555ddd;
+        }
+    </style>
+
+<div class="container-fluid resume-detail">
+    <h2>جزئیات کاربر: {{ object.get_full_name }}</h2>
+
+    <div class="container-fluid resume-detail">
+        <div class="x_panel">
+            <div class="field">
+                <span class="label">ایمیل:</span>
+                <span class="value">{{ object.email }}</span>
+            </div>
+
+            <div class="field">
+                <span class="label">شماره تماس:</span>
+                <span class="value">{{ object.phone_number }}</span>
+            </div>
+        
+            <div class="field">
+                <span class="label">آدرس:</span>
+                <span class="value">{{ object.address|default:"وارد نشده" }}</span>
+            </div>
+
+            <div class="field">
+                <span class="label">تاریخ تولد:</span>
+                <span class="value">{{ object.birth_date|date:"Y/m/d"|default:"وارد نشده" }}</span>
+            </div>
+        
+            <div class="field">
+                <span class="label">زمینه فعالیت:</span>
+                <span class="value">{{ object.field_of_activity|default:"وارد نشده" }}</span>
+            </div>
+        
+            <div class="field">
+                <span class="label">نوع کاربر:</span>
+                <span class="value">{{ object.get_user_type_display|default:"وارد نشده" }}</span>
+            </div>
+        
+            <div class="field">
+                <span class="label">نوع مشتری:</span>
+                <span class="value">{{ object.get_cutomer_type_display }}</span>
+            </div>
+        
+            <div class="field">
+                <span class="label">نوع عامل تبلیغ:</span>
+                <span class="value">{{ object.get_dealer_type_display|default:"وارد نشده" }}</span>
+            </div>
+        
+            <div class="field">
+                <span class="label">رتبه:</span>
+                <span class="value">{{ object.rank|default:"وارد نشده" }}</span>
+            </div>
+        
+            <div class="field">
+                <span class="label">ارزش کسب‌وکار:</span>
+                <span class="value">{{ object.bussines_value|default:"وارد نشده" }}</span>
+            </div>
+            <div class="field">
+                <span class="label">تخصص‌ها:</span>
+                <span class="value">
+                    {% if object.speciality_field.exists %}
+                        {% for topic in object.speciality_field.all %}
+                            {{ topic.name }}{% if not forloop.last %}، {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="value">وارد نشده</span>
+                    {% endif %}
+                </span>
+            </div>
+        
+            <div class="field">
+                <span class="label">نام شرکت:</span>
+                <span class="value">{{ object.company_name|default:"وارد نشده" }}</span>
+            </div>
+            {% if object.cutomer_type == 'juridical' %}
+            <div class="field">
+                <span class="label">آخرین تغییر پروفایل:</span>
+                <span class="value">{{ object.modified_time|jalali_timedate }}</span>
+            </div>
+            {% endif%}
+            <div class="field">
+                <span class="label">تاریخ ایجاد:</span>
+                <span class="value">{{ object.created_at|jalali_timedate }}</span>
+            </div>
+        
+            <div class="field">
+                <span class="label">مدیر تبلیغات:</span>
+                <span class="value">{{ object.is_am|yesno:"بله,خیر" }}</span>
+            </div>
+        </div>
+        <div>
+            <a href="{% url 'account:resume_detail' object.resume.id %}" class="btn btn-primary">بازگشت</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

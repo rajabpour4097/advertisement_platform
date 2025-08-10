@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView, LoginView
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -12,7 +12,7 @@ from advplatform.forms import ResumeForm, ResumeReviewForm
 from wallet.models import Wallet, Transaction
 from .tokens import account_activation_token
 from django.db.models import Q, Count
-from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView, ListView
+from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView, ListView, DetailView
 from account.forms import (
                             AssignMentorForm,
                             CampaignCreateForm,
@@ -1133,7 +1133,7 @@ class SubmitResumeView(DealerUserMixin, CreateView):
 class ResumeDetailView(ManagerUserMixin, UpdateView):
     model = Resume
     form_class = ResumeReviewForm
-    template_name = 'account/resumes/detail.html'
+    template_name = 'account/resumes/resume_detail.html'
     success_url = reverse_lazy('account:review_resumes')
     context_object_name = 'resume'
 
@@ -1650,3 +1650,19 @@ def ajax_add_worklink(request):
         return JsonResponse({'ok': False, 'error': str(e)}, status=500)
 
 
+class UsersList(ManagerUserMixin, ListView):
+    model = CustomUser
+    template_name = 'account/managersmenu/userslist.html'
+    context_object_name = 'users'
+    
+
+class UserDetailView(ManagerUserMixin, DetailView):
+    model = CustomUser
+    template_name = 'account/managersmenu/user_detail.html'
+    context_object_name = 'user'
+
+    def get_context_data(self, **kwargs):
+        user = get_object_or_404(CustomUser, id=self.kwargs['pk'])
+        context = super().get_context_data(**kwargs)
+        context['user'] = user
+        return context

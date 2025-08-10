@@ -56,7 +56,7 @@ class CityAdmin(admin.ModelAdmin):
     search_fields = ['name', 'province__name']
 
 class CustomUserAdmin(UserAdmin):
-    list_display = ('email', 'first_name', 'last_name', 'company_name','user_type', 'cutomer_type', 'is_staff')
+    list_display = ('email', 'first_name', 'last_name', 'company_name','user_type', 'cutomer_type', 'is_staff', 'created_at')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
@@ -67,7 +67,7 @@ class CustomUserAdmin(UserAdmin):
             'user_type','cutomer_type','dealer_type',
             'rank','bussines_value',
              'speciality_field',
-             'is_am'
+             'is_am',
             )}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
     )

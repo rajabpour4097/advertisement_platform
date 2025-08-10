@@ -161,7 +161,7 @@ class ManagerUserMixin(UserPassesTestMixin):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_staff and not request.user.is_am:
             return render(self.request, '403.html', 
-                          {'error_message': "شما به این صفحه دسترسی ندارید",
+                          {'error_message': "شما به این صفحه دسترسی ندارید. این صفحه فقط برای مدیران مجاز است.",
                            'back_url': "account:campaigns"},
                           )
         return super().dispatch(request, *args, **kwargs)
