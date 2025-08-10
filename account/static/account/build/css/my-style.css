@@ -38,3 +38,55 @@
         flex-direction: column;
         justify-content: space-between;
     }
+
+/* Mobile optimized profile alerts */
+.profile-alerts .alert-condensed {
+  text-align: center;
+  margin-bottom: 10px;
+  line-height: 1.8;
+}
+.profile-alerts .alert-condensed .alert-link {
+  display: inline-block;
+  margin-right: 4px;
+  font-weight: 600;
+}
+.profile-alerts .toggle-more {
+  padding: 0;
+  margin-right: 6px;
+}
+@media (max-width: 768px) {
+  .profile-alerts .alert-condensed {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+  .profile-alerts .alert-condensed .alert-link {
+    display: block;
+    margin-top: 6px;
+  }
+  /* Fix overlap of mobile alerts with top nav */
+  .top_nav {
+    position: sticky;
+    top: 0;
+    z-index: 1200;
+  }
+  .profile-alerts {
+    margin-top: 12px; /* base spacing when no nav height change */
+  }
+  /* Push alerts below nav actual height */
+  .profile-alerts.dynamic-offset {
+    margin-top: calc(var(--top-nav-h, 60px) + 8px);
+  }
+  /* Ensure alerts don't cover nav when expanded */
+  .profile-alerts .alert-condensed {
+    position: relative;
+    z-index: 1;
+  }
+}
+/* collapsed state */
+.profile-alerts .collapsed-short .alert-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 75%;
+}

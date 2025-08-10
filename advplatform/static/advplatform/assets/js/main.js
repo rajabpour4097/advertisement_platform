@@ -633,5 +633,56 @@
       });
     });
 
+(function () {
+  var alerts = document.querySelectorAll('.profile-alerts .alert-condensed');
+  alerts.forEach(function (al) {
+    if (window.innerWidth <= 768) {
+      al.classList.add('collapsed-short');
+      var btn = al.querySelector('.toggle-more');
+      if (btn) {
+        btn.textContent = 'بیشتر';
+        btn.addEventListener('click', function () {
+          var expanded = btn.getAttribute('aria-expanded') === 'true';
+          if (!expanded) {
+            al.classList.remove('collapsed-short');
+            al.querySelector('.alert-text').textContent = al.getAttribute('data-full');
+            btn.textContent = 'کمتر';
+            btn.setAttribute('aria-expanded', 'true');
+          } else {
+            al.classList.add('collapsed-short');
+            al.querySelector('.alert-text').textContent = al.getAttribute('data-short');
+            btn.textContent = 'بیشتر';
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        // ابتدا متن کوتاه
+        var shortTxt = al.getAttribute('data-short');
+        if (shortTxt) al.querySelector('.alert-text').textContent = shortTxt;
+      }
+    }
+  });
+})();
 
-    
+(function () {
+  function adjustAlertsOffset() {
+    if (window.innerWidth > 768) return;
+    var topNav = document.querySelector('.top_nav');
+    var alertsWrapper = document.querySelector('.profile-alerts');
+    if (!topNav || !alertsWrapper) return;
+    var h = topNav.getBoundingClientRect().height;
+    alertsWrapper.classList.add('dynamic-offset');
+    alertsWrapper.style.setProperty('--top-nav-h', h + 'px');
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    adjustAlertsOffset();
+    window.addEventListener('resize', adjustAlertsOffset);
+    var menuToggle = document.getElementById('menu_toggle');
+    if (menuToggle) {
+      menuToggle.addEventListener('click', function () {
+        setTimeout(adjustAlertsOffset, 350);
+      });
+    }
+  });
+})();
+
+

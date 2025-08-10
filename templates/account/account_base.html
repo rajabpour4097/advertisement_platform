@@ -209,15 +209,33 @@
 {% endif %}       
 <!-- page content -->
 <div class="right_col" role="main">
-    <div class="col-md-12 text-center">
+    <div class="col-md-12 profile-alerts text-center">
         {% if not request.user.customuserimages.first.image.url %}
-            <p class="alert alert-danger">{% if request.user.customer_type == 'private' or request.user.customer_type == '' or not request.user.customer_type %}پروفایل کاربری{% elif request.user.customer_type == 'juridical' %} برند تجاری{% endif %}  شما تصویر ندارد. لطفاً برای تجربه بهتر در استفاده از سایت تصویر خود را بارگذاری کنید. <a href="{% url 'account:profile' %}">اینجا کلیک کنید</a></p>
+            <div class="alert alert-danger alert-condensed" role="alert"
+                 data-short="پروفایل شما تصویر ندارد."
+                 data-full="{% if request.user.customer_type == 'private' or request.user.customer_type == '' or not request.user.customer_type %}پروفایل کاربری{% elif request.user.customer_type == 'juridical' %}برند تجاری{% endif %} شما تصویر ندارد. لطفاً برای تجربه بهتر در استفاده از سایت تصویر خود را بارگذاری کنید.">
+                <span class="alert-text">
+                    {% if request.user.customer_type == 'private' or request.user.customer_type == '' or not request.user.customer_type %}پروفایل کاربری{% elif request.user.customer_type == 'juridical' %} برند تجاری{% endif %}  شما تصویر ندارد. لطفاً برای تجربه بهتر در استفاده از سایت تصویر خود را بارگذاری کنید.
+                </span>
+                <a href="{% url 'account:profile' %}" class="alert-link">بارگذاری تصویر</a>
+                <button type="button" class="btn btn-link btn-xs toggle-more visible-xs-inline visible-sm-inline" aria-expanded="false">بیشتر</button>
+                <button type="button" class="close hidden-xs hidden-sm" data-dismiss="alert" aria-label="بستن"><span aria-hidden="true">&times;</span></button>
+            </div>
         {% endif %}
         {% if request.user.user_type == 'dealer' and not request.user.resume %}
-            <p class="alert alert-info">مجری تبلیغ عزیز، لطفاً رزومه خود را تکمیل کنید تا امکان شرکت در کمپین ها و ارائه پیشهاد برای شما امکان پذیر باشد. <a href="{% url 'account:my_resume' %}" style="color: blue;">اینجا کلیک کنید</a></p>
+            <div class="alert alert-info alert-condensed" role="alert"
+                 data-short="رزومه شما ناقص است."
+                 data-full="مجری تبلیغ عزیز، لطفاً رزومه خود را تکمیل کنید تا امکان شرکت در کمپین ها و ارائه پیشهاد برای شما امکان پذیر باشد.">
+                <span class="alert-text">
+                    مجری تبلیغ عزیز، لطفاً رزومه خود را تکمیل کنید تا امکان شرکت در کمپین ها و ارائه پیشهاد برای شما امکان پذیر باشد.
+                </span>
+                <a href="{% url 'account:my_resume' %}" class="alert-link">تکمیل رزومه</a>
+                <button type="button" class="btn btn-link btn-xs toggle-more visible-xs-inline visible-sm-inline" aria-expanded="false">کمتر</button>
+                <button type="button" class="close hidden-xs hidden-sm" data-dismiss="alert" aria-label="بستن"><span aria-hidden="true">&times;</span></button>
+            </div>
         {% endif %}
     </div>
- {% block content %}{% endblock %}
+    {% block content %}{% endblock %}
 
 </div>
 <!-- /page content -->
