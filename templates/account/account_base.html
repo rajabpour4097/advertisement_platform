@@ -45,8 +45,8 @@
     <div class="main_container">
         <div class="col-md-3 left_col hidden-print">
             <div class="left_col scroll-view">
-                <div class="navbar nav_title" style="border: 0;">
-                    <a href="{% url 'account:home' %}" class="site_title"><i class="glyphicon glyphicon-bullhorn"></i> <span>بیدورا</span></a>
+                <div class="navbar nav_title" style="border-bottom: 1px solid #d9dee4;">
+                    <a href="{% url 'account:home' %}" class="site_title"><i class="glyphicon glyphicon-bullhorn" style="color: #7d919c;"></i> <span style="color: #7d919c;">بیدورا</span></a>
                 </div>
 
                 <div class="clearfix"></div>
@@ -61,8 +61,8 @@
                         {% endif %}
                     </div>
                     <div class="profile_info">
-                        <span>خوش آمدید,</span>
-                        <h2>{% if request.user.get_full_name %}
+                        <span style="color: #3d4448ff;">خوش آمدید,</span>
+                        <h2 style="color: #7d919c;">{% if request.user.get_full_name %}
                             {{ request.user.get_full_name }}
                             {% else %}
                             {{ request.user.username }}{% endif %}</h2>
@@ -75,7 +75,7 @@
            {% include 'account/sidebar.html' %} 
 
                 <!-- /menu footer buttons -->
-                <div class="sidebar-footer hidden-small">
+                <div class="sidebar-footer hidden-small" style="border-top: 1px solid #d9dee4; background-color: #fff;">
                     <a data-toggle="tooltip" data-placement="top" title="تنظیمات">
                         <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
                     </a>

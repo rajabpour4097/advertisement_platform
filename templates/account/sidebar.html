@@ -2,14 +2,14 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
  <!-- sidebar menu -->
- <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+ <div id="sidebar-menu" class="main_menu_side hidden-print main_menu" style="font-color: #fff;">
      <div class="menu_section">
          <ul class="nav side-menu">
-             <li><a href="{% url 'adv:home' %}"><i class="fa fa-external-link" style="color: #34aeeb;"></i> صفحه اصلی سایت</a></li>
-             <li><a href="{% url 'account:home' %}"><i class="fa fa-home" style="color: #43eb34;"></i> داشبورد</a></li>
+             <li><a href="{% url 'adv:home' %}"><i class="fa fa-external-link" style="color: #7d919c;"></i> صفحه اصلی سایت</a></li>
+             <li><a href="{% url 'account:home' %}"><i class="fa fa-home" style="color: #7d919c;"></i> داشبورد</a></li>
              <hr style="scale:90%;">
              {% if request.user.is_staff %}
-             <li><a><i class="fa fa-laptop" style="color: Yellow;"></i>مدیریت سایت<span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-laptop" style="color: #7d919c;"></i>مدیریت سایت<span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
                      <li><a href="{% url 'account:userslist' %}"><i class="fa fa-user"></i>لیست کاربران </a></li>
                      <li><a href="form_advanced.html"><i class="fa fa-users"></i>گروه های کاربری</a></li>
@@ -36,22 +36,22 @@
              {% endif %}
            {% if request.user.user_type == 'customer' or request.user.is_staff or request.user.is_am %}
 
-             <li><a><i class="fa fa-tachometer" style="color: green;"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-tachometer" style="color: #7d919c;"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
                      <li><a href="{% url 'account:campaigns' %}"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
                      <li><a href="{% url 'account:campaigncreate' %}"><i class="fa fa-edit"></i>ایجاد کمپین‌ جدید</a></li>
                  </ul>
              </li>
              {% endif %}
-             {% if request.user.user_typeuser.user_type == 'dealer' %}
-             <li><a><i class="fa fa-tachometer" style="color: green;"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
+             {% if request.user.user_type == 'dealer' %}
+             <li><a><i class="fa fa-tachometer" style="color: #7d919c;"></i> کمپین‌ ها <span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <li><a href="{% url 'account:campaigns' %}"><i class="fa fa-list"></i>لیست کمپین‌ ها</a></li>
                 </ul>
              </li>
              {% endif %}
              {% if request.user.is_staff or request.user.is_am %}
-             <li><a><i class="fa fa-archive" style="color: Tomato;"></i>نمونه کارها و رزومه ها<span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-archive" style="color: #7d919c;"></i>نمونه کارها و رزومه ها<span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
                      <li><a href="{% url 'account:portfolios' %}"><i class="fa fa-list"></i>لیست نمونه کارها</a></li>
                      <li><a href="{% url 'account:portfoliocreate' %}"><i class="fa fa-edit"></i>ایجاد نمونه کار جدید</a></li>
@@ -60,14 +60,14 @@
              </li>
              {% endif %}
              {% if request.user.user_type == 'dealer' %}
-             <li><a><i class="fa fa-archive" style="color: Tomato;"></i>رزومه من<span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-archive" style="color: #7d919c;"></i>رزومه من<span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
                      <li><a href="{% url 'account:my_resume' %}"><i class="fa fa-user"></i>رزومه من</a></li>
                  </ul>
              </li>
              {% endif %}
              {% if request.user.is_staff  or request.user.is_am %}
-             <li><a><i class="fa fa-group" style="color: #690de0;"></i> پشتیبانان<span class="fa fa-chevron-down"></span></a>
+             <li><a><i class="fa fa-group" style="color: #7d919c;"></i> پشتیبانان<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <li><a href="{% url 'account:mentorslist' %}"><i class="fa fa-edit"></i>لیست پشتیبانان</a></li>
                 </ul>
@@ -77,8 +77,8 @@
              <li><a href="{% url 'account:mentoruserslist' %}"><i class="fa fa-group"></i> لیست کاربران شما</a></li>
              <li><a href="#"><i class="fa fa-list-ul"></i> لیست درخواست پشتیبان</a></li>
              {% endif %}
-             <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: Dodgerblue;"></i> مدیریت پیام</a></li>
-             <li><a><i class="fa fa-credit-card" style="color: Mediumslateblue;"></i> مالی<span class="fa fa-chevron-down"></span></a>
+             <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: #7d919c;"></i> مدیریت پیام</a></li>
+             <li><a><i class="fa fa-credit-card" style="color: #7d919c;"></i> مالی<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <li><a href="{% url 'wallet:home' %}"><i class="fa fa-wallet"></i>کیف پول</a></li>
                     {% if request.user.is_staff or request.user.is_am %}
