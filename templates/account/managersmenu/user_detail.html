@@ -127,7 +127,13 @@
             </div>
         </div>
         <div>
-            <a href="{% url 'account:resume_detail' object.resume.id %}" class="btn btn-primary">بازگشت</a>
+            {% if request.GET.from == "resume_detail" %}
+                <a href="{% url 'account:resume_detail' object.resume.id %}" class="btn btn-primary">بازگشت</a>
+            {% elif request.GET.from == "userslist" %}
+                <a href="{% url 'account:userslist' %}" class="btn btn-primary">بازگشت</a>
+            {% else %}
+                <a href="{% url 'account:userslist' %}" class="btn btn-primary">بازگشت</a>
+            {% endif %}
         </div>
     </div>
 </div>

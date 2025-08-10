@@ -165,9 +165,9 @@
                 <h4>اطلاعات اصلی</h4>
                 <div class="field-row">
                     <div><strong>نام مجری:</strong> {% if resume.user.get_full_name %}
-                                                        <a href="{% url 'account:user_detail' resume.user.id %}" title="{{resume.user.email}}">
+                                                        <a href="{% url 'account:user_detail' resume.user.id %}?from=resume_detail" title="{{resume.user.email}}">
                                                             {{ resume.user.get_full_name }}
-                                                        </a>
+                                                        </a>    
                                                     {% else%} 
                                                         <a href="{% url 'account:user_detail' resume.user.id %}">
                                                             {{ resume.user.email }}
