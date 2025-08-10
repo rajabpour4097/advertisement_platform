@@ -160,6 +160,8 @@
                                     {% endif %}
                                 {% elif campaign.status == 'rejected' %}
                                     <span class="badge bg-danger">رد شده</span>
+                                {% elif campaign.status == 'cancel' %}
+                                    <span class="badge bg-danger">انصراف داده شده</span>
                                 {% elif campaign.status == 'approved' %}
                                     <span class="badge bg-success">تایید شده</span>
                                 {% elif campaign.status == 'progressing' %}

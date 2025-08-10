@@ -62,10 +62,10 @@
              {% if request.user.user_type == 'dealer' %}
              <li><a><i class="fa fa-archive" style="color: #7d919c;"></i>رزومه من<span class="fa fa-chevron-down"></span></a>
                  <ul class="nav child_menu">
-                     <li><a href="{% url 'account:my_resume' %}"><i class="fa fa-user"></i>رزومه من</a></li>
-                     <li><a href=""><i class="fa fa-user"></i>مدیریت نمونه کارها</a></li>
-                     <li><a href=""><i class="fa fa-user"></i>مدیریت مجوزها</a></li>
-                     <li><a href=""><i class="fa fa-user"></i>مدیریت لینک های نمونه کار</a></li>
+                     <li><a href="{% url 'account:my_resume' %}"><i class="fa fa-file"></i>رزومه من</a></li>
+                     <li><a href=""><i class="fa fa-briefcase"></i>مدیریت نمونه کارها</a></li>
+                     <li><a href=""><i class="fa fa-id-card-o"></i>مدیریت مجوزها</a></li>
+                     <li><a href=""><i class="fa fa-link"></i>مدیریت لینک های نمونه کار</a></li>
                  </ul>
              </li>
              {% endif %}
