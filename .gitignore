@@ -38,3 +38,5 @@ advplatform/__pycache__/
 __pycache__/
 __pycache__/
 __pycache__()
+# Ignore all Django migration directories (user request)
+**/migrations/**
