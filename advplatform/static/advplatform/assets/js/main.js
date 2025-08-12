@@ -67,7 +67,11 @@
         counterInit();
         hobbleEffect();
         horizontalPrallax();
-        new WOW().init();
+        if (typeof WOW !== 'undefined') {
+            new WOW().init();
+        } else {
+            console.warn('WOW plugin not loaded');
+        }
     });
 
     $(window).on("resize", function() {
@@ -417,6 +421,10 @@
       --------------------------------------------------------------*/
     // mailchimp start
     function mailchimpInit() {
+        if (!$.fn.ajaxChimp) {
+            console.warn('ajaxChimp plugin not loaded');
+            return;
+        }
         if ($('.mailchimp').length > 0) {
             $('.mailchimp').ajaxChimp({
                 language: 'fa',
@@ -428,21 +436,25 @@
             if (resp.result === 'success') {
                 $('.subscription-success').html('<i class="fa fa-check"></i><br/>' + resp.msg).fadeIn(1000);
                 $('.subscription-error').fadeOut(500);
-
             } else if (resp.result === 'error') {
                 $('.subscription-error').html('<i class="fa fa-times"></i><br/>' + resp.msg).fadeIn(1000);
             }
         }
-        $.ajaxChimp.translations.es = {
-            'submit': 'در حال ارسال...',
-            0: "یک ایمیل تایید برای شما ارسال کرده ایم",
-            1: "لطفا یک مقدار وارد کنید",
-            2: '«آدرس ایمیل باید حاوی یک @ باشد»',
-            3: "بخش دامنه آدرس ایمیل نامعتبر است (بخش بعد از @: )",
-            4: "بخش نام کاربری آدرس ایمیل نامعتبر است (قسمت قبل از @: )",
-            5:'این آدرس ایمیل جعلی یا نامعتبر به نظر می رسد. لطفا یک آدرس ایمیل حقیقی وارد کنید'
-        };
 
+        // اطمینان از وجود آبجکت translations
+        $.ajaxChimp = $.ajaxChimp || {};
+        $.ajaxChimp.translations = $.ajaxChimp.translations || {};
+
+        // تعریف ترجمه فارسی (کلید باید با language یکی باشد)
+        $.ajaxChimp.translations.fa = {
+            'submit': 'در حال ارسال...',
+            0: "یک ایمیل تایید برای شما ارسال کردیم",
+            1: "لطفا مقداری وارد کنید",
+            2: "آدرس ایمیل باید حاوی @ باشد",
+            3: "دامنه ایمیل نامعتبر است",
+            4: "بخش نام کاربری ایمیل نامعتبر است",
+            5: "این ایمیل جعلی یا نامعتبر به نظر می‌رسد"
+        };
     }
 
     /*--------------------------------------------------------------
@@ -485,6 +497,10 @@
       16. Tamjid Counter
       --------------------------------------------------------------*/
     function counterInit() {
+        if (!$.fn.tamjidCounter) {
+            console.warn('tamjidCounter plugin not loaded');
+            return;
+        }
         $('.st-counter').tamjidCounter({
             duration: 700
         });

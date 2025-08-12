@@ -276,13 +276,12 @@
         .catch(error => console.error("Error:", error));
     }
 </script>
-<!-- jQuery -->
+<!-- jQuery (فقط یک بار) -->
 <script src="{% static 'account/vendors/jquery/dist/jquery.min.js' %}"></script>
-<!-- Bootstrap -->
+<!-- Bootstrap (tooltip را ثبت می‌کند) -->
 <script src="{% static 'account/vendors/bootstrap/dist/js/bootstrap.min.js' %}"></script>
-<!-- FastClick -->
+<!-- سایر vendor های پنل (بدون تغییر) -->
 <script src="{% static 'account/vendors/fastclick/lib/fastclick.js' %}"></script>
-<!-- NProgress -->
 <script src="{% static 'account/vendors/nprogress/nprogress.js' %}"></script>
 <!-- bootstrap-progressbar -->
 <script src="{% static 'account/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js' %}"></script>
@@ -321,10 +320,21 @@
 <!-- Custom Theme Scripts -->
 <script src="{% static 'account/build/js/custom.min.js' %}"></script>
 
-<script src="{% static 'advplatform/assets/js/main.js' %}"></script>
+<!-- پلاگین های قالب advplatform (بعد از همگی jQuery و قبل از main.js) -->
+<script src="{% static 'advplatform/assets/js/isotope.pkg.min.js' %}"></script>
+<script src="{% static 'advplatform/assets/js/jquery.slick.min.js' %}"></script>
+<script src="{% static 'advplatform/assets/js/mailchimp.min.js' %}"></script>
+<script src="{% static 'advplatform/assets/js/counter.min.js' %}"></script>
+<script src="{% static 'advplatform/assets/js/lightgallery.min.js' %}"></script>
+<script src="{% static 'advplatform/assets/js/wow.min.js' %}"></script>
+
 <!-- Persian Datepicker -->
 <script src="https://unpkg.com/persian-date@latest/dist/persian-date.min.js"></script>
 <script src="https://unpkg.com/persian-datepicker@latest/dist/js/persian-datepicker.min.js"></script>
+
+<!-- اسکریپت اصلی قالب سایت -->
+<script src="{% static 'advplatform/assets/js/main.js' %}"></script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>
