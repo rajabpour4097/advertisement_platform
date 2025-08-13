@@ -7,7 +7,7 @@ from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
-from account.models import CampaignTransaction, EditingCampaign, RequestForMentor
+from account.models import CampaignTransaction, DigitalAdvertisement, EditingCampaign, EnvironmentalAdvertisement, EventMarketingAdvertisement, PrintingAdvertisement, RequestForMentor, SocialmediaAdvertisement
 from advplatform.forms import ResumeForm, ResumeReviewForm
 from wallet.models import Wallet, Transaction
 from .tokens import account_activation_token
@@ -25,7 +25,12 @@ from account.forms import (
                             ProfileForm,
                             ReviewCampaignForm, 
                             SignupForm,
-                            StartCampaignForm
+                            StartCampaignForm,
+                            EnvironmentalAdvertisementForm,
+                            SocialmediaAdvertisementForm,
+                            DigitalAdvertisementForm,
+                            PrintingAdvertisementForm,
+                            EventMarketingAdvertisementForm,
                             )
 from account.mixins import (
                             CampaignUserMixin,
@@ -771,138 +776,6 @@ class CampaignEditView(EditCampaignUserMixin, View):
         })
 
 
-class CampaignParticipateView(DealerUserMixin, View):
-    template_name = "account/campaign/campaign_participate.html"
-    
-    def dispatch(self, request, *args, **kwargs):
-        campaign = get_object_or_404(Campaign, id=kwargs['pk'])
-
-        if not Resume.objects.filter(user=request.user, status='approved').exists():
-            return render(self.request, '403.html',
-                          {'error_message': "تا زمانی که رزومه ای ارسال نکرده اید و توسط مدیر بررسی و تایید نشده است، نمی توانید در هیچ کمپین شرکت کنید.",
-                           'back_url': "account:campaigns"},
-                          )
-
-        if request.user in campaign.list_of_participants.all():
-            return render(self.request, '403.html', 
-                          {'error_message': "شما قبلاً به این کمپین پیوسته اید.",
-                           'back_url': "account:campaigns"},
-                          )
-        
-        if campaign.status != 'progressing':
-            return render(self.request, '403.html', 
-                          {'error_message': "این کمپین در مرحله برگزاری نمیباشد.",
-                           'back_url': "account:campaigns"},
-                          )
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request, pk):
-        campaign = get_object_or_404(Campaign, id=pk)
-        # proposal = campaign.running_campaign.filter(campaign=campaign) 
-        form = ParticipateCampaignForm()
-        return render(request, self.template_name, {
-            'campaign': campaign,
-            'form': form,
-            # 'proposal': proposal, 
-        })
-    
-    def post(self, request, pk):
-        campaign = get_object_or_404(Campaign, id=pk)
-        form = ParticipateCampaignForm(request.POST)
-        if form.is_valid():
-            proposal_campaign = form.save(commit=False)
-            proposal_campaign.campaign = campaign
-            proposal_campaign.dealer = request.user
-            proposal_campaign.save()
-
-            campaign.list_of_participants.add(request.user)
-            campaign.save()
-            
-            # Send notifications
-            notify_campaign_participation(
-                user=request.user,
-                campaign=campaign,
-                action_type='participate',
-                staff_users=staff_users,
-                am_users=am_users
-            )
-
-            return redirect('account:campaigns')  
-
-        proposal = campaign.running_campaign.filter(campaign=campaign)
-        return render(request, self.template_name, {
-            'campaign': campaign,
-            'form': form,
-            'editings': proposal,
-        })
-        
-
-class CampaignCancelParticipateView(DealerUserMixin, View):
-    template_name = 'account/campaign/campaign_cancel_participate_confirm.html'
-    
-    def get(self, request, *args, **kwargs):
-        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
-        return render(request, self.template_name, {'campaign': campaign})
-    
-    def post(self, request, *args, **kwargs):
-        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
-        user = request.user
-        
-        # Check campaign status
-        if campaign.status != 'progressing':
-            messages.error(request, "امکان خروج از کمپین در این وضعیت وجود ندارد.")
-            return HttpResponseRedirect(reverse_lazy('account:campaigns'))
-        
-        transaction = CampaignTransaction.objects.filter(dealer=user, campaign=campaign).first()
-
-        # Remove from participate list
-        if request.user in campaign.list_of_participants.all():
-            if transaction:
-                transaction.delete()
-            campaign.list_of_participants.remove(request.user)
-            
-            # Send notifications
-            notify_campaign_participation(
-                user=request.user,
-                campaign=campaign,
-                action_type='cancel',
-                staff_users=staff_users,
-                am_users=am_users
-            )
-            
-            messages.success(request, "شما با موفقیت از کمپین خارج شدید.")
-        else:
-            messages.warning(request, "شما در این کمپین عضو نبودید.")
-
-        return HttpResponseRedirect(reverse_lazy('account:campaigns'))
-    
-
-class CampaignEditProposalView(DealerUserMixin, View):
-    template_name = 'account/campaign/campaign_edit_proposal.html'
-
-    def get(self, request, *args, **kwargs):
-        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
-        proposal = get_object_or_404(CampaignTransaction, campaign=campaign, dealer=request.user)
-        form = ParticipateCampaignForm(instance=proposal)
-        return render(request, self.template_name, {
-            'campaign': campaign,
-            'form': form,
-            'proposal': proposal
-        })
-
-    def post(self, request, *args, **kwargs):
-        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
-        proposal = get_object_or_404(CampaignTransaction, campaign=campaign, dealer=request.user)
-        form = ParticipateCampaignForm(request.POST, instance=proposal)
-        if form.is_valid():
-            form.save()
-            return redirect('account:campaigns')
-        
-        return render(request, self.template_name, {
-            'campaign': campaign,
-            'form': form,
-            'proposal': proposal
-        })
 
 class RunningCampaignParticipatedListView(ManagerUserMixin, ListView):
     template_name = 'account/campaign/running_campaign_participated_list.html'
@@ -1672,3 +1545,295 @@ class UserDetailView(ManagerUserMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['user'] = user
         return context
+
+
+class CampaignParticipateView(DealerUserMixin, View):
+    template_name = "account/campaign/campaign_participate.html"
+    
+    def dispatch(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, id=kwargs['pk'])
+
+        if not Resume.objects.filter(user=request.user, status='approved').exists():
+            return render(self.request, '403.html',
+                          {'error_message': "تا زمانی که رزومه ای ارسال نکرده اید و توسط مدیر بررسی و تایید نشده است، نمی توانید در هیچ کمپین شرکت کنید.",
+                           'back_url': "account:campaigns"},
+                          )
+
+        if request.user in campaign.list_of_participants.all():
+            return render(self.request, '403.html', 
+                          {'error_message': "شما قبلاً به این کمپین پیوسته اید.",
+                           'back_url': "account:campaigns"},
+                          )
+        
+        if campaign.status != 'progressing':
+            return render(self.request, '403.html', 
+                          {'error_message': "این کمپین در مرحله برگزاری نمیباشد.",
+                           'back_url': "account:campaigns"},
+                          )
+        return super().dispatch(request, *args, **kwargs)
+
+    def _top_level_topic_name(self, campaign: Campaign) -> str:
+        # Finds the top-level topic name for mapping (adjust to your data)
+        t = campaign.topic.first()
+        if not t:
+            return ''
+        while t.parent:
+            t = t.parent
+        return (t.name or '').strip().lower()
+
+    def _ad_kind(self, campaign: Campaign) -> str:
+        # Map top-level topic name to advertisement kind. Adjust keys to match your Topics.
+        name = self._top_level_topic_name(campaign)
+        mapping = {
+            'تبلیغات محیطی': 'environmental',
+            'شبکه های اجتماعی': 'socialmedia',
+            'تبلیغات دیجیتال': 'digital',
+            'تبلیغات چاپی': 'printing',
+            'ایونت مارکتینگ': 'event',
+        }
+        return mapping.get(name, 'generic')
+
+    def _form_for_kind(self, kind):
+        form_map = {
+            'environmental': EnvironmentalAdvertisementForm,
+            'socialmedia': SocialmediaAdvertisementForm,
+            'digital': DigitalAdvertisementForm,
+            'printing': PrintingAdvertisementForm,
+            'event': EventMarketingAdvertisementForm,
+            # fallback
+            'generic': ParticipateCampaignForm,
+        }
+        return form_map.get(kind, ParticipateCampaignForm)
+
+    def get(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        print('Topic:', self._top_level_topic_name(campaign))
+        kind = self._ad_kind(campaign)
+        print('Ad Kind:', kind)
+        FormClass = self._form_for_kind(kind)
+        print('Form Class:', self._form_for_kind(kind))
+        form = FormClass()
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'ad_kind': kind,
+        })
+    
+    def post(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        kind = self._ad_kind(campaign)
+        FormClass = self._form_for_kind(kind)
+        form = FormClass(request.POST, request.FILES)
+
+        if form.is_valid():
+            obj = form.save(commit=False)
+            # Set common foreign keys for all specialized models
+            if kind != 'generic':
+                obj.campaign = campaign
+                obj.proposed_user = request.user
+                obj.save()
+                # M2M after save
+                if hasattr(form, 'save_m2m'):
+                    form.save_m2m()
+            else:
+                # fallback to old generic flow
+                proposal_campaign = form.save(commit=False)
+                proposal_campaign.campaign = campaign
+                proposal_campaign.dealer = request.user
+                proposal_campaign.save()
+
+            # Track participation
+            campaign.list_of_participants.add(request.user)
+            campaign.save()
+            
+            # Notifications
+            notify_campaign_participation(
+                user=request.user,
+                campaign=campaign,
+                action_type='participate',
+                staff_users=staff_users,
+                am_users=am_users
+            )
+
+            return redirect('account:campaigns')  
+
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'ad_kind': kind,
+        })
+
+
+class CampaignCancelParticipateView(DealerUserMixin, View):
+    template_name = 'account/campaign/campaign_cancel_participate_confirm.html'
+    
+    def get(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        return render(request, self.template_name, {'campaign': campaign})
+    
+    def post(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        user = request.user
+        
+        if campaign.status != 'progressing':
+            messages.error(request, "امکان خروج از کمپین در این وضعیت وجود ندارد.")
+            return HttpResponseRedirect(reverse_lazy('account:campaigns'))
+        
+        # Remove any proposal of this user for this campaign (new specialized models or old generic)
+        deleted = False
+        tx = CampaignTransaction.objects.filter(dealer=user, campaign=campaign).first()
+        if tx:
+            tx.delete()
+            deleted = True
+
+        for Model in [EnvironmentalAdvertisement, SocialmediaAdvertisement, DigitalAdvertisement, PrintingAdvertisement, EventMarketingAdvertisement]:
+            qs = Model.objects.filter(campaign=campaign, proposed_user=user)
+            if qs.exists():
+                qs.delete()
+                deleted = True
+
+        if request.user in campaign.list_of_participants.all():
+            campaign.list_of_participants.remove(request.user)
+            notify_campaign_participation(
+                user=request.user,
+                campaign=campaign,
+                action_type='cancel',
+                staff_users=staff_users,
+                am_users=am_users
+            )
+            messages.success(request, "شما با موفقیت از کمپین خارج شدید.")
+        else:
+            if deleted:
+                messages.success(request, "پیشنهاد شما حذف شد.")
+            else:
+                messages.warning(request, "شما در این کمپین عضو نبودید.")
+
+        return HttpResponseRedirect(reverse_lazy('account:campaigns'))
+    
+
+class CampaignEditProposalView(DealerUserMixin, View):
+    template_name = "account/campaign/campaign_edit_proposal.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, id=kwargs['pk'])
+
+        if campaign.status != 'progressing':
+            return render(self.request, '403.html',
+                          {'error_message': "امکان ویرایش پیشنهاد فقط در وضعیت برگزاری وجود دارد.",
+                           'back_url': "account:campaigns"},
+                          )
+
+        if request.user not in campaign.list_of_participants.all():
+            return render(self.request, '403.html',
+                          {'error_message': "شما در این کمپین شرکت نکرده‌اید.",
+                           'back_url': "account:campaigns"},
+                          )
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _top_level_topic_name(self, campaign: Campaign) -> str:
+        t = campaign.topic.first()
+        if not t:
+            return ''
+        while t.parent:
+            t = t.parent
+        return (t.name or '').strip().lower()
+
+    def _ad_kind(self, campaign: Campaign) -> str:
+        name = self._top_level_topic_name(campaign)
+        mapping = {
+            'تبلیغات محیطی': 'environmental',
+            'شبکه های اجتماعی': 'socialmedia',
+            'تبلیغات دیجیتال': 'digital',
+            'تبلیغات چاپی': 'printing',
+            'ایونت مارکتینگ': 'event',
+        }
+        return mapping.get(name, 'generic')
+
+    def _form_for_kind(self, kind):
+        form_map = {
+            'environmental': EnvironmentalAdvertisementForm,
+            'socialmedia': SocialmediaAdvertisementForm,
+            'digital': DigitalAdvertisementForm,
+            'printing': PrintingAdvertisementForm,
+            'event': EventMarketingAdvertisementForm,
+            'generic': ParticipateCampaignForm,
+        }
+        return form_map.get(kind, ParticipateCampaignForm)
+
+    def _find_existing_instance(self, campaign: Campaign, user):
+        # Try specialized proposals first
+        pairs = [
+            (EnvironmentalAdvertisement, 'environmental'),
+            (SocialmediaAdvertisement, 'socialmedia'),
+            (DigitalAdvertisement, 'digital'),
+            (PrintingAdvertisement, 'printing'),
+            (EventMarketingAdvertisement, 'event'),
+        ]
+        for Model, kind in pairs:
+            obj = Model.objects.filter(campaign=campaign, proposed_user=user).first()
+            if obj:
+                return obj, kind
+
+        # Fallback to generic CampaignTransaction
+        tx = CampaignTransaction.objects.filter(campaign=campaign, dealer=user).first()
+        if tx:
+            return tx, 'generic'
+
+        return None, self._ad_kind(campaign)
+
+    def get(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        instance, kind = self._find_existing_instance(campaign, request.user)
+        if not instance:
+            messages.warning(request, "پیشنهادی برای ویرایش یافت نشد. ابتدا در کمپین شرکت کنید.")
+            return redirect('account:campaignparticipate', pk=pk)
+
+        FormClass = self._form_for_kind(kind)
+        form = FormClass(instance=instance)
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'ad_kind': kind,
+        })
+
+    def post(self, request, pk):
+        campaign = get_object_or_404(Campaign, id=pk)
+        instance, kind = self._find_existing_instance(campaign, request.user)
+        if not instance:
+            messages.warning(request, "پیشنهادی برای ویرایش یافت نشد. ابتدا در کمپین شرکت کنید.")
+            return redirect('account:campaignparticipate', pk=pk)
+
+        FormClass = self._form_for_kind(kind)
+        form = FormClass(request.POST, request.FILES, instance=instance)
+
+        if form.is_valid():
+            obj = form.save(commit=False)
+            if kind != 'generic':
+                # حفظ FK ها در حالت ویرایش
+                obj.campaign_id = campaign.id
+                obj.proposed_user_id = request.user.id
+                obj.save()
+                if hasattr(form, 'save_m2m'):
+                    form.save_m2m()
+            else:
+                obj.campaign_id = campaign.id
+                obj.dealer_id = request.user.id
+                obj.save()
+
+            notify_campaign_participation(
+                user=request.user,
+                campaign=campaign,
+                action_type='edit',
+                staff_users=staff_users,
+                am_users=am_users
+            )
+            messages.success(request, "پیشنهاد شما با موفقیت ویرایش شد.")
+            return redirect('account:campaigns')
+
+        return render(request, self.template_name, {
+            'campaign': campaign,
+            'form': form,
+            'ad_kind': kind,
+        })
+

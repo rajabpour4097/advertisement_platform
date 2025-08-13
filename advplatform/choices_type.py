@@ -41,3 +41,43 @@ RESUME_STATUS_CHOICES = [
     ('approved', 'تایید شده'),
     ('rejected', 'رد شده'),
 ]
+
+# انواع تبلیغات محیطی
+ENVIRONMENTAL_AD_TYPE_CHOICES = [
+    ('billboard', 'بیلبورد'),
+    ('lamp_post', 'لمپوست'),
+    ('bridge', 'پل'),
+]
+
+SOCIAL_MEDIA_AD_TYPE_CHOICES = [
+   ('post', 'پست'),
+   ('story', 'استوری'),
+   ('live', 'لایو'),
+]
+
+DIGITAL_AD_TYPE_CHOICES = [
+    ('banner', 'بنری'),
+    ('clickable', 'کلیکی'),
+    ('google_ads', 'گوگل ادز'),
+]
+
+TARGETING_TYPE_CHOICES = [
+    ('geographic', 'جغرافیایی'),
+    ('behavioral', 'رفتاری'),
+    ('retargeting', 'ریتارگت'),
+]
+
+PRINTING_AD_TYPE_CHOICES = [
+    ('flyer', 'تراکت'),
+    ('brochure', 'بروشور'),
+    ('packaging', 'بسته‌بندی'),
+]
+
+EVENT_TYPE_CHOICES = [
+    ('webinar', 'وبینار'),
+    ('workshop', 'کارگاه'),
+    ('conference', 'کنفرانس'),
+    ('meetup', 'ملاقات'),
+    ('opening_ceremony', 'افتتاحیه'),
+    ('brand_experience', 'برند اکسپریینس'),
+]

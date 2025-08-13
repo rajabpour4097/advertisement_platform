@@ -2,105 +2,34 @@
 {% load static %}
 {% load advplatform_tags %}
 {% load account_tags %}
-{% load crispy_forms_tags %}
+
 
 {% block title %}شرکت در کمپین{% endblock %}
 
-{% block extra_head %}
-<link href="{% static 'account/build/css/campaign_style.css' %}" rel="stylesheet">
-{% endblock %}
-
 {% block content %}
+<div class="container mt-4">
+  <h4 class="mb-3">شرکت در کمپین: {{ campaign.describe|default:"-" }}</h4>
 
-<div class="row">
-    
-    <!-- Participate in Campaign section -->
-    <div class="col-md-6 col-xs-12 campaign-form">
-        <div class="x_panel">
-            <div class="x_title">
-                <h2 style="color: #028c32;">شرکت در کمپین</h2>
-                <div class="clearfix"></div>
-            </div>
-            <form method="post" novalidate>
-                {% csrf_token %}
-                {% if form.errors %}
-                <div class="alert alert-danger">
-                    <strong>خطا در فرم:</strong>
-                    <ul>
-                        {% for field, errors in form.errors.items %}
-                            {% for error in errors %}
-                                <li>{{ field }}: {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-                {{ form|crispy }}
-                
-                <br>
-                <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
-                <button type="submit" class="btn btn-success">شرکت کردن</button>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Campaign detail section -->
-    <div class="col-md-6 col-xs-12 campaign-details">
-        <div class="x_panel">
-            <div class="x_title">
-                <h2 style="color: #028c32;">جزئیات کمپین</h2>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <p><strong class="campaign-strong">کارفرما:</strong> {{ campaign.customer.get_full_name }}</p>
-                <p><strong class="campaign-strong">زمینه کاری:</strong> 
-                    {% if campaign.customer.field_of_activity %}
-                        {{ campaign.customer.field_of_activity }}
-                    {% else %}
-                        زمینه کاری مشخص نشده است
-                    {% endif %}
-                </p>
-                <p><strong class="campaign-strong">شرح کمپین:</strong> {{ campaign.describe }}</p>
-                <p><strong class="campaign-strong">بودجه پیشنهادی:</strong> {{ campaign.purposed_price | format_price }}</p>
-                <p><strong class="campaign-strong">مبلغ جایزه:</strong> {{ campaign.get_gift_price | format_price }}</p>
-                <p><strong class="campaign-strong">زمان شروع کمپین:</strong> {{ campaign.starttimedate | jalali_timedate }}</p>
-                <p><strong class="campaign-strong">زمان پایان کمپین:</strong> {{ campaign.endtimedate | jalali_timedate }}</p>
-                <p><strong class="campaign-strong">تعداد شرکت کننده:</strong> {% get_campaign_participants_count campaign as participants_count %}
-                                                                                {{ participants_count|format_participants_count }}</p>
-                <small class="text-primary">
-                    <strong>زمان شمار:</strong> 
-                    <div class="countdown" data-deadline="{{ campaign.get_countdown_datetime }}">
-                    </div>
-                </small>
-            </div>
-        </div>
-    </div>
+  {% if ad_kind == "environmental" %}
+    <div class="alert alert-info">نوع پیشنهاد: تبلیغ محیطی</div>
+  {% elif ad_kind == "socialmedia" %}
+    <div class="alert alert-info">نوع پیشنهاد: تبلیغ شبکه‌های اجتماعی</div>
+  {% elif ad_kind == "digital" %}
+    <div class="alert alert-info">نوع پیشنهاد: تبلیغ دیجیتال</div>
+  {% elif ad_kind == "printing" %}
+    <div class="alert alert-info">نوع پیشنهاد: تبلیغ چاپی</div>
+  {% elif ad_kind == "event" %}
+    <div class="alert alert-info">نوع پیشنهاد: ایونت مارکتینگ</div>
+  {% else %}
+    <div class="alert alert-warning">نوع موضوع ناشناخته است. فرم عمومی ارسال می‌شود.</div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="mt-3">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">ارسال پیشنهاد</button>
+    <a href="{% url 'account:campaigns' %}" class="btn btn-secondary">بازگشت</a>
+  </form>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // AutoNumeric برای فیلد قیمت پیشنهادی
-        const priceInput = document.querySelector('input[name="proposal_price"]');
-        if (priceInput) {
-            new AutoNumeric(priceInput, {
-                currencySymbol: ' تومان',
-                currencySymbolPlacement: 's',
-                digitGroupSeparator: ',',
-                decimalCharacter: '.',
-                decimalPlaces: 0,
-                minimumValue: '0',
-                modifyValueOnWheel: false
-            });
-
-            // تنظیم مقدار اولیه
-            if (priceInput.value) {
-                const numericInstance = AutoNumeric.getAutoNumericElement(priceInput);
-                numericInstance.set(priceInput.value);
-            }
-        }
-    });
-</script>
-
 {% endblock %}
 

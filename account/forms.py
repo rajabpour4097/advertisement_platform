@@ -6,6 +6,16 @@ from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from account.models import CampaignTransaction, EditingCampaign
 from django.utils import timezone
+from account.models import (
+    EnvironmentalAdvertisement,
+    SocialmediaAdvertisement,
+    DigitalAdvertisement,
+    PrintingAdvertisement,
+    EventMarketingAdvertisement,
+    ContentCategory,
+    Platform,
+)
+from advplatform.models import City  # for service_area
 
 
 
@@ -415,4 +425,84 @@ class ParticipateCampaignForm(forms.ModelForm):
             raise forms.ValidationError("قیمت وارد شده معتبر نیست.")
 
         return price
+
+
+# New specialized forms
+
+class EnvironmentalAdvertisementForm(forms.ModelForm):
+    class Meta:
+        model = EnvironmentalAdvertisement
+        exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']
+        widgets = {
+            'available_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'service_area': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['service_area'].queryset = City.objects.all()
+
+
+class SocialmediaAdvertisementForm(forms.ModelForm):
+    class Meta:
+        model = SocialmediaAdvertisement
+        exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']
+        widgets = {
+            'content_categories': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'proposed_ad_template': forms.Select(attrs={'class': 'form-control'}),
+            'start_execution_time': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'end_execution_time': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['content_categories'].queryset = ContentCategory.objects.all()
+
+
+class DigitalAdvertisementForm(forms.ModelForm):
+    class Meta:
+        model = DigitalAdvertisement
+        exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']
+        widgets = {
+            'proposed_platform': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'digital_ad_type': forms.Select(attrs={'class': 'form-control'}),
+            'targeting_type': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['proposed_platform'].queryset = Platform.objects.all()
+
+
+class PrintingAdvertisementForm(forms.ModelForm):
+    class Meta:
+        model = PrintingAdvertisement
+        exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']
+        widgets = {
+            'printing_ad_type': forms.Select(attrs={'class': 'form-control'}),
+            'paper_weight_and_type': forms.TextInput(attrs={'class': 'form-control'}),
+            'dimensions': forms.TextInput(attrs={'class': 'form-control'}),
+            'delivery_time': forms.NumberInput(attrs={'class': 'form-control'}),
+            'total_proposal_price': forms.NumberInput(attrs={'class': 'form-control'}),
+            'circulation': forms.NumberInput(attrs={'class': 'form-control'}),
+            'graphic_design_included': forms.CheckboxInput(),
+        }
+
+
+class EventMarketingAdvertisementForm(forms.ModelForm):
+    class Meta:
+        model = EventMarketingAdvertisement
+        exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']
+        widgets = {
+            'event_type': forms.Select(attrs={'class': 'form-control'}),
+            'location': forms.Select(attrs={'class': 'form-control'}),
+            'location_address': forms.TextInput(attrs={'class': 'form-control'}),
+            'event_proposed_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'event_content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'total_proposal_price': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+
+
 
