@@ -5,6 +5,16 @@
 
 {% block title %}جزئیات پیشنهاد{% endblock %}
 
+{% block extra_head %}
+{% if kind == 'environmental' %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+  #env-map { height: 350px; width: 700px; border: 1px solid #ddd; border-radius: 6px; }
+</style>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="x_panel">
   <div class="x_title">
@@ -52,6 +62,13 @@
       <p style="white-space: pre-line">{{ text|default:"-" }}</p>
     </div>
 
+    {% if kind == 'environmental' %}
+    <div class="mb-3" id="env-map-wrap" style="display:none">
+      <h5 class="mt-2 mb-2">موقعیت مکانی</h5>
+      <div id="env-map"></div>
+    </div>
+    {% endif %}
+
     <h5 class="mt-4">سایر جزئیات</h5>
     <div class="table-responsive">
       <table class="table table-striped">
@@ -77,4 +94,42 @@
     </div>
   </div>
 </div>
+
+{% if kind == 'environmental' %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  (function () {
+    // مختصات از شیء پیشنهاد (اگر موجود باشد)
+    const latRaw = "{{ obj.media_location_latitude|default_if_none:'' }}";
+    const lonRaw = "{{ obj.media_location_longitude|default_if_none:'' }}";
+    const lat = parseFloat(latRaw);
+    const lon = parseFloat(lonRaw);
+
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      const wrap = document.getElementById('env-map-wrap');
+      if (wrap) wrap.style.display = '';
+
+      const map = L.map('env-map', {
+        center: [lat, lon],
+        zoom: 14,
+        zoomControl: true,
+        dragging: true,           // اجازه جابه‌جایی نقشه (اختیاری)
+        scrollWheelZoom: false,   // جلوگیری از اسکرول ناخواسته صفحه
+        doubleClickZoom: true,
+        boxZoom: false,
+        keyboard: false
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      // مارکر فقط برای نمایش (غیرقابل‌کشیدن)
+      L.marker([lat, lon], { draggable: false }).addTo(map);
+    }
+  })();
+</script>
+{% endif %}
 {% endblock %}
