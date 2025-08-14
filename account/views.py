@@ -64,6 +64,9 @@ from django.utils.dateparse import parse_date
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.utils.html import format_html
+from datetime import date, datetime, time
+from django.utils import timezone
 
 
 
@@ -1886,3 +1889,120 @@ class RunningCampaignParticipatedListView(ManagerUserMixin, TemplateView):
         context['campaign'] = campaign
         context['proposals'] = page_obj
         return context
+
+
+class ProposalDetailView(ManagerUserMixin, TemplateView):
+    template_name = 'account/campaign/proposal_detail.html'
+
+    MODEL_MAP = {
+        'generic': CampaignTransaction,
+        'environmental': EnvironmentalAdvertisement,
+        'socialmedia': SocialmediaAdvertisement,
+        'digital': DigitalAdvertisement,
+        'printing': PrintingAdvertisement,
+        'event': EventMarketingAdvertisement,
+    }
+
+    def get_object_and_kind(self, kind: str, obj_id: int):
+        Model = self.MODEL_MAP.get(kind)
+        if not Model:
+            return None, None
+        obj = get_object_or_404(Model, pk=obj_id)
+        return obj, kind
+
+    def get_common_fields(self, obj, kind: str):
+        # فیلدهای مشترک (کاربر، کمپین، متن، قیمت)
+        user = getattr(obj, 'dealer', None) or getattr(obj, 'proposed_user', None)
+        campaign = getattr(obj, 'campaign', None)
+
+        # متن و قیمت مطابق لیست شرکت‌کنندگان
+        text = ''
+        price = 0
+        if kind == 'generic':
+            text = getattr(obj, 'proposals', '')
+            price = getattr(obj, 'proposal_price', 0)
+        elif kind == 'environmental':
+            text = getattr(obj, 'description', '')
+            price = getattr(obj, 'proposal_price', 0)
+        elif kind == 'socialmedia':
+            text = ''
+            price = getattr(obj, 'proposal_price', 0)
+        elif kind == 'digital':
+            text = getattr(obj, 'description', '')
+            price = getattr(obj, 'proposal_price', 0)
+        elif kind == 'printing':
+            text = getattr(obj, 'description', '')
+            price = getattr(obj, 'total_proposal_price', getattr(obj, 'proposal_price', 0))
+        elif kind == 'event':
+            text = getattr(obj, 'event_content', '')
+            price = getattr(obj, 'total_proposal_price', getattr(obj, 'proposal_price', 0))
+
+        return user, campaign, text, price
+
+    def get_detail_pairs(self, obj):
+        exclude = {'id', 'created_at', 'modified_at', 'campaign', 'proposed_user', 'dealer'}
+        pairs = []
+
+        for f in obj._meta.fields:
+            if f.name in exclude:
+                continue
+            # رد کردن ارتباطاتی که نمایششون مناسب نیست
+            if f.is_relation and not f.many_to_one:
+                continue
+
+            label = f.verbose_name or f.name
+            raw_value = getattr(obj, f.name)
+            display_value = raw_value
+            is_dt = False
+
+            # اگر choices دارد، برچسب فارسی را بگیر
+            if getattr(f, 'choices', None):
+                try:
+                    display_value = getattr(obj, f'get_{f.name}_display')()
+                except Exception:
+                    display_value = raw_value
+
+            # بولین به فارسی
+            if isinstance(raw_value, bool):
+                display_value = 'بله' if raw_value else 'خیر'
+
+            # تاریخ/زمان
+            if isinstance(raw_value, datetime):
+                try:
+                    raw_value = timezone.localtime(raw_value) if timezone.is_aware(raw_value) else raw_value
+                except Exception:
+                    pass
+                is_dt = True
+            elif isinstance(raw_value, (date, time)):
+                is_dt = True
+
+            pairs.append({'label': label, 'value': display_value, 'is_dt': is_dt})
+
+        # فیلدهای many-to-many
+        for m2m in obj._meta.many_to_many:
+            if m2m.name in exclude:
+                continue
+            label = m2m.verbose_name or m2m.name
+            qs = getattr(obj, m2m.name).all()
+            value = ', '.join(str(x) for x in qs) if qs.exists() else ''
+            pairs.append({'label': label, 'value': value, 'is_dt': False})
+
+        return pairs
+
+    def get(self, request, kind, obj_id):
+        obj, kind = self.get_object_and_kind(kind, obj_id)
+        if not obj:
+            return render(request, '404.html', status=404)
+
+        user, campaign, text, price = self.get_common_fields(obj, kind)
+        details = self.get_detail_pairs(obj)
+
+        return render(request, self.template_name, {
+            'kind': kind,
+            'obj': obj,
+            'campaign': campaign,
+            'user': user,
+            'text': text,
+            'price': price,
+            'details': details,
+        })

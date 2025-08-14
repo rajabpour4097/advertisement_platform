@@ -12,6 +12,7 @@
         padding: 5px 10px;
         border-radius: 4px;
         font-size: 0.9em;
+        display: inline-block; /* ensure proper spacing */
     }
     .status-delayed { background-color: #fff3cd; color: #856404; }
     .status-ready { background-color: #d4edda; color: #155724; }
@@ -89,16 +90,8 @@
                     <small class="text-muted">{{ proposal.created_at|jalali_timedate }}</small>
                 </div>
                 <div class="card-body">
+                    <!-- نوع پیشنهاد moved above price and spaced -->
                     <div class="mb-2">
-                        <strong>توضیحات:</strong>
-                        <p>{{ proposal.text|default:"-"|truncatechars:100 }}</p>
-                    </div>
-                    <div class="mb-2">
-                        <strong>قیمت پیشنهادی:</strong>
-                        <span class="price-column">{{ proposal.price|default:0|format_price }}</span>
-                    </div>
-                    
-                    <div>
                         <span class="status-badge status-ready">
                             نوع پیشنهاد:
                             {% if proposal.kind == 'environmental' %}محیطی
@@ -108,6 +101,15 @@
                             {% elif proposal.kind == 'event' %}ایونت مارکتینگ
                             {% else %}عمومی{% endif %}
                         </span>
+                    </div>
+
+                    <div class="mb-2">
+                        <strong>توضیحات:</strong>
+                        <p>{{ proposal.text|default:"-"|truncatechars:100 }}</p>
+                    </div>
+                    <div class="mb-2">
+                        <strong>قیمت پیشنهادی:</strong>
+                        <span class="price-column">{{ proposal.price|default:0|format_price }}</span>
                     </div>
                 </div>
                 <div class="card-footer">
@@ -168,8 +170,14 @@
     });
 
     function showDetails(proposalId) {
-        // پیاده‌سازی نمایش جزئیات
-        console.log('Showing details for proposal:', proposalId);
+        // proposalId قالب: kind-<pk>
+        const parts = String(proposalId).split('-');
+        if (parts.length !== 2) return;
+        const kind = parts[0];
+        const id = parts[1];
+        // استفاده از مسیر namespaced
+        const base = "{% url 'account:campaigns' %}"; // /account/campaigns/
+        window.location.href = base + "proposal/" + kind + "/" + id + "/";
     }
 </script>
 {% endblock %}

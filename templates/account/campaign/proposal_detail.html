@@ -1,0 +1,80 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load advplatform_tags %}
+{% load account_tags %}
+
+{% block title %}جزئیات پیشنهاد{% endblock %}
+
+{% block content %}
+<div class="x_panel">
+  <div class="x_title">
+    <h2>جزئیات پیشنهاد</h2>
+    <div class="nav navbar-right">
+      <a href="javascript:history.back();" class="btn btn-secondary">
+        <i class="fa fa-arrow-right"></i> بازگشت
+      </a>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="x_content">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-2"><strong>نوع پیشنهاد:</strong>
+          <span class="badge bg-info">
+            {% if kind == 'environmental' %}محیطی
+            {% elif kind == 'socialmedia' %}شبکه‌های اجتماعی
+            {% elif kind == 'digital' %}دیجیتال
+            {% elif kind == 'printing' %}چاپی
+            {% elif kind == 'event' %}ایونت مارکتینگ
+            {% else %}عمومی{% endif %}
+          </span>
+        </div>
+        {% if campaign %}
+        <div class="mb-2"><strong>کمپین:</strong> {{ campaign.describe|default:campaign }}</div>
+        {% endif %}
+        <div class="mb-2"><strong>کاربر برگزارکننده:</strong> {{ campaign.customer.get_full_name|default:user.username }}</div>
+        {% if user %}
+        <div class="mb-2"><strong>کاربر پیشنهاد دهنده:</strong> {{ user.get_full_name|default:user.username }}</div>
+        {% endif %}
+      </div>
+      <div class="col-md-6 text-start">
+        <div class="mb-2"><strong>قیمت پیشنهادی:</strong>
+          <span class="price-column">{{ price|default:0|format_price }}</span>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="mb-3">
+      <strong>توضیحات/متن:</strong>
+      <p style="white-space: pre-line">{{ text|default:"-" }}</p>
+    </div>
+
+    <h5 class="mt-4">سایر جزئیات</h5>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <tbody>
+          {% for item in details %}
+          {% if item.value %}
+          <tr>
+            <th style="width: 250px">{{ item.label }}</th>
+            <td>
+              {% if item.is_dt %}
+                {{ item.value|jalali_timedate }}
+              {% else %}
+                {{ item.value }}
+              {% endif %}
+            </td>
+          </tr>
+          {% endif %}
+          {% empty %}
+          <tr><td colspan="2">جزئیات دیگری ثبت نشده است.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
