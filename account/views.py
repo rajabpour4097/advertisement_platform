@@ -11,7 +11,7 @@ from account.models import CampaignTransaction, DigitalAdvertisement, EditingCam
 from advplatform.forms import ResumeForm, ResumeReviewForm
 from wallet.models import Wallet, Transaction
 from .tokens import account_activation_token
-from django.db.models import Q, Count
+from django.db.models import Q, Count, DecimalField, IntegerField, BigIntegerField, FloatField
 from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView, ListView, DetailView
 from account.forms import (
                             AssignMentorForm,
@@ -1940,50 +1940,56 @@ class ProposalDetailView(ManagerUserMixin, TemplateView):
     def get_detail_pairs(self, obj):
         exclude = {'id', 'created_at', 'modified_at', 'campaign', 'proposed_user', 'dealer'}
         pairs = []
+        money_keys = {'price', 'proposal_price', 'total_price', 'total_proposal_price',
+                      'amount', 'payment', 'budget', 'cost', 'fee', 'balance'}
 
         for f in obj._meta.fields:
             if f.name in exclude:
                 continue
-            # رد کردن ارتباطاتی که نمایششون مناسب نیست
             if f.is_relation and not f.many_to_one:
                 continue
 
             label = f.verbose_name or f.name
             raw_value = getattr(obj, f.name)
-            display_value = raw_value
-            is_dt = False
 
-            # اگر choices دارد، برچسب فارسی را بگیر
+            # نمایش لیبل انتخابی برای فیلدهای choices
             if getattr(f, 'choices', None):
                 try:
                     display_value = getattr(obj, f'get_{f.name}_display')()
                 except Exception:
                     display_value = raw_value
+            else:
+                display_value = raw_value
 
             # بولین به فارسی
             if isinstance(raw_value, bool):
                 display_value = 'بله' if raw_value else 'خیر'
 
             # تاریخ/زمان
+            is_dt = isinstance(raw_value, (datetime, date, time))
             if isinstance(raw_value, datetime):
                 try:
-                    raw_value = timezone.localtime(raw_value) if timezone.is_aware(raw_value) else raw_value
+                    display_value = timezone.localtime(raw_value) if timezone.is_aware(raw_value) else raw_value
                 except Exception:
                     pass
-                is_dt = True
-            elif isinstance(raw_value, (date, time)):
-                is_dt = True
 
-            pairs.append({'label': label, 'value': display_value, 'is_dt': is_dt})
+            # پولی؟
+            is_money = (
+                any(k in f.name.lower() for k in money_keys) and
+                isinstance(raw_value, (int, float))
+            ) or isinstance(f, (DecimalField, IntegerField, BigIntegerField, FloatField)) and \
+                any(k in f.name.lower() for k in money_keys)
 
-        # فیلدهای many-to-many
+            pairs.append({'label': label, 'value': display_value, 'is_dt': is_dt, 'is_money': bool(is_money)})
+
+        # M2M
         for m2m in obj._meta.many_to_many:
             if m2m.name in exclude:
                 continue
             label = m2m.verbose_name or m2m.name
             qs = getattr(obj, m2m.name).all()
             value = ', '.join(str(x) for x in qs) if qs.exists() else ''
-            pairs.append({'label': label, 'value': value, 'is_dt': False})
+            pairs.append({'label': label, 'value': value, 'is_dt': False, 'is_money': False})
 
         return pairs
 
@@ -1996,6 +2002,7 @@ class ProposalDetailView(ManagerUserMixin, TemplateView):
         details = self.get_detail_pairs(obj)
 
         return render(request, self.template_name, {
+
             'kind': kind,
             'obj': obj,
             'campaign': campaign,

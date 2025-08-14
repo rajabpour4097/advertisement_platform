@@ -80,6 +80,8 @@
             <td>
               {% if item.is_dt %}
                 {{ item.value|jalali_timedate }}
+              {% elif item.is_money %}
+                {{ item.value|format_price }}
               {% else %}
                 {{ item.value }}
               {% endif %}
