@@ -379,7 +379,7 @@ class City(BaseModel):
         unique_together = ['name', 'province']  # جلوگیری از تکرار نام شهر در یک استان
     
     def __str__(self):
-        return f"{self.name} - {self.province.name}"
+        return f"{self.name}"
 
 
 class Resume(models.Model):

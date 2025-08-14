@@ -40,7 +40,7 @@
       {{ form.non_field_errors }}
       {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
 
-      {# اول همه فیلدها به‌جز توضیحات و مختصات #}
+      {# همه فیلدها به‌جز توضیحات و مختصات (مختصات با نقشه پر می‌شود) #}
       {% for field in form.visible_fields %}
         {% if field.name != 'description' and field.name != 'media_location_latitude' and field.name != 'media_location_longitude' %}
           <div class="mb-3">
@@ -51,7 +51,7 @@
         {% endif %}
       {% endfor %}
 
-      {# سپس نقشه #}
+      {# نقشه قبل از توضیحات #}
       <h5 class="mt-2 mb-2">انتخاب موقعیت مکانی</h5>
       <div class="mb-2 d-flex gap-2">
         <button type="button" id="locateMeBtn" class="btn btn-sm btn-secondary">یافتن موقعیت من</button>
@@ -62,7 +62,7 @@
         <small id="coordsInfo" class="text-muted">مختصات انتخاب‌شده: -</small>
       </div>
 
-      {# در نهایت توضیحات به عنوان آخرین فیلد #}
+      {# توضیحات آخر فرم #}
       {% if form.description %}
       <div class="mb-3">
         <label for="{{ form.description.id_for_label }}" class="form-label">توضیحات</label>
@@ -84,10 +84,52 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
   (function () {
+    // مختصات
     const latInput = document.getElementById('id_media_location_latitude');
     const lonInput = document.getElementById('id_media_location_longitude');
     const coordsInfo = document.getElementById('coordsInfo');
 
+    // استان/شهر
+    const provinceSelect = document.getElementById('id_province');
+    const citySelect = document.getElementById('id_city');
+
+    async function loadCities(provinceId, selectedId) {
+      if (!citySelect) return;
+      citySelect.innerHTML = '';
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'انتخاب شهر';
+      citySelect.appendChild(opt);
+
+      if (!provinceId) return;
+
+      try {
+        const resp = await fetch("{% url 'account:ajax_cities' %}?province_id=" + encodeURIComponent(provinceId));
+        const data = await resp.json();
+        (data.results || []).forEach(function (c) {
+          const o = document.createElement('option');
+          o.value = c.id;
+          o.textContent = c.name;
+          if (selectedId && String(selectedId) === String(c.id)) o.selected = true;
+          citySelect.appendChild(o);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (provinceSelect && citySelect) {
+      const initialProvince = provinceSelect.value;
+      const initialCity = citySelect.getAttribute('value') || citySelect.value || '';
+      if (initialProvince) {
+        loadCities(initialProvince, initialCity);
+      }
+      provinceSelect.addEventListener('change', function () {
+        loadCities(this.value, '');
+      });
+    }
+
+    // نقشه
     let initLat = parseFloat(latInput?.value) || 35.6892;
     let initLon = parseFloat(lonInput?.value) || 51.3890;
     let initZoom = (latInput?.value && lonInput?.value) ? 14 : 6;
@@ -104,35 +146,20 @@
       if (!latInput || !lonInput) return;
       latInput.value = latlng.lat.toFixed(6);
       lonInput.value = latlng.lng.toFixed(6);
-      if (coordsInfo) {
-        coordsInfo.textContent = `مختصات انتخاب‌شده: ${latInput.value}, ${lonInput.value}`;
-      }
+      if (coordsInfo) coordsInfo.textContent = `مختصات انتخاب‌شده: ${latInput.value}, ${lonInput.value}`;
     }
-
     updateInputs({ lat: initLat, lng: initLon });
 
-    map.on('click', function (e) {
-      marker.setLatLng(e.latlng);
-      updateInputs(e.latlng);
-    });
-
-    marker.on('dragend', function (e) {
-      updateInputs(e.target.getLatLng());
-    });
+    map.on('click', function (e) { marker.setLatLng(e.latlng); updateInputs(e.latlng); });
+    marker.on('dragend', function (e) { updateInputs(e.target.getLatLng()); });
 
     const locateBtn = document.getElementById('locateMeBtn');
     if (locateBtn && navigator.geolocation) {
       locateBtn.addEventListener('click', function () {
         navigator.geolocation.getCurrentPosition(function (pos) {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          const ll = L.latLng(lat, lon);
-          map.setView(ll, 15);
-          marker.setLatLng(ll);
-          updateInputs(ll);
-        }, function () {
-          alert('امکان دریافت موقعیت شما وجود ندارد.');
-        }, { enableHighAccuracy: true, timeout: 8000 });
+          const ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
+          map.setView(ll, 15); marker.setLatLng(ll); updateInputs(ll);
+        }, function () { alert('امکان دریافت موقعیت شما وجود ندارد.'); }, { enableHighAccuracy: true, timeout: 8000 });
       });
     }
   })();

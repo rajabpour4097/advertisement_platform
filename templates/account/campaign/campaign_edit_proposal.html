@@ -5,6 +5,16 @@
 
 {% block title %}ویرایش پیشنهاد کمپین{% endblock %}
 
+{% block extra_head %}
+{% if ad_kind == "environmental" %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+  #env-map { height: 350px; width: 700px; border: 1px solid #ddd; border-radius: 6px; }
+</style>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
   <h4 class="mb-3">ویرایش پیشنهاد برای کمپین: {{ campaign.describe|default:"-" }}</h4>
@@ -25,10 +35,123 @@
 
   <form method="post" enctype="multipart/form-data" class="mt-3">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    {% if ad_kind == "environmental" %}
+      {{ form.non_field_errors }}
+      {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+      {% for field in form.visible_fields %}
+        {% if field.name != 'description' and field.name != 'media_location_latitude' and field.name != 'media_location_longitude' %}
+          <div class="mb-3">
+            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {{ field.errors }}
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      <h5 class="mt-2 mb-2">انتخاب موقعیت مکانی</h5>
+      <div class="mb-2 d-flex gap-2">
+        <button type="button" id="locateMeBtn" class="btn btn-sm btn-secondary">یافتن موقعیت من</button>
+        <small class="text-muted">برای انتخاب موقعیت روی نقشه کلیک کنید.</small>
+      </div>
+      <div id="env-map" class="mb-2"></div>
+      <div class="mb-3"><small id="coordsInfo" class="text-muted">مختصات انتخاب‌شده: -</small></div>
+
+      {% if form.description %}
+      <div class="mb-3">
+        <label for="{{ form.description.id_for_label }}" class="form-label">توضیحات</label>
+        {{ form.description }}
+        {{ form.description.errors }}
+      </div>
+      {% endif %}
+    {% else %}
+      {{ form.as_p }}
+    {% endif %}
+
     <button type="submit" class="btn btn-warning">ثبت ویرایش</button>
     <a href="{% url 'account:campaigns' %}" class="btn btn-secondary">بازگشت</a>
   </form>
 </div>
+
+{% if ad_kind == "environmental" %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  (function () {
+    const latInput = document.getElementById('id_media_location_latitude');
+    const lonInput = document.getElementById('id_media_location_longitude');
+    const coordsInfo = document.getElementById('coordsInfo');
+
+    const provinceSelect = document.getElementById('id_province');
+    const citySelect = document.getElementById('id_city');
+
+    async function loadCities(provinceId, selectedId) {
+      if (!citySelect) return;
+      citySelect.innerHTML = '';
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'انتخاب شهر';
+      citySelect.appendChild(opt);
+      if (!provinceId) return;
+      try {
+        const resp = await fetch("{% url 'account:ajax_cities' %}?province_id=" + encodeURIComponent(provinceId));
+        const data = await resp.json();
+        (data.results || []).forEach(function (c) {
+          const o = document.createElement('option');
+          o.value = c.id;
+          o.textContent = c.name;
+          if (selectedId && String(selectedId) === String(c.id)) o.selected = true;
+          citySelect.appendChild(o);
+        });
+      } catch (e) { console.error(e); }
+    }
+
+    if (provinceSelect && citySelect) {
+      const initialProvince = provinceSelect.value;
+      const initialCity = citySelect.getAttribute('value') || citySelect.value || '';
+      if (initialProvince) {
+        loadCities(initialProvince, initialCity);
+      }
+      provinceSelect.addEventListener('change', function () {
+        loadCities(this.value, '');
+      });
+    }
+
+    let initLat = parseFloat(latInput?.value) || 35.6892;
+    let initLon = parseFloat(lonInput?.value) || 51.3890;
+    let initZoom = (latInput?.value && lonInput?.value) ? 14 : 6;
+
+    const map = L.map('env-map', { center: [initLat, initLon], zoom: initZoom });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = L.marker([initLat, initLon], { draggable: true }).addTo(map);
+
+    function updateInputs(latlng) {
+      if (!latInput || !lonInput) return;
+      latInput.value = latlng.lat.toFixed(6);
+      lonInput.value = latlng.lng.toFixed(6);
+      if (coordsInfo) coordsInfo.textContent = `مختصات انتخاب‌شده: ${latInput.value}, ${lonInput.value}`;
+    }
+    updateInputs({ lat: initLat, lng: initLon });
+
+    map.on('click', function (e) { marker.setLatLng(e.latlng); updateInputs(e.latlng); });
+    marker.on('dragend', function (e) { updateInputs(e.target.getLatLng()); });
+
+    const locateBtn = document.getElementById('locateMeBtn');
+    if (locateBtn && navigator.geolocation) {
+      locateBtn.addEventListener('click', function () {
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          const ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
+          map.setView(ll, 15); marker.setLatLng(ll); updateInputs(ll);
+        }, function () { alert('امکان دریافت موقعیت شما وجود ندارد.'); }, { enableHighAccuracy: true, timeout: 8000 });
+      });
+    }
+  })();
+</script>
+{% endif %}
 {% endblock %}
 

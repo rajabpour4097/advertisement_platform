@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from advplatform.choices_type import CUSTOMER_TYPE, USER_TYPE
 from advplatform.models import Campaign, CampaignImages,\
     CustomUser, Portfolio, PortfolioImages, UsersImages
@@ -15,9 +16,7 @@ from account.models import (
     ContentCategory,
     Platform,
 )
-from advplatform.models import City  # for service_area
-from django.core.exceptions import ValidationError
-
+from advplatform.models import City, Province
 
 
 class SignupForm(UserCreationForm):
@@ -431,25 +430,58 @@ class ParticipateCampaignForm(forms.ModelForm):
 # New specialized forms
 
 class EnvironmentalAdvertisementForm(forms.ModelForm):
+    # فیلدهای کمکی (در مدل نیستند)
+    province = forms.ModelChoiceField(
+        queryset=Province.objects.all(),
+        required=False,
+        label='استان',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    city = forms.ModelChoiceField(
+        queryset=City.objects.none(),
+        required=True,
+        label='شهر',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = EnvironmentalAdvertisement
         exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']
         widgets = {
-            'service_area': forms.SelectMultiple(attrs={'class': 'form-control'}),
-            'available_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'expiration_date': forms.NumberInput(attrs={'class': 'form-control'}),
-            'media_type': forms.Select(attrs={'class': 'form-control'}),
-            'media_width': forms.NumberInput(attrs={'class': 'form-control'}),
-            'media_height': forms.NumberInput(attrs={'class': 'form-control'}),
-            'proposal_price': forms.NumberInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            # مخفی کردن مختصات برای پرشدن با نقشه
+            # مختصات با نقشه ست می‌شوند
             'media_location_latitude': forms.HiddenInput(),
             'media_location_longitude': forms.HiddenInput(),
+            # بقیه ویجت‌ها (در صورت وجود در مدل شما)
+            # 'available_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            # 'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            # 'proposal_price': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # اگر مدل شما فیلد service_area (ManyToMany به City) دارد، از فرم حذفش می‌کنیم
+        self.fields.pop('service_area', None)
+
+        # مقداردهی اولیه شهر/استان در حالت ویرایش
+        selected_city = None
+        # اگر مدل فیلد city داشته باشد
+        if hasattr(self.instance, 'city') and getattr(self.instance, 'city', None):
+            selected_city = self.instance.city
+        # اگر مدل فقط service_area (m2m) داشته باشد
+        elif hasattr(self.instance, 'service_area') and self.instance.pk:
+            selected_city = self.instance.service_area.first()
+
+        if selected_city:
+            self.fields['province'].initial = selected_city.province_id
+            self.fields['city'].queryset = City.objects.filter(province=selected_city.province)
+            self.fields['city'].initial = selected_city.id
+        else:
+            self.fields['city'].queryset = City.objects.none()
 
     def clean(self):
         cleaned = super().clean()
+        # اعتبارسنجی مختصات
         lat = cleaned.get('media_location_latitude')
         lon = cleaned.get('media_location_longitude')
         if lat in [None, ''] or lon in [None, '']:
@@ -460,7 +492,32 @@ class EnvironmentalAdvertisementForm(forms.ModelForm):
             raise ValidationError("مختصات واردشده نامعتبر است.")
         if not (-90 <= lat <= 90 and -180 <= lon <= 180):
             raise ValidationError("مختصات خارج از محدوده معتبر است.")
+
+        # الزام انتخاب شهر
+        if not cleaned.get('city'):
+            raise ValidationError("انتخاب شهر الزامی است.")
         return cleaned
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        selected_city = self.cleaned_data.get('city')
+
+        # نگاشت شهر به مدل شما
+        if hasattr(obj, 'city'):
+            obj.city = selected_city
+
+        if commit:
+            obj.save()
+
+        # اگر مدل شما service_area (M2M) دارد و فقط یک شهر می‌خواهید
+        if hasattr(obj, 'service_area'):
+            obj.service_area.set([selected_city] if selected_city else [])
+
+        # اگر فرم شما M2M دیگری دارد
+        if hasattr(self, 'save_m2m'):
+            self.save_m2m()
+
+        return obj
 
 
 class SocialmediaAdvertisementForm(forms.ModelForm):

@@ -1102,7 +1102,7 @@ class ResumeDetailView(ManagerUserMixin, UpdateView):
                 }
                 messages.success(
                     self.request,
-                    status_messages.get(new_status, 'وضعیت رزومه تغییر کرد.')
+                    status_messages.get(new_status, 'عملیات موفقیت‌آمیز')
                 )
             elif comment_changed:
                 messages.success(self.request, 'نظر مدیر بروزرسانی شد.')
@@ -1603,11 +1603,8 @@ class CampaignParticipateView(DealerUserMixin, View):
 
     def get(self, request, pk):
         campaign = get_object_or_404(Campaign, id=pk)
-        print('Topic:', self._top_level_topic_name(campaign))
         kind = self._ad_kind(campaign)
-        print('Ad Kind:', kind)
         FormClass = self._form_for_kind(kind)
-        print('Form Class:', self._form_for_kind(kind))
         form = FormClass()
         return render(request, self.template_name, {
             'campaign': campaign,
@@ -1820,7 +1817,8 @@ class CampaignEditProposalView(DealerUserMixin, View):
             notify_campaign_participation(
                 user=request.user,
                 campaign=campaign,
-                action_type='edit',
+                # برخی سیستم‌ها کلید edit ندارند. از participate استفاده می‌کنیم تا خطا ندهد.
+                action_type='participate',
                 staff_users=staff_users,
                 am_users=am_users
             )
@@ -2006,3 +2004,12 @@ class ProposalDetailView(ManagerUserMixin, TemplateView):
             'price': price,
             'details': details,
         })
+
+
+class CitiesByProvinceView(LoginRequiredMixin, View):
+    def get(self, request):
+        province_id = request.GET.get('province_id')
+        if not province_id:
+            return JsonResponse({'results': []})
+        qs = City.objects.filter(province_id=province_id).order_by('name')
+        return JsonResponse({'results': [{'id': c.id, 'name': str(c)} for c in qs]})

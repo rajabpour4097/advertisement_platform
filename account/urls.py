@@ -45,6 +45,7 @@ from account.views import (
     ajax_add_worklink,  # View جدید برای مشاهده رزومه کاربر
     get_specialty_categories,  # View جدید برای دریافت دسته‌بندی‌های تخصصی
     ProposalDetailView,
+    CitiesByProvinceView,
 )
 from advplatform.views import custom_404_view
 
@@ -98,4 +99,5 @@ urlpatterns = [
     path('userslist/', UsersList.as_view(), name='userslist'),
     path('userslist/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
     path('campaigns/proposal/<str:kind>/<int:obj_id>/', ProposalDetailView.as_view(), name='proposal_detail'),
+    path('ajax/cities/', CitiesByProvinceView.as_view(), name='ajax_cities'),
 ]
