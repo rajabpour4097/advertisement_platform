@@ -63,6 +63,7 @@ import json
 from django.utils.dateparse import parse_date
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 
 
@@ -777,14 +778,6 @@ class CampaignEditView(EditCampaignUserMixin, View):
 
 
 
-class RunningCampaignParticipatedListView(ManagerUserMixin, ListView):
-    template_name = 'account/campaign/running_campaign_participated_list.html'
-    context_object_name = 'proposals'
-    paginate_by = 8
-
-    def get_queryset(self):
-        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
-        return campaign.running_campaign.filter(campaign=campaign).order_by('-created_at')
     
 
 class FinishedCampaignProposalsListView(LoginRequiredMixin, EditCampaignUserMixin, ListView):
@@ -1837,3 +1830,59 @@ class CampaignEditProposalView(DealerUserMixin, View):
             'ad_kind': kind,
         })
 
+
+class RunningCampaignParticipatedListView(ManagerUserMixin, TemplateView):
+    template_name = 'account/campaign/running_campaign_participated_list.html'
+    context_object_name = 'proposals'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+
+        items = []
+
+        def add_item(kind, obj, user, text, price):
+            items.append({
+                'id': f'{kind}-{obj.id}',
+                'kind': kind,
+                'user': user,
+                'created_at': getattr(obj, 'created_at', None),
+                'text': text or '',
+                'price': price or 0,
+            })
+
+        # Generic proposals
+        for tx in CampaignTransaction.objects.filter(campaign=campaign):
+            add_item('generic', tx, tx.dealer, getattr(tx, 'proposals', ''), getattr(tx, 'proposal_price', 0))
+
+        # Specialized proposals
+        for env in EnvironmentalAdvertisement.objects.filter(campaign=campaign):
+            add_item('environmental', env, env.proposed_user, getattr(env, 'description', ''), getattr(env, 'proposal_price', 0))
+
+        for sm in SocialmediaAdvertisement.objects.filter(campaign=campaign):
+            add_item('socialmedia', sm, sm.proposed_user, '', getattr(sm, 'proposal_price', 0))
+
+        for dg in DigitalAdvertisement.objects.filter(campaign=campaign):
+            add_item('digital', dg, dg.proposed_user, getattr(dg, 'description', ''), getattr(dg, 'proposal_price', 0))
+
+        for pr in PrintingAdvertisement.objects.filter(campaign=campaign):
+            add_item('printing', pr, pr.proposed_user, getattr(pr, 'description', ''), getattr(pr, 'total_proposal_price', getattr(pr, 'proposal_price', 0)))
+
+        for ev in EventMarketingAdvertisement.objects.filter(campaign=campaign):
+            add_item('event', ev, ev.proposed_user, getattr(ev, 'event_content', ''), getattr(ev, 'total_proposal_price', getattr(ev, 'proposal_price', 0)))
+
+        items.sort(key=lambda x: x['created_at'] or timezone.now(), reverse=True)
+
+        per_page = int(self.request.GET.get('per_page') or 8)
+        paginator = Paginator(items, per_page)
+        page = self.request.GET.get('page')
+        try:
+            page_obj = paginator.page(page)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+
+        context['campaign'] = campaign
+        context['proposals'] = page_obj
+        return context

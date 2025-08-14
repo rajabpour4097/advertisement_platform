@@ -80,27 +80,33 @@
             {% for proposal in proposals %}
             <div class="card">
                 <div class="card-header">
-                    {% if proposal.dealer.customuserimages.first.image.url %}
-                        <img src="{{ proposal.dealer.customuserimages.first.image.url }}" style="width: 50px; height: 50px; border-radius: 50%;">
+                    {% if proposal.user.customuserimages.first.image.url %}
+                        <img src="{{ proposal.user.customuserimages.first.image.url }}" style="width: 50px; height: 50px; border-radius: 50%;">
                     {% else %}
                         <img src="{% static 'account/build/images/user.png' %}" style="width: 50px; height: 50px; border-radius: 50%;">
                     {% endif %}
-                    <h5>{{ proposal.dealer.get_full_name }}</h5>
-                    <small class="text-muted">{{ proposal.created_at| jalali_timedate }}</small>
+                    <h5>{{ proposal.user.get_full_name }}</h5>
+                    <small class="text-muted">{{ proposal.created_at|jalali_timedate }}</small>
                 </div>
                 <div class="card-body">
                     <div class="mb-2">
                         <strong>توضیحات:</strong>
-                        <p>{{ proposal.proposals|truncatechars:100 }}</p>
+                        <p>{{ proposal.text|default:"-"|truncatechars:100 }}</p>
                     </div>
                     <div class="mb-2">
                         <strong>قیمت پیشنهادی:</strong>
-                        <span class="price-column">{{ proposal.proposal_price|format_price }}</span>
+                        <span class="price-column">{{ proposal.price|default:0|format_price }}</span>
                     </div>
                     
                     <div>
-                        <span class="status-badge {% if proposal.status == 'delayed' %}status-delayed{% elif proposal.status == 'ready' %}status-ready{% elif proposal.status == 'cancelled' %}status-cancelled{% endif %}">
-                            {{ proposal.get_status_display }}
+                        <span class="status-badge status-ready">
+                            نوع پیشنهاد:
+                            {% if proposal.kind == 'environmental' %}محیطی
+                            {% elif proposal.kind == 'socialmedia' %}شبکه‌های اجتماعی
+                            {% elif proposal.kind == 'digital' %}دیجیتال
+                            {% elif proposal.kind == 'printing' %}چاپی
+                            {% elif proposal.kind == 'event' %}ایونت مارکتینگ
+                            {% else %}عمومی{% endif %}
                         </span>
                     </div>
                 </div>
@@ -112,7 +118,6 @@
             </div>
             {% endfor %}
         </div>
-
         <!-- Pagination -->
         <div class="row">
             <div class="col-md-12 text-center">
@@ -169,4 +174,4 @@
 </script>
 {% endblock %}
 
-{% endblock %} 
+{% endblock %}
