@@ -16,6 +16,7 @@ from account.models import (
     Platform,
 )
 from advplatform.models import City  # for service_area
+from django.core.exceptions import ValidationError
 
 
 
@@ -434,14 +435,32 @@ class EnvironmentalAdvertisementForm(forms.ModelForm):
         model = EnvironmentalAdvertisement
         exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']
         widgets = {
-            'available_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'service_area': forms.SelectMultiple(attrs={'class': 'form-control'}),
+            'available_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'expiration_date': forms.NumberInput(attrs={'class': 'form-control'}),
+            'media_type': forms.Select(attrs={'class': 'form-control'}),
+            'media_width': forms.NumberInput(attrs={'class': 'form-control'}),
+            'media_height': forms.NumberInput(attrs={'class': 'form-control'}),
+            'proposal_price': forms.NumberInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            # مخفی کردن مختصات برای پرشدن با نقشه
+            'media_location_latitude': forms.HiddenInput(),
+            'media_location_longitude': forms.HiddenInput(),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['service_area'].queryset = City.objects.all()
+    def clean(self):
+        cleaned = super().clean()
+        lat = cleaned.get('media_location_latitude')
+        lon = cleaned.get('media_location_longitude')
+        if lat in [None, ''] or lon in [None, '']:
+            raise ValidationError("لطفاً موقعیت رسانه را روی نقشه انتخاب کنید.")
+        try:
+            lat = float(lat); lon = float(lon)
+        except (TypeError, ValueError):
+            raise ValidationError("مختصات واردشده نامعتبر است.")
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            raise ValidationError("مختصات خارج از محدوده معتبر است.")
+        return cleaned
 
 
 class SocialmediaAdvertisementForm(forms.ModelForm):
