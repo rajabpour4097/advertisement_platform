@@ -605,7 +605,7 @@ class EventMarketingAdvertisementForm(forms.ModelForm):
         widgets = {
             'event_type': forms.Select(attrs={'class': 'form-control'}),
             'location_address': forms.TextInput(attrs={'class': 'form-control'}),
-            'event_proposed_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'event_proposed_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'event_content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'total_proposal_price': forms.NumberInput(attrs={'class': 'form-control'}),
         }
@@ -645,7 +645,7 @@ class EventMarketingAdvertisementForm(forms.ModelForm):
         if not cleaned.get('city'):
             raise ValidationError("انتخاب شهر الزامی است.")
         return cleaned
-
+        
     def save(self, commit=True):
         obj = super().save(commit=False)
         selected_city = self.cleaned_data.get('city')

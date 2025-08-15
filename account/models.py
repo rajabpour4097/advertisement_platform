@@ -212,7 +212,7 @@ class EventMarketingAdvertisement(BaseModel):
     event_type = models.CharField(max_length=100, choices=EVENT_TYPE_CHOICES, verbose_name='نوع رویداد پیشنهادی')
     location = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='شهر محل برگزاری')
     location_address = models.CharField(max_length=255, verbose_name='آدرس محل برگزاری')
-    event_proposed_date = models.DateTimeField(verbose_name='تاریخ پیشنهادی رویداد')
+    event_proposed_date = models.DateField(verbose_name='تاریخ پیشنهادی رویداد')
     event_content = models.TextField(verbose_name='محتوا یا سناریوی کلی رویداد')
     total_proposal_price = models.BigIntegerField(verbose_name='قیمت پیشنهادی کل (همه هزینه‌ها را شامل شود)')
     description = models.TextField(verbose_name='توضیحات', blank=True, null=True)

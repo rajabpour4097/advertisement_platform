@@ -9,120 +9,222 @@
 {% if kind == 'environmental' %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-<style>
-  #env-map { height: 350px; width: 700px; border: 1px solid #ddd; border-radius: 6px; }
-</style>
 {% endif %}
+<style>
+  /* left column sticky on lg+ */
+  @media (min-width: 992px) {
+    .campaign-details-sticky { position: sticky; top: 1rem; }
+  }
+  .campaign-cover {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  .thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e5e5;
+  }
+  {% if kind == 'environmental' %}
+  #env-map { height: 320px; width: 100%; border: 1px solid #ddd; border-radius: 6px; }
+  {% endif %}
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="x_panel">
-  <div class="x_title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <h2 class="mb-0" style="font-size:18px;">جزئیات پیشنهاد</h2>
-      <span class="label label-info" style="font-size:12px;">
-        {% if kind == 'environmental' %}محیطی
-        {% elif kind == 'socialmedia' %}شبکه‌های اجتماعی
-        {% elif kind == 'digital' %}دیجیتال
-        {% elif kind == 'printing' %}چاپی
-        {% elif kind == 'event' %}ایونت مارکتینگ
-        {% else %}عمومی{% endif %}
-      </span>
-      {% if campaign %}
-        <span class="label label-default" style="font-size:12px;">کمپین: {{ campaign.describe|default:campaign }}</span>
-      {% endif %}
-    </div>
+<div class="container mt-4">
+  <div class="row g-4">
 
-    <a href="javascript:history.back();" class="btn btn-default btn-sm">
-      <i class="fa fa-arrow-right"></i> بازگشت
-    </a>
-    <div class="clearfix"></div>
-  </div>
-
-  <div class="x_content">
-    <!-- meta row -->
-    <div class="row">
-      <div class="col-md-7 col-sm-7">
-        <ul class="list-unstyled" style="margin:0;">
-          {% if campaign %}
-          <li class="mb-2">
-            <strong>کمپین:</strong>
-            <span class="text-primary">{{ campaign.describe|default:campaign }}</span>
-          </li>
-          {% endif %}
-
-          <li class="mb-2">
-            <strong>کاربر برگزارکننده:</strong>
-            <span>{{ campaign.customer.get_full_name|default:user.username }}</span>
-          </li>
-
-          {% if user %}
-          <li class="mb-2">
-            <strong>کاربر پیشنهاددهنده:</strong>
-            <span>{{ user.get_full_name|default:user.username }}</span>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
-
-      <div class="col-md-5 col-sm-5 text-start">
-        <div class="well" style="padding:10px 12px;display:inline-block;margin:0;">
-          <strong>قیمت پیشنهادی:</strong>
-          <span class="price-column text-success" style="font-weight:700;">
-            {{ price|default:0|format_price }}
+    <!-- Right: proposal details content -->
+    <div class="col-12 col-lg-8 order-1 order-lg-2">
+      <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <h4 class="mb-0" style="font-size:18px;">جزئیات پیشنهاد</h4>
+          <span class="badge bg-info text-dark" style="font-size:12px;">
+            {% if kind == 'environmental' %}محیطی
+            {% elif kind == 'socialmedia' %}شبکه‌های اجتماعی
+            {% elif kind == 'digital' %}دیجیتال
+            {% elif kind == 'printing' %}چاپی
+            {% elif kind == 'event' %}ایونت مارکتینگ
+            {% else %}عمومی{% endif %}
           </span>
-        </div>
-      </div>
-    </div>
-
-    <hr>
-
-    <!-- description -->
-    <div class="mb-3">
-      <strong>توضیحات / متن:</strong>
-      <div class="panel panel-default" style="margin-top:8px;">
-        <div class="panel-body" style="white-space:pre-line; font-size:13px; color:#4b5563;">
-          {{ text|default:"-" }}
-        </div>
-      </div>
-    </div>
-
-    {% if kind == 'environmental' %}
-    <!-- map -->
-    <div class="mb-3" id="env-map-wrap" style="display:none">
-      <h4 class="mt-0 mb-10" style="font-size:15px;">موقعیت مکانی</h4>
-      <div id="env-map" style="height:360px;width:100%;border:1px solid #e5e7eb;border-radius:8px;"></div>
-    </div>
-    {% endif %}
-
-    <!-- details table -->
-    <h4 class="mt-4" style="font-size:15px;">سایر جزئیات</h4>
-    <div class="table-responsive">
-      <table class="table table-striped table-hover">
-        <tbody>
-        {% for item in details %}
-          {% if item.value %}
-          <tr>
-            <th style="width:240px;white-space:nowrap;">{{ item.label }}</th>
-            <td>
-              {% if item.is_dt %}
-                {{ item.value|jalali_timedate }}
-              {% elif item.is_money %}
-                {{ item.value|format_price }}
-              {% else %}
-                {{ item.value }}
-              {% endif %}
-            </td>
-          </tr>
+          {% if campaign %}
+            <span class="badge bg-secondary" style="font-size:12px;">کمپین: {{ campaign.describe|default:campaign }}</span>
           {% endif %}
-        {% empty %}
-          <tr>
-            <td colspan="2" class="text-center text-muted">جزئیات دیگری ثبت نشده است.</td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+        </div>
+        <a href="javascript:history.back();" class="btn btn-sm btn-outline-secondary">
+          <i class="fa fa-arrow-right"></i> بازگشت
+        </a>
+      </div>
+
+      <!-- meta row -->
+      <div class="row mb-3">
+        <div class="col-md-7 col-sm-7">
+          <ul class="list-unstyled mb-0">
+            {% if campaign %}
+            <li class="mb-2">
+              <strong>کمپین:</strong>
+              <span class="text-primary">{{ campaign.describe|default:campaign }}</span>
+            </li>
+            {% endif %}
+
+            <li class="mb-2">
+              <strong>کاربر برگزارکننده:</strong>
+              <span>{{ campaign.customer.get_full_name|default:user.username }}</span>
+            </li>
+
+            {% if user %}
+            <li class="mb-2">
+              <strong>کاربر پیشنهاددهنده:</strong>
+              <span>{{ user.get_full_name|default:user.username }}</span>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <div class="col-md-5 col-sm-5 text-start">
+          <div class="border rounded p-2 d-inline-block mb-2">
+            <strong>قیمت پیشنهادی:</strong>
+            <span class="text-success fw-bold">
+              {{ price|default:0|format_price }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- description -->
+      <div class="mb-3">
+        <strong>توضیحات / متن:</strong>
+        <div class="card mt-2">
+          <div class="card-body" style="white-space:pre-line; font-size:13px; color:#4b5563;">
+            {{ text|default:"-" }}
+          </div>
+        </div>
+      </div>
+
+      {% if kind == 'environmental' %}
+      <!-- map -->
+      <div class="mb-3" id="env-map-wrap" style="display:none">
+        <h5 class="mt-0 mb-2" style="font-size:15px;">موقعیت مکانی</h5>
+        <div id="env-map"></div>
+      </div>
+      {% endif %}
+
+      <!-- details table -->
+      <h5 class="mt-4" style="font-size:15px;">سایر جزئیات</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <tbody>
+          {% for item in details %}
+            {% if item.value %}
+            <tr>
+              <th style="width:240px;white-space:nowrap;">{{ item.label }}</th>
+              <td>
+                {% if item.is_dt %}
+                  {{ item.value|jalali_timedate }}
+                {% elif item.is_money %}
+                  {{ item.value|format_price }}
+                {% else %}
+                  {{ item.value }}
+                {% endif %}
+              </td>
+            </tr>
+            {% endif %}
+          {% empty %}
+            <tr>
+              <td colspan="2" class="text-center text-muted">جزئیات دیگری ثبت نشده است.</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- Left: campaign detail sidebar -->
+    <div class="col-12 col-lg-4 order-2 order-lg-1">
+      <div class="card campaign-details-sticky">
+        <div class="card-body">
+          <h5 class="card-title mb-3">جزئیات کمپین</h5>
+
+          {% if campaign %}
+            {% with cover=campaign.campaignsimages.all|first %}
+            {% if cover %}
+              <img src="{{ cover.image.url }}" alt="campaign image" class="campaign-cover mb-3">
+            {% endif %}
+            {% endwith %}
+
+            <div class="mb-2">
+              <span class="text-muted">موضوعات:</span>
+              <div class="mt-1">
+                {% for t in campaign.topic.all %}
+                  <span class="badge bg-secondary me-1 mb-1">{{ t.name }}</span>
+                {% empty %}
+                  <span class="text-muted">—</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <span class="text-muted">کارفرما:</span>
+              <div class="mt-1">{{ campaign.customer.get_full_name|default:campaign.customer.email }}</div>
+            </div>
+
+            <div class="mb-2">
+              <span class="text-muted">بودجه پیشنهادی:</span>
+              <div class="mt-1">{{ campaign.purposed_price|default:0|format_price }}</div>
+            </div>
+
+            <div class="mb-2">
+              <span class="text-muted">وضعیت:</span>
+              <div class="mt-1">
+                {{ campaign.get_status_display|default:campaign.status }}
+                {% if campaign.is_active %}
+                  <span class="badge bg-success me-1">فعال</span>
+                {% else %}
+                  <span class="badge bg-secondary me-1">غیرفعال</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <span class="text-muted">زمان شروع:</span>
+              <div class="mt-1">{{ campaign.starttimedate|date:"Y-m-d H:i"|default:"—" }}</div>
+            </div>
+
+            <div class="mb-2">
+              <span class="text-muted">زمان پایان:</span>
+              <div class="mt-1">{{ campaign.endtimedate|date:"Y-m-d H:i"|default:"—" }}</div>
+            </div>
+
+            <div class="mb-3">
+              <span class="text-muted d-block">توضیحات:</span>
+              <div class="small mt-1" style="white-space: pre-wrap">{{ campaign.describe|default:"—" }}</div>
+            </div>
+
+            {% with imgs=campaign.campaignsimages.all %}
+            {% if imgs %}
+              <div class="mb-2">
+                <span class="text-muted d-block mb-2">تصاویر:</span>
+                <div class="d-flex flex-wrap gap-2">
+                  {% for img in imgs %}
+                    <img class="thumb" src="{{ img.image.url }}" alt="campaign image {{ forloop.counter }}">
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+            {% endwith %}
+          {% else %}
+            <div class="text-muted">اطلاعات کمپین در دسترس نیست.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -131,7 +233,6 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
   (function () {
-    // مختصات از شیء پیشنهاد (اگر موجود باشد)
     const latRaw = "{{ obj.media_location_latitude|default_if_none:'' }}";
     const lonRaw = "{{ obj.media_location_longitude|default_if_none:'' }}";
     const lat = parseFloat(latRaw);
@@ -145,8 +246,8 @@
         center: [lat, lon],
         zoom: 14,
         zoomControl: true,
-        dragging: true,           // اجازه جابه‌جایی نقشه (اختیاری)
-        scrollWheelZoom: false,   // جلوگیری از اسکرول ناخواسته صفحه
+        dragging: true,
+        scrollWheelZoom: false,
         doubleClickZoom: true,
         boxZoom: false,
         keyboard: false
@@ -157,7 +258,6 @@
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      // مارکر فقط برای نمایش (غیرقابل‌کشیدن)
       L.marker([lat, lon], { draggable: false }).addTo(map);
     }
   })();

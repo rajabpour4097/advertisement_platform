@@ -1,112 +1,214 @@
 {% extends "account/account_base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}ویرایش پیشنهاد{% endblock %}
 
-{# اضافه‌شدن CSS نقشه برای حالت محیطی #}
 {% block extra_head %}
 {% if ad_kind == "environmental" %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
-  #env-map { height: 350px; width: 700px; border: 1px solid #ddd; border-radius: 6px; }
+  /* Map responsive and smaller */
+  #env-map { height: 300px; width: 100%; border: 1px solid #ddd; border-radius: 6px; }
 </style>
 {% endif %}
+<style>
+  /* Left details stick on large screens */
+  @media (min-width: 992px) {
+    .campaign-details-sticky {
+      position: sticky;
+      top: 1rem;
+    }
+  }
+  .campaign-cover {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  .thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e5e5e5;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4">
   <h4 class="mb-3">ویرایش پیشنهاد کمپین: {{ campaign.describe|default:"-" }}</h4>
 
-  {% if ad_kind == "event" %}
-    <div class="alert alert-info">نوع پیشنهاد: ایونت مارکتینگ</div>
-  {% elif ad_kind == "environmental" %}
-    <div class="alert alert-info">نوع پیشنهاد: تبلیغ محیطی</div>
-  {% endif %}
-
-  <form method="post" enctype="multipart/form-data" class="mt-3">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
-
-    {% if ad_kind == "event" %}
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label for="{{ form.province.id_for_label }}" class="form-label">استان</label>
-          {{ form.province }}
-          {{ form.province.errors }}
-        </div>
-        <div class="col-md-6 mb-3">
-          <label for="{{ form.city.id_for_label }}" class="form-label">شهر</label>
-          {{ form.city }}
-          {{ form.city.errors }}
-        </div>
-      </div>
-
-      {% for field in form.visible_fields %}
-        {% if field.name != 'province' and field.name != 'city' %}
-          <div class="mb-3">
-            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-            {{ field }}
-            {{ field.errors }}
-          </div>
-        {% endif %}
-      {% endfor %}
-
-    {% elif ad_kind == "environmental" %}
-      {# استان/شهر #}
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label for="{{ form.province.id_for_label }}" class="form-label">استان</label>
-          {{ form.province }}
-          {{ form.province.errors }}
-        </div>
-        <div class="col-md-6 mb-3">
-          <label for="{{ form.city.id_for_label }}" class="form-label">شهر</label>
-          {{ form.city }}
-          {{ form.city.errors }}
-        </div>
-      </div>
-
-      {# سایر فیلدها به‌جز توضیحات و مختصات #}
-      {% for field in form.visible_fields %}
-        {% if field.name not in 'province,city,media_location_latitude,media_location_longitude,description' %}
-          <div class="mb-3">
-            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-            {{ field }}
-            {{ field.errors }}
-          </div>
-        {% endif %}
-      {% endfor %}
-
-      <h5 class="mt-2 mb-2">انتخاب موقعیت مکانی</h5>
-      <div class="mb-2 d-flex gap-2">
-        <button type="button" id="locateMeBtn" class="btn btn-sm btn-secondary">یافتن موقعیت من</button>
-        <small class="text-muted">برای انتخاب موقعیت روی نقشه کلیک کنید.</small>
-      </div>
-      <div id="env-map" class="mb-2"></div>
-      <div class="mb-3">
-        <small id="coordsInfo" class="text-muted">مختصات انتخاب‌شده: -</small>
-      </div>
-
-      {# توضیحات #}
-      {% if form.description %}
-      <div class="mb-3">
-        <label for="{{ form.description.id_for_label }}" class="form-label">توضیحات</label>
-        {{ form.description }}
-        {{ form.description.errors }}
-      </div>
+  <div class="row g-4">
+     <!-- Right column: form (smaller) -->
+    <div class="col-12 col-lg-8 order-1 order-lg-2">
+      {% if ad_kind == "event" %}
+        <div class="alert alert-info">نوع پیشنهاد: ایونت مارکتینگ</div>
+      {% elif ad_kind == "environmental" %}
+        <div class="alert alert-info">نوع پیشنهاد: تبلیغ محیطی</div>
       {% endif %}
-    {% else %}
-      {{ form.as_p }}
-    {% endif %}
 
-    <button type="submit" class="btn btn-primary">ذخیره</button>
-    <a href="{% url 'account:campaigns' %}" class="btn btn-secondary">بازگشت</a>
-  </form>
+      <form method="post" enctype="multipart/form-data" class="mt-3">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+        {% if ad_kind == "event" %}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.province.id_for_label }}" class="form-label">استان</label>
+              {{ form.province }}
+              {{ form.province.errors }}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.city.id_for_label }}" class="form-label">شهر</label>
+              {{ form.city }}
+              {{ form.city.errors }}
+            </div>
+          </div>
+
+          {% for field in form.visible_fields %}
+            {% if field.name != 'province' and field.name != 'city' %}
+              <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+        {% elif ad_kind == "environmental" %}
+          {# استان/شهر #}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.province.id_for_label }}" class="form-label">استان</label>
+              {{ form.province }}
+              {{ form.province.errors }}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.city.id_for_label }}" class="form-label">شهر</label>
+              {{ form.city }}
+              {{ form.city.errors }}
+            </div>
+          </div>
+
+          {# سایر فیلدها به‌جز توضیحات و مختصات #}
+          {% for field in form.visible_fields %}
+            {% if field.name != 'province' and field.name != 'city' and field.name != 'media_location_latitude' and field.name != 'media_location_longitude' and field.name != 'description' %}
+              <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          <h5 class="mt-2 mb-2">انتخاب موقعیت مکانی</h5>
+          <div class="mb-2 d-flex gap-2">
+            <button type="button" id="locateMeBtn" class="btn btn-sm btn-secondary">یافتن موقعیت من</button>
+            <small class="text-muted">برای انتخاب موقعیت روی نقشه کلیک کنید.</small>
+          </div>
+          <div id="env-map" class="mb-2"></div>
+
+          {# توضیحات #}
+          {% if form.description %}
+          <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">توضیحات</label>
+            {{ form.description }}
+            {{ form.description.errors }}
+          </div>
+          {% endif %}
+        {% else %}
+          {{ form.as_p }}
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">ذخیره</button>
+        <a href="{% url 'account:campaigns' %}" class="btn btn-secondary">بازگشت</a>
+      </form>
+    </div>
+
+    <!-- Left column: campaign details -->
+    <div class="col-12 col-lg-4 order-2 order-lg-1">
+      <div class="card campaign-details-sticky">
+        <div class="card-body">
+          <h5 class="card-title mb-3">جزئیات کمپین</h5>
+
+          {% with cover=campaign.campaignsimages.all|first %}
+          {% if cover %}
+            <img src="{{ cover.image.url }}" alt="campaign image" class="campaign-cover mb-3">
+          {% endif %}
+          {% endwith %}
+
+          <div class="mb-2">
+            <span class="text-muted">موضوعات:</span>
+            <div class="mt-1">
+              {% for t in campaign.topic.all %}
+                <span class="badge bg-secondary me-1 mb-1">{{ t.name }}</span>
+              {% empty %}
+                <span class="text-muted">—</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <span class="text-muted">کارفرما:</span>
+            <div class="mt-1">{{ campaign.customer.get_full_name|default:campaign.customer.email }}</div>
+          </div>
+
+          <div class="mb-2">
+            <span class="text-muted">بودجه پیشنهادی:</span>
+            <div class="mt-1">{{ campaign.purposed_price|intcomma }} تومان</div>
+          </div>
+
+          <div class="mb-2">
+            <span class="text-muted">وضعیت:</span>
+            <div class="mt-1">
+              {{ campaign.get_status_display|default:campaign.status }}
+              {% if campaign.is_active %}
+                <span class="badge bg-success me-1">فعال</span>
+              {% else %}
+                <span class="badge bg-secondary me-1">غیرفعال</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <span class="text-muted">زمان شروع:</span>
+            <div class="mt-1">{{ campaign.starttimedate|date:"Y-m-d H:i"|default:"—" }}</div>
+          </div>
+
+          <div class="mb-2">
+            <span class="text-muted">زمان پایان:</span>
+            <div class="mt-1">{{ campaign.endtimedate|date:"Y-m-d H:i"|default:"—" }}</div>
+          </div>
+
+          <div class="mb-3">
+            <span class="text-muted d-block">توضیحات:</span>
+            <div class="small mt-1" style="white-space: pre-wrap">{{ campaign.describe|default:"—" }}</div>
+          </div>
+
+          {% with imgs=campaign.campaignsimages.all %}
+          {% if imgs %}
+            <div class="mb-2">
+              <span class="text-muted d-block mb-2">تصاویر:</span>
+              <div class="d-flex flex-wrap gap-2">
+                {% for img in imgs %}
+                  <img class="thumb" src="{{ img.image.url }}" alt="campaign image {{ forloop.counter }}">
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+
+   
+  </div>
 </div>
 
-{# اسکریپت‌ها #}
 {% if ad_kind == "environmental" %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
