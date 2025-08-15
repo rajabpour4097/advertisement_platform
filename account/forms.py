@@ -444,7 +444,7 @@ class EnvironmentalAdvertisementForm(forms.ModelForm):
         queryset=City.objects.none(),
         required=True,
         label='شهر',
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control', 'style': 'margin-bottom: 1rem;'})
     )
     available_date = forms.DateField(
         required=True,

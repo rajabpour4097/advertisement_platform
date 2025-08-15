@@ -58,10 +58,26 @@
 .my-span-custom{
 font-size: 14px; color: #f40cd1ff;
 }
+
+/* scrollable frame for content */
+  .content-frame {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (max-width: 576px) {
+    .content-frame { max-height: calc(100vh - 110px); padding: .75rem; }
+  }
+
 </style>
 
 <div class="col-md-12" dir="rtl">
-  <div class="x_panel" style="scale:85%;">
+  <div class="x_panel" style="scale:80%;">
     <div class="x_title">
       <h2>پروفایل کاربری</h2>
       <div class="clearfix"></div>

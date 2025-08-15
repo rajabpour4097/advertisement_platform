@@ -14,6 +14,22 @@
 </style>
 {% endif %}
 <style>
+
+  /* scrollable frame for content */
+  .content-frame {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (max-width: 576px) {
+    .content-frame { max-height: calc(100vh - 110px); padding: .75rem; }
+  }
+
   /* Left details stick on large screens */
   @media (min-width: 992px) {
     .campaign-details-sticky {
@@ -38,6 +54,7 @@
 {% endblock %}
 
 {% block content %}
+<div class="content-frame">
 <div class="container mt-4">
   <h4 class="mb-3">ویرایش پیشنهاد کمپین: {{ campaign.describe|default:"-" }}</h4>
 
@@ -114,7 +131,7 @@
 
           {# توضیحات #}
           {% if form.description %}
-          <div class="mb-3">
+          <div style="margin-top: 2rem; margin-bottom: 2rem;">
             <label for="{{ form.description.id_for_label }}" class="form-label">توضیحات</label>
             {{ form.description }}
             {{ form.description.errors }}
@@ -207,6 +224,7 @@
 
    
   </div>
+</div>
 </div>
 
 {% if ad_kind == "environmental" %}

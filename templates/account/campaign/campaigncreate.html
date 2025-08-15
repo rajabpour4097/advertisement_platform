@@ -9,6 +9,21 @@
 
 {% block content %}
 <style>
+/* scrollable frame for content */
+  .content-frame {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (max-width: 576px) {
+    .content-frame { max-height: calc(100vh - 110px); padding: .75rem; }
+  }
+
 .topic-card-list {
     display: flex;
     flex-wrap: wrap;
@@ -97,6 +112,7 @@
 
 </style>
 
+<div class="content-frame">
 <div class="container-fluid" style="scale:90%;">
     <div class="row">
         <!-- فرم اصلی -->
@@ -234,6 +250,7 @@
         </div>
     </form>
     </div>
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>

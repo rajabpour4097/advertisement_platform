@@ -73,3 +73,18 @@
     .notification-row-read td {
         font-weight: 500;
     }
+
+    /* scrollable frame for content */
+    .content-frame {
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fff;
+      padding: 1rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 576px) {
+      .content-frame { max-height: calc(100vh - 110px); padding: .75rem; }
+    }

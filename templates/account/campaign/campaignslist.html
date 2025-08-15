@@ -9,10 +9,26 @@
 {% block extra_head %}
 <link href="{% static 'account/build/css/campaignlist_style.css' %}" rel="stylesheet">
 {% endblock %}
+<style>
+
+    /* scrollable frame for content */
+  .content-frame {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (max-width: 576px) {
+    .content-frame { max-height: calc(100vh - 110px); padding: .75rem; }
+  }
+</style>
 
 {% block content %}
-
-<div class="col-md-12 col-sm-12 col-xs-12">
+<div class="content-frame">
     <div class="x_panel">
         <!-- Panel Header -->
         <div class="x_title">

@@ -6,6 +6,22 @@
 
 {% block content %}
 <style>
+
+      /* scrollable frame for content */
+    .content-frame {
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fff;
+      padding: 1rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 576px) {
+      .content-frame { max-height: calc(100vh - 110px); padding: .75rem; }
+    }
+
     /* استایل‌های پایه */
     .resume-form {
         max-width: 800px;
@@ -484,6 +500,7 @@
 </style>
 
 <!-- باقی HTML همان‌طور که هست -->
+<div class="content-frame">
 <div class="container-fluid">
     <div class="x_panel">
         <div class="x_title">
@@ -867,6 +884,7 @@
             <button type="button" class="btn btn-secondary" id="worklink-modal-cancel">انصراف</button>
         </div>
     </div>
+</div>
 </div>
 
 <script>
