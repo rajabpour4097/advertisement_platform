@@ -51,102 +51,112 @@
 
 {% block content %}
 <div class="x_panel">
-    <div class="x_title">
-        <h2>لیست شرکت‌کنندگان کمپین</h2>
-        <div class="nav navbar-right">
-            <a href="{% url 'account:campaigns' %}" class="btn btn-primary">
-                <i class="fa fa-arrow-left"></i> بازگشت
-            </a>
+  <div class="x_title d-flex justify-content-between align-items-center flex-wrap" style="gap:10px;">
+    <h2 class="mb-0"><i class="fa fa-users"></i> لیست شرکت‌کنندگان کمپین</h2>
+    <a href="{% url 'account:campaigns' %}" class="btn btn-primary btn-sm">
+      <i class="fa fa-arrow-left"></i> بازگشت
+    </a>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="x_content">
+    <!-- Search and Filter Section -->
+    <div class="row mb-3 align-items-center" style="gap:10px 0;">
+      <div class="col-md-4 col-sm-6 col-xs-12">
+        <input type="text" class="form-control" placeholder="🔍 جستجو..." id="searchInput">
+      </div>
+      <div class="col-md-2 col-sm-4 col-xs-6">
+        <select class="form-control" id="resultsPerPage">
+          <option value="8">8</option>
+          <option value="16">16</option>
+          <option value="32">32</option>
+        </select>
+      </div>
+    </div>
+    <hr class="my-3">
+
+    <!-- Grid View -->
+    <div class="row" style="gap:16px;">
+      {% for proposal in proposals %}
+      <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="card" style="border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,.05);">
+          <div class="card-header text-center" style="padding:15px; background:#f9fafb;">
+            {% if proposal.user.customuserimages.first.image.url %}
+              <img src="{{ proposal.user.customuserimages.first.image.url }}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+            {% else %}
+              <img src="{% static 'account/build/images/user.png' %}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+            {% endif %}
+            <h5 class="mt-2 mb-1" style="font-size:15px;">{{ proposal.user.get_full_name }}</h5>
+            <small class="text-muted">{{ proposal.created_at|jalali_timedate }}</small>
+          </div>
+
+          <div class="card-body" style="padding:12px;">
+            <div class="mb-2">
+              <span class="badge badge-info" style="font-size:12px;">
+                نوع پیشنهاد:
+                {% if proposal.kind == 'environmental' %}محیطی
+                {% elif proposal.kind == 'socialmedia' %}شبکه‌های اجتماعی
+                {% elif proposal.kind == 'digital' %}دیجیتال
+                {% elif proposal.kind == 'printing' %}چاپی
+                {% elif proposal.kind == 'event' %}ایونت مارکتینگ
+                {% else %}عمومی{% endif %}
+              </span>
+            </div>
+            <div class="mb-2">
+              <strong>توضیحات:</strong>
+              <p class="mb-0" style="font-size:13px; color:#4b5563;">{{ proposal.text|default:"-"|truncatechars:100 }}</p>
+            </div>
+            <div class="mb-2">
+              <strong>قیمت پیشنهادی:</strong>
+              <span class="price-column text-success" style="font-weight:600;">
+                {{ proposal.price|default:0|format_price }}
+              </span>
+            </div>
+          </div>
+
+          <div class="card-footer p-2">
+            <button class="btn btn-sm btn-info w-100" onclick="showDetails('{{ proposal.id }}')">
+              <i class="fa fa-eye"></i> جزئیات
+            </button>
+          </div>
         </div>
-        <div class="clearfix"></div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="alert alert-warning text-center">شرکت‌کننده‌ای یافت نشد.</div>
+      </div>
+      {% endfor %}
     </div>
 
-    <div class="x_content">
-        <!-- Search and Filter Section -->
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="جستجو..." id="searchInput">
-            </div>
-            <div class="col-md-2">
-                <select class="form-control" id="resultsPerPage">
-                    <option value="8">8</option>
-                    <option value="16">16</option>
-                    <option value="32">32</option>
-                </select>
-            </div>
-        </div>
-        <hr style="border-top: 1px solid #ddd;">
-        <!-- Grid View -->
-        <div class="grid-container">
-            {% for proposal in proposals %}
-            <div class="card">
-                <div class="card-header">
-                    {% if proposal.user.customuserimages.first.image.url %}
-                        <img src="{{ proposal.user.customuserimages.first.image.url }}" style="width: 50px; height: 50px; border-radius: 50%;">
-                    {% else %}
-                        <img src="{% static 'account/build/images/user.png' %}" style="width: 50px; height: 50px; border-radius: 50%;">
-                    {% endif %}
-                    <h5>{{ proposal.user.get_full_name }}</h5>
-                    <small class="text-muted">{{ proposal.created_at|jalali_timedate }}</small>
-                </div>
-                <div class="card-body">
-                    <!-- نوع پیشنهاد moved above price and spaced -->
-                    <div class="mb-2">
-                        <span class="status-badge status-ready">
-                            نوع پیشنهاد:
-                            {% if proposal.kind == 'environmental' %}محیطی
-                            {% elif proposal.kind == 'socialmedia' %}شبکه‌های اجتماعی
-                            {% elif proposal.kind == 'digital' %}دیجیتال
-                            {% elif proposal.kind == 'printing' %}چاپی
-                            {% elif proposal.kind == 'event' %}ایونت مارکتینگ
-                            {% else %}عمومی{% endif %}
-                        </span>
-                    </div>
+    <!-- Pagination -->
+    {% if proposals.paginator.num_pages > 1 %}
+    <div class="row mt-4">
+      <div class="col-md-12 text-center">
+        <nav>
+          <ul class="pagination justify-content-center">
+            {% if proposals.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ proposals.previous_page_number }}">قبلی</a>
+            </li>
+            {% endif %}
 
-                    <div class="mb-2">
-                        <strong>توضیحات:</strong>
-                        <p>{{ proposal.text|default:"-"|truncatechars:100 }}</p>
-                    </div>
-                    <div class="mb-2">
-                        <strong>قیمت پیشنهادی:</strong>
-                        <span class="price-column">{{ proposal.price|default:0|format_price }}</span>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <button class="btn btn-sm btn-info w-100" onclick="showDetails('{{ proposal.id }}')">
-                        <i class="fa fa-eye"></i> جزئیات
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        <!-- Pagination -->
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <nav>
-                    <ul class="pagination justify-content-center">
-                        {% if proposals.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ proposals.previous_page_number }}">قبلی</a>
-                        </li>
-                        {% endif %}
-                        
-                        <li class="page-item active">
-                            <span class="page-link">
-                                صفحه {{ proposals.number }} از {{ proposals.paginator.num_pages }}
-                            </span>
-                        </li>
+            <li class="page-item active">
+              <span class="page-link">
+                صفحه {{ proposals.number }} از {{ proposals.paginator.num_pages }}
+              </span>
+            </li>
 
-                        {% if proposals.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ proposals.next_page_number }}">بعدی</a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
-        </div>
+            {% if proposals.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ proposals.next_page_number }}">بعدی</a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
     </div>
+    {% endif %}
+  </div>
 </div>
 
 {% block extra_js %}

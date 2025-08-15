@@ -1624,16 +1624,29 @@ class CampaignParticipateView(DealerUserMixin, View):
             if kind != 'generic':
                 obj.campaign = campaign
                 obj.proposed_user = request.user
+                
+                # ویژه EventMarketing: اطمینان از نگاشت شهر به location
+                if kind == 'event':
+                    selected_city = form.cleaned_data.get('city')
+                    if selected_city:
+                        obj.location = selected_city
+                    else:
+                        form.add_error('city', 'انتخاب شهر الزامی است.')
+                        return render(request, self.template_name, {
+                            'campaign': campaign,
+                            'form': form,
+                            'ad_kind': kind,
+                        })
+                
                 obj.save()
-                # M2M after save
-                if hasattr(form, 'save_m2m'):
+                
+                # در EventMarketing چون M2M نداریم، save_m2m لازم نیست
+                if hasattr(form, 'save_m2m') and kind != 'event':
                     form.save_m2m()
             else:
-                # fallback to old generic flow
-                proposal_campaign = form.save(commit=False)
-                proposal_campaign.campaign = campaign
-                proposal_campaign.dealer = request.user
-                proposal_campaign.save()
+                obj.dealer = request.user
+                obj.campaign = campaign
+                obj.save()
 
             # Track participation
             campaign.list_of_participants.add(request.user)
@@ -1803,21 +1816,33 @@ class CampaignEditProposalView(DealerUserMixin, View):
         if form.is_valid():
             obj = form.save(commit=False)
             if kind != 'generic':
-                # حفظ FK ها در حالت ویرایش
-                obj.campaign_id = campaign.id
-                obj.proposed_user_id = request.user.id
+                obj.campaign = campaign
+                obj.proposed_user = request.user
+                
+                # ویژه EventMarketing: اطمینان از نگاشت شهر به location
+                if kind == 'event':
+                    selected_city = form.cleaned_data.get('city')
+                    if selected_city:
+                        obj.location = selected_city
+                    else:
+                        form.add_error('city', 'انتخاب شهر الزامی است.')
+                        return render(request, self.template_name, {
+                            'campaign': campaign,
+                            'form': form,
+                            'ad_kind': kind,
+                        })
+                
                 obj.save()
-                if hasattr(form, 'save_m2m'):
+                if hasattr(form, 'save_m2m') and kind != 'event':
                     form.save_m2m()
             else:
-                obj.campaign_id = campaign.id
-                obj.dealer_id = request.user.id
+                obj.dealer = request.user
+                obj.campaign = campaign
                 obj.save()
 
             notify_campaign_participation(
                 user=request.user,
                 campaign=campaign,
-                # برخی سیستم‌ها کلید edit ندارند. از participate استفاده می‌کنیم تا خطا ندهد.
                 action_type='participate',
                 staff_users=staff_users,
                 am_users=am_users

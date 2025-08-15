@@ -17,66 +17,93 @@
 
 {% block content %}
 <div class="x_panel">
-  <div class="x_title">
-    <h2>جزئیات پیشنهاد</h2>
-    <div class="nav navbar-right">
-      <a href="javascript:history.back();" class="btn btn-secondary">
-        <i class="fa fa-arrow-right"></i> بازگشت
-      </a>
+  <div class="x_title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <h2 class="mb-0" style="font-size:18px;">جزئیات پیشنهاد</h2>
+      <span class="label label-info" style="font-size:12px;">
+        {% if kind == 'environmental' %}محیطی
+        {% elif kind == 'socialmedia' %}شبکه‌های اجتماعی
+        {% elif kind == 'digital' %}دیجیتال
+        {% elif kind == 'printing' %}چاپی
+        {% elif kind == 'event' %}ایونت مارکتینگ
+        {% else %}عمومی{% endif %}
+      </span>
+      {% if campaign %}
+        <span class="label label-default" style="font-size:12px;">کمپین: {{ campaign.describe|default:campaign }}</span>
+      {% endif %}
     </div>
+
+    <a href="javascript:history.back();" class="btn btn-default btn-sm">
+      <i class="fa fa-arrow-right"></i> بازگشت
+    </a>
     <div class="clearfix"></div>
   </div>
 
   <div class="x_content">
+    <!-- meta row -->
     <div class="row">
-      <div class="col-md-6">
-        <div class="mb-2"><strong>نوع پیشنهاد:</strong>
-          <span class="badge bg-info">
-            {% if kind == 'environmental' %}محیطی
-            {% elif kind == 'socialmedia' %}شبکه‌های اجتماعی
-            {% elif kind == 'digital' %}دیجیتال
-            {% elif kind == 'printing' %}چاپی
-            {% elif kind == 'event' %}ایونت مارکتینگ
-            {% else %}عمومی{% endif %}
-          </span>
-        </div>
-        {% if campaign %}
-        <div class="mb-2"><strong>کمپین:</strong> {{ campaign.describe|default:campaign }}</div>
-        {% endif %}
-        <div class="mb-2"><strong>کاربر برگزارکننده:</strong> {{ campaign.customer.get_full_name|default:user.username }}</div>
-        {% if user %}
-        <div class="mb-2"><strong>کاربر پیشنهاد دهنده:</strong> {{ user.get_full_name|default:user.username }}</div>
-        {% endif %}
+      <div class="col-md-7 col-sm-7">
+        <ul class="list-unstyled" style="margin:0;">
+          {% if campaign %}
+          <li class="mb-2">
+            <strong>کمپین:</strong>
+            <span class="text-primary">{{ campaign.describe|default:campaign }}</span>
+          </li>
+          {% endif %}
+
+          <li class="mb-2">
+            <strong>کاربر برگزارکننده:</strong>
+            <span>{{ campaign.customer.get_full_name|default:user.username }}</span>
+          </li>
+
+          {% if user %}
+          <li class="mb-2">
+            <strong>کاربر پیشنهاددهنده:</strong>
+            <span>{{ user.get_full_name|default:user.username }}</span>
+          </li>
+          {% endif %}
+        </ul>
       </div>
-      <div class="col-md-6 text-start">
-        <div class="mb-2"><strong>قیمت پیشنهادی:</strong>
-          <span class="price-column">{{ price|default:0|format_price }}</span>
+
+      <div class="col-md-5 col-sm-5 text-start">
+        <div class="well" style="padding:10px 12px;display:inline-block;margin:0;">
+          <strong>قیمت پیشنهادی:</strong>
+          <span class="price-column text-success" style="font-weight:700;">
+            {{ price|default:0|format_price }}
+          </span>
         </div>
       </div>
     </div>
 
     <hr>
 
+    <!-- description -->
     <div class="mb-3">
-      <strong>توضیحات/متن:</strong>
-      <p style="white-space: pre-line">{{ text|default:"-" }}</p>
+      <strong>توضیحات / متن:</strong>
+      <div class="panel panel-default" style="margin-top:8px;">
+        <div class="panel-body" style="white-space:pre-line; font-size:13px; color:#4b5563;">
+          {{ text|default:"-" }}
+        </div>
+      </div>
     </div>
 
     {% if kind == 'environmental' %}
+    <!-- map -->
     <div class="mb-3" id="env-map-wrap" style="display:none">
-      <h5 class="mt-2 mb-2">موقعیت مکانی</h5>
-      <div id="env-map"></div>
+      <h4 class="mt-0 mb-10" style="font-size:15px;">موقعیت مکانی</h4>
+      <div id="env-map" style="height:360px;width:100%;border:1px solid #e5e7eb;border-radius:8px;"></div>
     </div>
     {% endif %}
 
-    <h5 class="mt-4">سایر جزئیات</h5>
+    <!-- details table -->
+    <h4 class="mt-4" style="font-size:15px;">سایر جزئیات</h4>
     <div class="table-responsive">
-      <table class="table table-striped">
+      <table class="table table-striped table-hover">
         <tbody>
-          {% for item in details %}
+        {% for item in details %}
           {% if item.value %}
           <tr>
-            <th style="width: 250px">{{ item.label }}</th>
+            <th style="width:240px;white-space:nowrap;">{{ item.label }}</th>
             <td>
               {% if item.is_dt %}
                 {{ item.value|jalali_timedate }}
@@ -88,9 +115,11 @@
             </td>
           </tr>
           {% endif %}
-          {% empty %}
-          <tr><td colspan="2">جزئیات دیگری ثبت نشده است.</td></tr>
-          {% endfor %}
+        {% empty %}
+          <tr>
+            <td colspan="2" class="text-center text-muted">جزئیات دیگری ثبت نشده است.</td>
+          </tr>
+        {% endfor %}
         </tbody>
       </table>
     </div>

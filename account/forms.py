@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 from advplatform.choices_type import CUSTOMER_TYPE, USER_TYPE
 from advplatform.models import Campaign, CampaignImages,\
     CustomUser, Portfolio, PortfolioImages, UsersImages
@@ -443,6 +444,11 @@ class EnvironmentalAdvertisementForm(forms.ModelForm):
         label='شهر',
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    available_date = forms.DateField(
+        required=True,
+        label='تاریخ قابل استفاده',
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
 
     class Meta:
         model = EnvironmentalAdvertisement
@@ -460,15 +466,16 @@ class EnvironmentalAdvertisementForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # آدرس AJAX برای لود شهرها
+        self.fields['province'].widget.attrs['data-cities-url'] = reverse('account:ajax_cities')
+
         # اگر مدل شما فیلد service_area (ManyToMany به City) دارد، از فرم حذفش می‌کنیم
         self.fields.pop('service_area', None)
 
         # مقداردهی اولیه شهر/استان در حالت ویرایش
         selected_city = None
-        # اگر مدل فیلد city داشته باشد
         if hasattr(self.instance, 'city') and getattr(self.instance, 'city', None):
             selected_city = self.instance.city
-        # اگر مدل فقط service_area (m2m) داشته باشد
         elif hasattr(self.instance, 'service_area') and self.instance.pk:
             selected_city = self.instance.service_area.first()
 
@@ -478,6 +485,15 @@ class EnvironmentalAdvertisementForm(forms.ModelForm):
             self.fields['city'].initial = selected_city.id
         else:
             self.fields['city'].queryset = City.objects.none()
+
+        # پشتیبانی از prefix برای محدودسازی شهرها بر اساس استان ارسالی
+        province_field_name = self.add_prefix('province')
+        province_id = self.data.get(province_field_name) or self.initial.get('province')
+        if province_id:
+            try:
+                self.fields['city'].queryset = City.objects.filter(province_id=int(province_id))
+            except (TypeError, ValueError):
+                self.fields['city'].queryset = City.objects.none()
 
     def clean(self):
         cleaned = super().clean()
@@ -567,17 +583,82 @@ class PrintingAdvertisementForm(forms.ModelForm):
 
 
 class EventMarketingAdvertisementForm(forms.ModelForm):
+    # فیلدهای کمکی (در مدل نیستند)
+    province = forms.ModelChoiceField(
+        queryset=Province.objects.all(),
+        required=False,
+        label='استان',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    city = forms.ModelChoiceField(
+        queryset=City.objects.none(),
+        required=True,
+        label='شهر',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = EventMarketingAdvertisement
         exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']
         widgets = {
             'event_type': forms.Select(attrs={'class': 'form-control'}),
-            'location': forms.Select(attrs={'class': 'form-control'}),
             'location_address': forms.TextInput(attrs={'class': 'form-control'}),
             'event_proposed_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'event_content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'total_proposal_price': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # آدرس AJAX برای لود شهرها (مشابه Environmental)
+        self.fields['province'].widget.attrs['data-cities-url'] = reverse('account:ajax_cities')
+
+        # فیلد location را از فرم حذف می‌کنیم؛ در save مقداردهی می‌شود
+        self.fields.pop('location', None)
+
+        # مقداردهی اولیه شهر/استان در حالت ویرایش
+        selected_city = None
+        if hasattr(self.instance, 'location') and getattr(self.instance, 'location', None):
+            selected_city = self.instance.location
+
+        if selected_city:
+            self.fields['province'].initial = selected_city.province_id
+            self.fields['city'].queryset = City.objects.filter(province=selected_city.province)
+            self.fields['city'].initial = selected_city.id
+        else:
+            self.fields['city'].queryset = City.objects.none()
+
+        # پشتیبانی از prefix برای محدودسازی شهرها بر اساس استان ارسالی
+        province_field_name = self.add_prefix('province')
+        province_id = self.data.get(province_field_name) or self.initial.get('province')
+        if province_id:
+            try:
+                self.fields['city'].queryset = City.objects.filter(province_id=int(province_id))
+            except (TypeError, ValueError):
+                self.fields['city'].queryset = City.objects.none()
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get('city'):
+            raise ValidationError("انتخاب شهر الزامی است.")
+        return cleaned
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        selected_city = self.cleaned_data.get('city')
+
+        # نگاشت شهر انتخاب‌شده به فیلد location مدل
+        if hasattr(obj, 'location'):
+            obj.location = selected_city
+
+        if commit:
+            obj.save()
+
+        if hasattr(self, 'save_m2m'):
+            self.save_m2m()
+
+        return obj
 
 
 

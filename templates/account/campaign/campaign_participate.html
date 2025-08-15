@@ -101,7 +101,7 @@
       opt.textContent = 'انتخاب شهر';
       citySelect.appendChild(opt);
 
-      if (!provinceId) return;
+      if (!provinceId) return; 
 
       try {
         const resp = await fetch("{% url 'account:ajax_cities' %}?province_id=" + encodeURIComponent(provinceId));
@@ -163,6 +163,41 @@
       });
     }
   })();
+</script>
+{% endif %}
+
+{# JavaScript برای استان/شهر در EventMarketing و سایر فرم‌ها #}
+{% if ad_kind == "event" or ad_kind == "socialmedia" or ad_kind == "digital" or ad_kind == "printing" %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const provinceSelect = document.getElementById('id_province');
+  const citySelect = document.getElementById('id_city');
+  if (!provinceSelect || !citySelect) return;
+
+  provinceSelect.addEventListener('change', function () {
+    const pid = this.value;
+    citySelect.innerHTML = '<option value="">در حال بارگذاری...</option>';
+    if (!pid) { 
+      citySelect.innerHTML = '<option value="">ابتدا استان را انتخاب کنید</option>'; 
+      return; 
+    }
+    
+    fetch("{% url 'account:ajax_cities' %}?province_id=" + encodeURIComponent(pid))
+      .then(r => r.json())
+      .then(data => {
+        citySelect.innerHTML = '<option value="">انتخاب شهر</option>';
+        (data.results || []).forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.name;
+          citySelect.appendChild(opt);
+        });
+      })
+      .catch(() => {
+        citySelect.innerHTML = '<option value="">خطا در بارگذاری</option>';
+      });
+  });
+});
 </script>
 {% endif %}
 {% endblock %}

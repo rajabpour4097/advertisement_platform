@@ -152,6 +152,7 @@ class SocialmediaAdvertisement(BaseModel):
     start_execution_time = models.DateTimeField(verbose_name='زمان شروع تبلیغ')
     end_execution_time = models.DateTimeField(verbose_name='زمان پایان تبلیغ')
     proposal_price = models.BigIntegerField(verbose_name='قیمت پیشنهادی')
+    description = models.TextField(verbose_name='توضیحات', blank=True, null=True)
 
     class Meta:
         verbose_name = 'تبلیغ رسانه اجتماعی'
@@ -174,6 +175,8 @@ class DigitalAdvertisement(BaseModel):
     duration = models.PositiveIntegerField(verbose_name='مدت زمان اجرا (روز)')
     advertising_budget = models.BigIntegerField(verbose_name='بودجه تبلیغ')
     proposal_price = models.BigIntegerField(verbose_name='قیمت پیشنهادی')
+    description = models.TextField(verbose_name='توضیحات', blank=True, null=True)
+
     class Meta:
         verbose_name = 'تبلیغ دیجیتال'
         verbose_name_plural = 'تبلیغات دیجیتال'
@@ -192,6 +195,7 @@ class PrintingAdvertisement(BaseModel):
     delivery_time = models.PositiveIntegerField(verbose_name='زمان تحویل (عدد بر حسب روز کاری)')
     total_proposal_price = models.BigIntegerField(verbose_name='قیمت کل پیشنهادی (طراحی + چاپ)')
     graphic_design_included = models.BooleanField(default=False, verbose_name='طراحی گرافیکی همراه دارد؟')
+    description = models.TextField(verbose_name='توضیحات', blank=True, null=True)
 
     class Meta:
         verbose_name = 'تبلیغ چاپی'
@@ -211,6 +215,7 @@ class EventMarketingAdvertisement(BaseModel):
     event_proposed_date = models.DateTimeField(verbose_name='تاریخ پیشنهادی رویداد')
     event_content = models.TextField(verbose_name='محتوا یا سناریوی کلی رویداد')
     total_proposal_price = models.BigIntegerField(verbose_name='قیمت پیشنهادی کل (همه هزینه‌ها را شامل شود)')
+    description = models.TextField(verbose_name='توضیحات', blank=True, null=True)
 
     class Meta:
         verbose_name = 'ایونت مارکتینگ'
