@@ -89,8 +89,9 @@ class ProfileForm(forms.ModelForm):
             self.fields['is_active'].disabled = True
             self.fields['rank'].disabled = True
             del self.fields['speciality_field']
-            
-    
+        if user.cutomer_type == 'juridical':
+            del self.fields['birth_date']
+
     class Meta:
         model = CustomUser
         fields = [
@@ -98,6 +99,7 @@ class ProfileForm(forms.ModelForm):
                 'email',
                 'first_name',
                 'last_name',
+                'company_name',
                 'speciality_field',#/ for mentor
                 'phone_number',#/
                 'address',#/

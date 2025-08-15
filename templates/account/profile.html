@@ -7,49 +7,47 @@
 
 {% block content %}
 <style>
-  textarea.form-control {
-    height: 80px;
+  [dir="rtl"] .form-row { direction: rtl; }
+  textarea.form-control { min-height: 80px; }
+  .input-help { font-size: 12px; color: #6c757d; }
+  .dropzone {
+    border: 2px dashed #cbd5e0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #1449b4ff;
+    height: 260px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: .2s border-color, .2s background;
+    text-align: center;
+    font-size: medium;
   }
-  .custom-file-upload {
-    display: inline-block;
-    background-color: #28a745; /* رنگ سبز */
-    color: white;
-    padding: 10px 12px;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: bold;
+  .dropzone.dragover { border-color: #28a745; background: #f0fff4; }
+  .dropzone .placeholder { pointer-events: none; }
+  .dropzone .placeholder .plus {
+    font-size: 42px; font-weight: 700; line-height: 1; display: block; margin-bottom: 10px; color: #9ca3af;
+  }
+  .dropzone img.preview {
+    max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 6px; display: none;
+  }
+  .btn-success { background-color: #28a745; border-color: #28a745; }
+  .btn-success:hover { background-color: #218838; border-color: #1e7e34; }
+.my-custom-p{
+  font-size: 13px;
+  color: #1619ca;
 }
-
-.custom-file-upload:hover {
-    background-color: #218838;
-}
-
-.file-input {
-    display: none; /* مخفی کردن input اصلی */
-}
-
-#file-name {
-    margin-right: 10px;
-    font-size: 14px;
-    color: #666;
-}
-
-
 </style>
 
-<div class="col-md-6 col-xs-12">
+<div class="col-md-12" dir="rtl">
   <div class="x_panel" style="scale:85%;">
     <div class="x_title">
-        <h2>پروفایل کاربری</h2>
-
-        <div class="clearfix"></div>
+      <h2>پروفایل کاربری</h2>
+      <div class="clearfix"></div>
     </div>
+
     <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        
-       <br>
-       <div class="col-md-12 col-sm-10 col-xs-12">
+      {% csrf_token %}
+
+      <div class="col-md-12 col-sm-12 col-xs-12">
 
         <div class="form-row">
           <div class="form-group col-md-6 mb-0">
@@ -58,146 +56,148 @@
           <div class="form-group col-md-6 mb-0">
             {{ form.email|as_crispy_field }}
           </div>
-          <div class="col-3" style="font-size: small; margin-right: 20px;">
-            <label class="my-4" style="font-size: x-small;"> گذرواژه:</label>
-            <span style="background: #cffff2;">برای تغییر گذرواژه <a href="{% url 'account:password_change' %}" style="color: blue;">کلیک</a> کنید</span>
-          </div>
         </div>
-        <br>
-        <div class="form-row">
-          <div class="form-group col-md-6 mb-0">
+
+        {% if user.cutomer_type == 'private' or user.cutomer_type is None %}
+          <div class="form-row">
+            <div class="form-group col-md-6 mb-0">
               {{ form.first_name|as_crispy_field }}
-          </div>
-          <div class="form-group col-md-6 mb-0">
+            </div>
+            <div class="form-group col-md-6 mb-0">
               {{ form.last_name|as_crispy_field }}
+            </div>
           </div>
-        </div>
-        <br>
+        {% elif user.cutomer_type == 'juridical' %}
+          <div class="form-row">
+            <div class="form-group col-md-6 mb-0">
+              {{ form.company_name|as_crispy_field }}
+            </div>
+          </div>
+        {% endif %}
+
         <div class="form-row">
-          <div class="form-group col-md-6 mb-0">
-            {{ form.phone_number|as_crispy_field }}
-          </div>
-          <div class="form-group col-md-6 mb-0">
-            {{ form.birth_date|as_crispy_field }}
+          {% if form.phone_number %}
+            <div class="form-group col-md-6 mb-0">
+              {{ form.phone_number|as_crispy_field }}
+            </div>
+          {% endif %}
+          {% if form.birth_date %}
+            <div class="form-group col-md-6 mb-0">
+              {{ form.birth_date|as_crispy_field }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-12 mb-0">
+            {{ form.address|as_crispy_field }}
           </div>
         </div>
-      </div>
-        <br>
-        {% if user.user_type == 'customer' and form.bussines_value and form.customer_mentor %}
-        <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px;">
-          <div class="form-group col-md-6 mb-0">
-              {{ form.bussines_value|as_crispy_field }}
+
+        {% if not user.is_staff %}
+          <div class="form-row">
+            <div class="form-group col-md-4 mb-0">
+              <label>نوع کاربر:</label>
+              <p class="my-custom-p" style="display: inline;">{{ user.get_user_type_display }}</p>
+            </div>
           </div>
-        </div>
-          
-        <div class="col-md-12 col-sm-10 col-xs-12">
-          <div class="form-group col-md-6 mb-0">
-            <label> مشاور شما: </label>
-              <p class="btn btn-default">
-                {% if user.customer_mentor %}
-                {{ user.customer_mentor.get_full_name }}
-                {% else %}
-                  فعلا مشاوری ندارید
-                {% endif %}
+        {% endif %}
+
+        {% if user.user_type == 'customer' or user.user_type == 'dealer' %}
+          <div class="form-row">
+            <div class="form-group col-md-6 mb-0">
+              <label>نوع مشتری:</label>
+              <p class="my-custom-p" style="display: inline;">{{ user.get_cutomer_type_display }}</p>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if user.user_type == 'dealer' or user.user_type == 'mentor' %}
+          <div class="form-row" style="margin-top:10px;">
+            <div class="form-group col-md-2 mb-0">
+              <label>امتیاز شما:</label>
+              <p class="my-custom-p" style="display: inline;">
+                {% if user.rank %}{{ user.rank }}{% else %}فعلا امتیازی ندارید{% endif %}
               </p>
+            </div>
+            {% if user.speciality_field %}
+              <div class="form-group col-md-6 mb-0">
+                {{ form.speciality_field }}
+              </div>
+            {% endif %}
           </div>
-        </div>
         {% endif %}
-        <br>
-        <br>
-        <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px;">
-          <div class="col-md-12 col-sm-10 col-xs-12">
-          {{ form.address|as_crispy_field }}
+          <hr>
+        <div class="form-row" style="margin-top:10px;">
+          <div class="form-group col-md-12">
+            <label class="mb-2">تصویر آواتار</label>
+            <div id="dropzone" class="dropzone">
+              {% with user.customuserimages.last as profile_image %}
+                <img id="dz-preview" class="preview"
+                     src="{% if profile_image %}{{ profile_image.image.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}"
+                     alt="جهت درج تصویر کلیک کنید">
+              {% endwith %}
+             
+            </div>
+            <input type="file" name="profile_image" id="profile_image" accept="image/*" class="d-none">
+            <div class="input-help mt-2" id="file-name"></div>
           </div>
         </div>
-        <br>
-        <br>
-        <div class="col-md-12 col-sm-10 col-xs-12">
-          {% if not user.is_staff %}
-           <div class="form-group col-md-4 mb-0">
-           <label> نوع کاربر: </label><p class="btn btn-default">{{ user.get_user_type_display}}</p>
-           
-           </div>
-           {% endif %}
-        </div>
-        <br>
-        {% if user.user_type == 'customer' and form.cutomer_type %}
-        <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px;">
-          <div class="form-group col-md-6 mb-0">
-            {{ form.cutomer_type|as_crispy_field }}
+
+        <div class="form-row" style="margin: 10px 0;">
+          <div class="col-md-12">
+            <a href="{% url 'account:home' %}" class="btn btn-default">انصراف</a>
+            <button type="submit" class="btn btn-success">ذخیره تغییرات</button>
+            <span class="input-help" style="margin-right:10px;">
+              برای تغییر گذرواژه <a href="{% url 'account:password_change' %}">کلیک</a> کنید
+            </span>
           </div>
         </div>
-          <br>
-        {% endif %}
-        
-        {% if user.user_type == 'dealer' or user.user_type == 'mentor' and form.rank or form.speciality_field %}
-       
-          <div class="col-md-12 col-sm-10 col-xs-12" style="margin-top: 20px;">
-           <div class="form-group col-md-2 mb-0">
-            <label> امتیاز شما: </label>
-            <p class="btn btn-default">
-              {% if user.rank %}
-              {{ user.rank }}
-              {% else %}
-                فعلا امتیازی ندارید
-              {% endif %}
-            </p>
-           </div>
-          </div>
-          <br>
-        {% endif %}  
-        <div class="col-md-12 col-sm-10 col-xs-12">
-          <label for="profile-image">عکس پروفایل</label>
-          <br>
-          {% with user.customuserimages.last as profile_image %}
-              {% if profile_image %}
-                  <img id="profile-preview" src="{{ profile_image.image.url }}" class="img-thumbnail" width="150">
-              {% else %}
-                  <img id="profile-preview" src="{% static 'images/default-profile.png' %}" class="img-thumbnail" width="150">
-              {% endif %}
-          {% endwith %}
-          <br><br>
-      
-          <!-- دکمه آپلود جایگزین -->
-          <label for="profile_image" class="custom-file-upload">انتخاب فایل</label>
-          <span id="file-name"></span>
-      
-          <!-- فیلد آپلود مخفی شده -->
-          <input type="file" name="profile_image" id="profile_image" class="file-input" accept="image/*" style="display:none;">
-        </div>
-       <br>
-       <div class="col-md-12 col-sm-10 col-xs-12" style="margin-bottom: 10px; margin-right: 100px;">
-          <a href="{% url 'account:home' %}" class="btn btn-primary">بازگشت</a>
-          <button type="submit" class="btn btn-success">بروزرسانی</button>    
-       </div>
+
+      </div>
     </form>
   </div>
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    var fileInput = document.getElementById('profile_image');
-    var fileNameSpan = document.getElementById('file-name');
-    var previewImage = document.getElementById('profile-preview');
-    var defaultImage = previewImage.src; // ذخیره تصویر پیش‌فرض
+  (function () {
+    const dz = document.getElementById('dropzone');
+    const input = document.getElementById('profile_image');
+    const preview = document.getElementById('dz-preview');
+    const placeholder = document.getElementById('dz-placeholder');
+    const fileName = document.getElementById('file-name');
 
-    fileInput.addEventListener('change', function(event) {
-        var file = fileInput.files[0];
+    function showPreview(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+        fileName.textContent = file.name;
+      };
+      reader.readAsDataURL(file);
+    }
 
-        if (file) {
+    dz.addEventListener('click', () => input.click());
+    input.addEventListener('change', e => showPreview(e.target.files[0]));
 
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result; // نمایش پیش‌نمایش تصویر
-            };
-            reader.readAsDataURL(file);
-        } else {
-            fileNameSpan.textContent = "هیچ فایلی انتخاب نشده است";
-            previewImage.src = defaultImage; // اگر فایلی انتخاب نشود، تصویر پیش‌فرض را برگردان
-        }
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault(); dz.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        input.files = e.dataTransfer.files;
+        showPreview(e.dataTransfer.files[0]);
+      }
     });
-});
-</script>
 
+    // If an existing image is present, show it immediately.
+    if (preview.getAttribute('src')) {
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+    }
+  })();
+</script>
 {% endblock %}
 
