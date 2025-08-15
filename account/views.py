@@ -780,26 +780,6 @@ class CampaignEditView(EditCampaignUserMixin, View):
         })
 
 
-
-    
-
-class FinishedCampaignProposalsListView(LoginRequiredMixin, EditCampaignUserMixin, ListView):
-    template_name = 'account/campaign/finished_campaign_proposals_list.html'
-    context_object_name = 'proposals'
-    paginate_by = 8
-
-    def get_queryset(self):
-        self.campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
-        if self.campaign.status == 'finished' and not self.campaign.is_active:
-            return CampaignTransaction.objects.filter(campaign=self.campaign)
-        return CampaignTransaction.objects.none()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['campaign'] = self.campaign
-        return context
-        
-
 class SelectCampaignWinnerView(EditCampaignUserMixin, View):
     template_name = 'account/campaign/confirm_winner.html'
 
@@ -2045,3 +2025,20 @@ class CitiesByProvinceView(LoginRequiredMixin, View):
             return JsonResponse({'results': []})
         qs = City.objects.filter(province_id=province_id).order_by('name')
         return JsonResponse({'results': [{'id': c.id, 'name': str(c)} for c in qs]})
+    
+
+class FinishedCampaignProposalsListView(EditCampaignUserMixin, ListView):
+    template_name = 'account/campaign/finished_campaign_proposals_list.html'
+    context_object_name = 'proposals'
+    paginate_by = 8
+
+    def get_queryset(self):
+        self.campaign = get_object_or_404(Campaign, pk=self.kwargs.get('pk'))
+        if self.campaign.status == 'finished' and not self.campaign.is_active:
+            return CampaignTransaction.objects.filter(campaign=self.campaign)
+        return CampaignTransaction.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['campaign'] = self.campaign
+        return context
