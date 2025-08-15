@@ -31,10 +31,16 @@
   }
   .btn-success { background-color: #28a745; border-color: #28a745; }
   .btn-success:hover { background-color: #218838; border-color: #1e7e34; }
-.my-custom-p{
-  font-size: 13px;
-  color: #1619ca;
-}
+  .my-custom-p{ font-size: 13px; color: #1619ca; }
+
+  /* star rating (supports fractional fill) */
+  .rating{ display:inline-flex; align-items:center; gap:8px; }
+  .rating-stars{ position:relative; display:inline-block; font-size:22px; line-height:1; }
+  .rating-stars .stars-outer{ color:#e5e7eb; }      /* empty (off) */
+  .rating-stars .stars-inner{
+    position:absolute; left:0; top:0; white-space:nowrap; overflow:hidden;
+    color:#f59e0b; width:0;                              /* filled (on) */
+  }
 </style>
 
 <div class="col-md-12" dir="rtl">
@@ -89,7 +95,7 @@
         </div>
 
         <div class="form-row">
-          <div class="form-group col-md-12 mb-0">
+          <div class="form-group col-md-12 mb-0" style="border-radius: 6px;">
             {{ form.address|as_crispy_field }}
           </div>
         </div>
@@ -114,11 +120,18 @@
 
         {% if user.user_type == 'dealer' or user.user_type == 'mentor' %}
           <div class="form-row" style="margin-top:10px;">
-            <div class="form-group col-md-2 mb-0">
+            <div class="form-group col-md-3 mb-0">
               <label>امتیاز شما:</label>
-              <p class="my-custom-p" style="display: inline;">
-                {% if user.rank %}{{ user.rank }}{% else %}فعلا امتیازی ندارید{% endif %}
-              </p>
+              {% if user.rank %}
+                <div id="user-rating" class="rating" data-value="{{ user.rank }}" data-max="5" title="امتیاز {{ user.rank }} از 5">
+                  <div class="rating-stars" aria-hidden="true">
+                    <div class="stars-outer">★★★★★</div>
+                    <div class="stars-inner">★★★★★</div>
+                  </div>
+                </div>
+              {% else %}
+                <p class="my-custom-p" style="display: inline;">فعلا امتیازی ندارید</p>
+              {% endif %}
             </div>
             {% if user.speciality_field %}
               <div class="form-group col-md-6 mb-0">
@@ -173,29 +186,39 @@
       reader.onload = e => {
         preview.src = e.target.result;
         preview.style.display = 'block';
-        placeholder.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'none';
         fileName.textContent = file.name;
       };
       reader.readAsDataURL(file);
     }
 
-    dz.addEventListener('click', () => input.click());
-    input.addEventListener('change', e => showPreview(e.target.files[0]));
+    if (dz && input) {
+      dz.addEventListener('click', () => input.click());
+      input.addEventListener('change', e => showPreview(e.target.files[0]));
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+      dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+      dz.addEventListener('drop', e => {
+        e.preventDefault(); dz.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          input.files = e.dataTransfer.files;
+          showPreview(e.dataTransfer.files[0]);
+        }
+      });
+    }
 
-    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
-    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-    dz.addEventListener('drop', e => {
-      e.preventDefault(); dz.classList.remove('dragover');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        input.files = e.dataTransfer.files;
-        showPreview(e.dataTransfer.files[0]);
-      }
-    });
-
-    // If an existing image is present, show it immediately.
-    if (preview.getAttribute('src')) {
+    if (preview && preview.getAttribute('src')) {
       preview.style.display = 'block';
-      placeholder.style.display = 'none';
+      if (placeholder) placeholder.style.display = 'none';
+    }
+
+    /* fractional star fill */
+    const ratingEl = document.getElementById('user-rating');
+    if (ratingEl) {
+      const value = parseFloat(ratingEl.dataset.value || '0');
+      const max = parseFloat(ratingEl.dataset.max || '5');
+      const percent = Math.max(0, Math.min(100, (value / max) * 100));
+      const inner = ratingEl.querySelector('.stars-inner');
+      if (inner) inner.style.width = percent + '%';
     }
   })();
 </script>
