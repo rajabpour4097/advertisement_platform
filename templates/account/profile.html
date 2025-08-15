@@ -1,9 +1,17 @@
 {% extends "account/account_base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load account_tags %}
 
 
 {% block title %}پروفایل کاربری{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'account/vendors/persian-datepicker/persian-datepicker.min.css' %}">
+<style>
+  .pdp-default { z-index: 999999; }
+</style>
+{% endblock %}
 
 {% block content %}
 <style>
@@ -98,6 +106,7 @@ font-size: 14px; color: #f40cd1ff;
           {% endif %}
           {% if form.birth_date %}
             <div class="form-group col-md-6 mb-0">
+              {# datepicker will be attached via JS #}
               {{ form.birth_date|as_crispy_field }}
             </div>
           {% endif %}
@@ -229,6 +238,35 @@ font-size: 14px; color: #f40cd1ff;
       const percent = Math.max(0, Math.min(100, (value / max) * 100));
       const inner = ratingEl.querySelector('.stars-inner');
       if (inner) inner.style.width = percent + '%';
+    }
+  })();
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'account/vendors/persian-datepicker/persian-date.min.js' %}"></script>
+<script src="{% static 'account/vendors/persian-datepicker/persian-datepicker.min.js' %}"></script>
+<script>
+  (function() {
+    // Attach Persian datepicker to birth_date and submit Gregorian to backend
+    var $birth = $('#id_birth_date');
+    if ($birth.length) {
+      // Ensure input is text for the datepicker to work
+      $birth.attr('type', 'text')
+            .addClass('persian-datepicker')
+            .attr('autocomplete', 'off');
+
+      $birth.persianDatepicker({
+        format: 'YYYY/MM/DD',
+        initialValue: false,
+        autoClose: true,
+        timePicker: { enabled: false },
+        onSelect: function(unix) {
+          var date = new persianDate(unix);
+          var gregorianDate = date.toCalendar('gregorian').toLocale('en').format('YYYY-MM-DD');
+          $(this.model.input.elem).val(gregorianDate);
+        }
+      });
     }
   })();
 </script>
