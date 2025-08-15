@@ -69,7 +69,6 @@
                             <th>شرح کمپین‌</th>
                             <th>بودجه پیشنهادی</th>
                             <th>مبلغ جایره</th>
-                            <th>پشتیبان</th>
                             <th>زمان اتمام</th>
                             <th>وضعیت</th>
                             <th>وضعیت کمپین</th>
@@ -109,24 +108,6 @@
                             <!-- Campaign Prices -->
                             <td>{{ campaign.purposed_price | format_price }}</td>
                             <td>{{ campaign.get_gift_price | format_price }}</td>
-                            <td>
-                                {% if request.user.user_type != 'dealer' %}
-                                    {% if campaign.assigned_mentor %}
-                                        <span class="text-success">
-                                            {{ campaign.assigned_mentor.get_full_name }}
-                                        </span>
-                                        {% if campaign.status == 'reviewing' or campaign.status == 'editing' %}
-                                            <a href="{% url 'messages:compose' %}"><i class="fa fa-envelope fa-sm"></i></a>
-                                        {% endif %}
-                                    {% elif campaign.needs_mentor and not campaign.assigned_mentor %}
-                                        <span class="text-primary" style="font-size: 10px;">پشتیبان تعیین نشده است</span>
-                                    {% else %}
-                                        <span class="text-danger" style="font-size: 10px;">نیاز به پشتیبان ندارد</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="text-danger" style="font-size: 10px;">غیر قابل مشاهده</span>
-                                {% endif %}
-                            </td>
 
                             <!-- End Time -->
                             <td>
@@ -278,13 +259,15 @@
                                             </div>
                                         
                                         </div>
-                                        <div>
-                                            <span class="badge bg-primary" style="margin-top:2px; font-size: 7px;">
-                                                <a href="{% url 'account:winned_proposal_detail' campaign.pk %}">
-                                                    مشاهده طرح پیشنهادی <i class="fa fa-search"></i>
-                                                </a>
-                                            </span>
-                                        </div>
+                                        {% if user.user_type == 'customer' %}
+                                            <div>
+                                                <span class="badge bg-primary" style="margin-top:2px; font-size: 7px;">
+                                                    <a href="{% url 'account:winned_proposal_detail' campaign.pk %}">
+                                                        مشاهده طرح پیشنهادی <i class="fa fa-search"></i>
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        {% endif %}
                                     {% elif not campaign.campaign_dealer and not campaign.get_finished_proposals and campaign.status == 'finished' %}
                                         <span class="text-muted">بدون برنده</span>
                                     {% else %}
