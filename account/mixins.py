@@ -181,28 +181,34 @@ class CancelUserMixin(UserPassesTestMixin):
 
 class EditCampaignUserMixin(UserPassesTestMixin):
 
+    def _resolve_campaign(self):
+        # Try several common kwarg names
+        for key in ('campaign_id', 'campaign_pk', 'campaign', 'pk', 'id'):
+            cid = self.kwargs.get(key)
+            if cid:
+                obj = Campaign.objects.filter(pk=cid).first()
+                if obj:
+                    return obj
+        return None
+
     def test_func(self):
         user = self.request.user
-
-        # اگر کاربر لاگین نکرده
         if not user.is_authenticated:
             return False
 
-        # دریافت campaign و هندل کردن وجود نداشتن آن
-        campaign_id = self.kwargs.get('campaign_id')
-        if not campaign_id:
-            campaign_id = self.kwargs.get('pk')
-            
-        campaign = Campaign.objects.filter(pk=campaign_id).first()
+        campaign = self._resolve_campaign()
         if not campaign:
-            return False  # یا raise PermissionDenied یا 404 بسته به نیاز
+            return False
 
-        # بررسی دسترسی کاربر
-        return (
-            user.is_staff or
-            user.is_am or
-            (user.user_type == 'customer' and user == campaign.customer)
-        )
+        # Ownership without tying to user_type
+        is_owner = user.pk == getattr(campaign.customer, 'pk', None)
+        print("is_owner:", is_owner)
+        # If you also want dealers who participated, uncomment next line and add to return:
+        # is_participant = campaign.list_of_participants.filter(pk=user.pk).exists()
+
+        return user.is_staff or user.is_am or is_owner
+        # or include participants:
+        # return user.is_staff or user.is_am or is_owner or is_participant
 
 
 class MentorUserMixin(UserPassesTestMixin):

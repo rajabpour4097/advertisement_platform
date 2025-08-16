@@ -43,8 +43,8 @@
                         <tbody>
                             {% for proposal in proposals %}
                                 <tr>
-                                    <td>{{ proposal.dealer.get_full_name }}</td>
-                                    <td>{{ proposal.proposal_price|intcomma }} تومان</td>
+                                    <td>{{ proposal.dealer.get_full_name }} <a href="{% url 'account:dealer_resume' proposal.dealer.resume.id request.user.id %}" style="color: #0d2fd8ff; font-size: 9px; margin-right: 5px;"> مشاهده رزومه <i class="fas fa-eye"></i></a></td>
+                                    <td>{{ proposal.proposal_price|format_price }}</td>
                                     <td>
                                         <a href="#">
                                             <span data-bs-toggle="tooltip" 
@@ -55,10 +55,14 @@
                                         </a>
                                     </td>
                                     {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
-                                        <td>
+                                        <td> 
                                             <a href="{% url 'account:select_winner' campaign.id proposal.dealer.id %}" 
                                                class="btn btn-success btn-sm">
                                                 انتخاب بعنوان برنده
+                                            </a>
+                                            <a href="{% url 'account:select_winner' campaign.id proposal.dealer.id %}" 
+                                               class="btn btn-info btn-sm">
+                                                مشاهده جزئیات پیشنهاد
                                             </a>
                                         </td>
                                     {% endif %}

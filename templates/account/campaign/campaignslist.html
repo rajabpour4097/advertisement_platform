@@ -202,6 +202,7 @@
                                         <span class="badge bg-secondary">پایان یافته</span>
                                     </div>
                                     {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
+                                    {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
                                         <div>
                                             <span class="badge bg-primary" style="margin-top:2px; font-size: 10px;">
                                                 <a href="{% url 'account:finished_campaign_proposals' campaign.id %}">
@@ -209,6 +210,7 @@
                                                 </a>
                                             </span>
                                         </div>
+                                        {% endif %}
                                     {% endif %}
                                 {% elif campaign.status == 'unpaid' %}
                                         {% if request.user.user_type == 'customer' %}

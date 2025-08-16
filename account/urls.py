@@ -14,6 +14,7 @@ from account.views import (
     CampaignParticipateView,
     CampaignReviewView,
     CampaignListView,
+    CustomerResumeView,
     ListOfRequestForMentor,
     MentorChooseView,
     MentorUsersList,
@@ -100,4 +101,5 @@ urlpatterns = [
     path('userslist/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
     path('campaigns/proposal/<str:kind>/<int:obj_id>/', ProposalDetailView.as_view(), name='proposal_detail'),
     path('ajax/cities/', CitiesByProvinceView.as_view(), name='ajax_cities'),
+    path('resume/customerview/<int:pk>/<int:user_id>/', CustomerResumeView.as_view(), name='dealer_resume'),
 ]
