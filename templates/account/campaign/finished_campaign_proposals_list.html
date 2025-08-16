@@ -43,7 +43,7 @@
                         <tbody>
                             {% for proposal in proposals %}
                                 <tr>
-                                    <td>{{ proposal.dealer.get_full_name }} <a href="{% url 'account:dealer_resume' proposal.dealer.resume.id request.user.id %}" style="color: #0d2fd8ff; font-size: 9px; margin-right: 5px;"> مشاهده رزومه <i class="fas fa-eye"></i></a></td>
+                                    <td>{{ proposal.dealer.get_full_name }} <a href="{% if request.user.user_type == 'customer' %}{% url 'account:dealer_resume' proposal.dealer.resume.id request.user.id %}{% else %} {% url 'account:resume_detail' proposal.dealer.resume.id %} {% endif %}" style="color: #0d2fd8ff; font-size: 9px; margin-right: 5px;"> مشاهده رزومه <i class="fas fa-eye"></i></a></td>
                                     <td>{{ proposal.proposal_price|format_price }}</td>
                                     <td>
                                         <a href="#">
