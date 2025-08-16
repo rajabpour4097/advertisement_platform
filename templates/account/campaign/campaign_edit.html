@@ -31,17 +31,21 @@
                     <label for="id_topic">موضوعات کمپین:</label>
                     <div class="topic-checkbox-list">
                         {% for topic in form.fields.topic.queryset %}
-                        <div class="topic-checkbox-item">
-                            <input type="radio" 
-                                   name="topic" 
-                                   value="{{ topic.id }}" 
-                                   id="topic_{{ topic.id }}"
-                                   {% if topic.id == form.initial.topic %}checked{% endif %}>
-                            <label for="topic_{{ topic.id }}">
-                                {{ topic.name }}
-                            </label>
-                            <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
-                        </div>
+                            {% if not topic.parent %}
+                                <div class="topic-checkbox-item">
+                                    <input type="radio" 
+                                           name="topic" 
+                                           value="{{ topic.id }}" 
+                                           id="topic_{{ topic.id }}"
+                                           {% if topic.id == form.initial.topic %}checked{% endif %}>
+                                    <label for="topic_{{ topic.id }}">
+                                        {{ topic.name }}
+                                    </label>
+                                    {% if topic.icon %}
+                                        <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                     {% if form.topic.errors %}

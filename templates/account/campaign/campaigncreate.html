@@ -259,7 +259,8 @@
 
                         <div id="image-previews" class="preview-grid">
                             {% for f in image_formset.forms %}
-                                <div class="image-form preview-card" data-index="{{ forloop.counter0 }}">
+                                <div class="image-form preview-card {% if not f.instance.pk or not f.instance.image %}hidden{% endif %}"
+                                     data-index="{{ forloop.counter0 }}">
                                     {{ f.id }}
                                     <span class="delete-checkbox">{% if f.DELETE %}{{ f.DELETE }}{% endif %}</span>
                                     {{ f.image }}
@@ -435,13 +436,19 @@
     const emptyForm = document.getElementById('empty-form');
     const totalForms = document.getElementById('id_{{ image_formset.prefix }}-TOTAL_FORMS');
 
-    // برای کارت‌های رندر شده‌ی اولیه (حالت ویرایش یا فرم extra=1)
+    // آماده‌سازی کارت‌های موجود
     Array.from(previews.querySelectorAll('.image-form')).forEach(initCard => {
-        const fileInput = initCard.querySelector('input[type="file"]');
-        const img = initCard.querySelector('img');
-        const removeBtn = initCard.querySelector('.remove-btn');
-        const deleteField = initCard.querySelector('input[name$="-DELETE"]');
-        const idField = initCard.querySelector('input[name$="-id"]');
+        const fileInput  = initCard.querySelector('input[type="file"]');
+        const img        = initCard.querySelector('img');
+        const removeBtn  = initCard.querySelector('.remove-btn');
+        const deleteField= initCard.querySelector('input[name$="-DELETE"]');
+        const idField    = initCard.querySelector('input[name$="-id"]');
+
+        // اگر تصویری موجود نیست، کارت پنهان بماند
+        if (!(idField && idField.value)) {
+            initCard.classList.add('hidden');
+            if (removeBtn) removeBtn.classList.add('hidden');
+        }
 
         if (fileInput) {
             fileInput.addEventListener('change', (e) => {
@@ -451,46 +458,56 @@
                     reader.onload = () => {
                         img.src = reader.result;
                         img.classList.remove('hidden');
-                        removeBtn.classList.remove('hidden');   // show after pick
+                        removeBtn.classList.remove('hidden');
                     };
                     reader.readAsDataURL(file);
                 } else {
                     img.src = '';
                     img.classList.add('hidden');
-                    // hide only if this is a new/empty form (no instance id)
+                    // کارت‌های بدون فایل پنهان باشند
                     if (!(idField && idField.value)) {
-                        removeBtn.classList.add('hidden');
+                        initCard.classList.add('hidden');
+                        if (removeBtn) removeBtn.classList.add('hidden');
                     }
                 }
             });
         }
 
-        removeBtn.addEventListener('click', () => {
-            if (idField && idField.value && deleteField) {
-                deleteField.checked = true;   // mark for deletion
-                initCard.classList.add('hidden');
-            } else {
-                if (fileInput) fileInput.value = '';
-                img.src = '';
-                img.classList.add('hidden');
-                removeBtn.classList.add('hidden');
-                initCard.classList.add('hidden');
-            }
-        });
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                if (idField && idField.value && deleteField) {
+                    // فرم موجود: فقط برای حذف تیک بخورد و کارت پنهان شود
+                    deleteField.checked = true;
+                    initCard.classList.add('hidden');
+                } else {
+                    // فرم جدید: ورودی پاک و کارت پنهان
+                    if (fileInput) fileInput.value = '';
+                    img.src = '';
+                    img.classList.add('hidden');
+                    removeBtn.classList.add('hidden');
+                    initCard.classList.add('hidden');
+                }
+            });
+        }
     });
 
     function addNewImageCard(triggerPick = true) {
         const nextIndex = parseInt(totalForms.value, 10) || 0;
+
+        // ساخت کارت موقت بدون افزایش فوری TOTAL_FORMS
         const html = emptyForm.innerHTML.replace(/__prefix__/g, String(nextIndex));
         const wrapper = document.createElement('div');
         wrapper.className = 'image-form preview-card';
         wrapper.dataset.index = String(nextIndex);
-        wrapper.innerHTML = html + '<button type="button" class="remove-btn hidden">حذف</button><img class="hidden" alt="preview">';
+        wrapper.innerHTML = html +
+            '<button type="button" class="remove-btn hidden">حذف</button>' +
+            '<img class="hidden" alt="preview">';
 
         const fileInput = wrapper.querySelector('input[type="file"]');
         const img = wrapper.querySelector('img');
         const removeBtn = wrapper.querySelector('.remove-btn');
 
+        // انتخاب فایل
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files && e.target.files[0];
             if (file) {
@@ -498,17 +515,20 @@
                 reader.onload = () => {
                     img.src = reader.result;
                     img.classList.remove('hidden');
-                    removeBtn.classList.remove('hidden');     // show after pick
+                    removeBtn.classList.remove('hidden');
+                    wrapper.dataset.counted = '1';
+                    // حالا که واقعاً فایلی انتخاب شد، TOTAL_FORMS افزایش یابد
+                    totalForms.value = String(nextIndex + 1);
                 };
                 reader.readAsDataURL(file);
             } else {
-                img.src = '';
-                img.classList.add('hidden');
-                removeBtn.classList.add('hidden');
+                // کاربر Cancel کرد: کارت موقت حذف و TOTAL_FORMS دست‌نخورده بماند
+                wrapper.remove();
             }
         });
 
         removeBtn.addEventListener('click', () => {
+            // برای کارت‌های جدیدِ شمارش‌شده: فقط پنهان و پاکسازی؛ TOTAL_FORMS را تغییر نده
             fileInput.value = '';
             img.src = '';
             img.classList.add('hidden');
@@ -517,11 +537,14 @@
         });
 
         previews.appendChild(wrapper);
-        totalForms.value = String(nextIndex + 1);
         if (triggerPick) fileInput.click();
     }
 
-    addBtn.addEventListener('click', () => addNewImageCard(true));
+    // جلوگیری از دوبار اجرا شدن (کلیک روی دکمه داخل Dropzone)
+    addBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        addNewImageCard(true);
+    });
     dropzone.addEventListener('click', () => addNewImageCard(true));
 
     form.addEventListener("submit", function (e) {
