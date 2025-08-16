@@ -496,10 +496,10 @@ class CampaignCreateView(CreateCampaignUserMixin, CreateView):
             return self.form_invalid(form)
 
         # ارسال اعلان و پیامک همینجا
-        notify_campaign_actions(self.request.user, self.object, 'create', staff_users, am_users)
-        success, error = send_campaign_confirmation_sms(self.object, self.object.needs_mentor)
-        if not success:
-            messages.warning(self.request, f"خطا در ارسال پیامک: {error}")
+        # notify_campaign_actions(self.request.user, self.object, 'create', staff_users, am_users)
+        # success, error = send_campaign_confirmation_sms(self.object, self.object.needs_mentor)
+        # if not success:
+        #     messages.warning(self.request, f"خطا در ارسال پیامک: {error}")
 
         # هدایت مستقیم به صفحه پرداخت
         return redirect('wallet:campaign_payment', campaign_id=self.object.pk)

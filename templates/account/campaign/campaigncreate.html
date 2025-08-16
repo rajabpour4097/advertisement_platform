@@ -119,6 +119,59 @@
     font-weight: bold;
 }
 
+/* Dropzone + previews */
+.upload-dropzone {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  color: #6b7280;
+  background: #f9fafb;
+  margin-top: 8px;
+}
+.preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+.preview-card {
+  position: relative;
+  width: 150px;
+  height: 120px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.preview-card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+.preview-card input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.preview-card .remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  padding: 2px 6px;
+  cursor: pointer;
+  z-index: 2;
+}
+.hidden { display: none !important; }
 </style>
 
 <div class="content-frame">
@@ -131,7 +184,7 @@
                     <h2 style="color: #028c32;">ایجاد کمپین‌ جدید</h2>
                     <div class="clearfix"></div>
                 </div>
-                <form method="post" enctype="multipart/form-data novalidate" >
+                <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
                     
                     {# Render customer field if it exists #}
@@ -163,7 +216,6 @@
                                 </div>
                                 <h4>{{ topic.name }}</h4>
                                 <p class="short-description">{{ topic.short_description }}</p>
-                                <!-- اضافه کردن توضیحات ریزتر -->
                                 <div class="detailed-description">
                                     {{ topic.short_describe|default:"توضیحات تکمیلی اینجا نمایش داده می‌شود" }}
                                 </div>
@@ -175,9 +227,8 @@
                         <input type="hidden" name="topic" id="selected-topic-id" value="{{ form.topic.value.0 }}">
                     </div>
 
-
                     <div class="form-group">
-                        <label for="id_topic">شرح کمپین:</label>{# Render describe field #}
+                        <label for="id_topic">شرح کمپین:</label>
                         {{ form.describe }}
                         {% if form.describe.errors %}
                             <div class="invalid-feedback d-block text-danger">
@@ -185,9 +236,9 @@
                             </div>
                         {% endif %}
                     </div>
-                    {# Render purposed_price field #}
+
                     <div class="form-group">
-                        <label for="id_topic">قیمت پیشنهادی:</label>{# Render describe field #}
+                        <label for="id_topic">قیمت پیشنهادی:</label>
                         {{ form.purposed_price }}
                         {% if form.purposed_price.errors %}
                             <div class="invalid-feedback d-block text-danger">
@@ -196,21 +247,45 @@
                         {% endif %}
                     </div>
 
-                    {# Campaign images #}
-                    {{ image_formset.management_form }}
-                    <div id="image-form-container">
-                        {% for image_form in image_formset %}
-                            <div class="image-form">
-                                {{ image_form|crispy }}
-                            </div>
-                        {% endfor %}
-                    </div>
+                    {# Campaign images - New UI #}
+                    <div class="form-group">
+                        <label>تصاویر کمپین:</label>
 
-                    <button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
+                        {{ image_formset.management_form }}
+
+                        <div id="image-previews" class="preview-grid">
+                            {# نمایش فرم‌های موجود (در حالت ویرایش) به صورت کارت با پیش‌نمایش #}
+                            {% for f in image_formset.forms %}
+                                <div class="image-form preview-card" data-index="{{ forloop.counter0 }}">
+                                    {{ f.id }}  {# hidden id برای فرم‌های اولیه #}
+                                    {{ f.image }} {# input[type=file] #}
+                                    {% if f.DELETE %}{{ f.DELETE }}{% endif %}
+                                    <button type="button" class="remove-btn">حذف</button>
+                                    {% if f.instance.pk and f.instance.image %}
+                                        <img src="{{ f.instance.image.url }}" alt="preview">
+                                    {% else %}
+                                        <img class="hidden" alt="preview">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="upload-dropzone" id="upload-dropzone">
+                            <div>برای افزودن تصویر کلیک کنید یا دکمه زیر را بزنید</div>
+                            <button type="button" id="add-image-form" class="btn btn-sm btn-outline-primary">افزودن تصویر</button>
+                        </div>
+
+                        {# قالب فرم خالی برای کلون شدن - شامل __prefix__ #}
+                        <div id="empty-form" class="hidden">
+                            {{ image_formset.empty_form.id }}
+                            {{ image_formset.empty_form.image }}
+                            {% if image_formset.can_delete %}{{ image_formset.empty_form.DELETE }}{% endif %}
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="rules_accepted" name="rules_accepted" >
+                            <input type="checkbox" class="custom-control-input" id="rules_accepted" name="rules_accepted">
                             <label class="custom-control-label" for="rules_accepted">
                                 قوانین و مقررات را مطالعه کرده و می‌پذیرم
                             </label>
@@ -289,17 +364,17 @@
     const cards = document.querySelectorAll(".topic-card");
     const hiddenInput = document.getElementById("selected-topic-id");
     const form = document.querySelector("form");
-    const rulesCheckbox = document.getElementById("rules");
+    const rulesCheckbox = document.getElementById("rules_accepted"); // fixed
     const descriptionContainer = document.getElementById("topic-description-container");
 
+    // --- Topic cards (بدون تغییر مهم) ---
     function resetCardStyles() {
-    cards.forEach(card => {
-        card.classList.remove("selected");
-        card.style.borderColor = "#ddd";  // ← بازگرداندن به حالت اولیه
-        card.style.backgroundColor = "#fff"; // ← در صورت نیاز
-            });
-        }
-
+        cards.forEach(card => {
+            card.classList.remove("selected");
+            card.style.borderColor = "#ddd";
+            card.style.backgroundColor = "#fff";
+        });
+    }
     function showModal(title, message) {
         const modalHtml = `
             <div class="modal fade" id="customModal" tabindex="-1" role="dialog">
@@ -320,24 +395,18 @@
             </div>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         $('#customModal').modal('show');
-        $('#customModal').on('hidden.bs.modal', function () {
-            $(this).remove();
-        });
+        $('#customModal').on('hidden.bs.modal', function () { $(this).remove(); });
     }
-
     cards.forEach(card => {
         card.addEventListener("click", () => {
-                        resetCardStyles();
-                        card.classList.add("selected");
-                        const color = card.dataset.color || "#2ecc71";
-                        card.style.borderColor = color;
-                        hiddenInput.value = card.dataset.id;
-                        const description = card.dataset.description || "توضیحاتی برای این موضوع ثبت نشده است.";
-                        if (descriptionContainer) {
-                            descriptionContainer.innerHTML = `<p>${description}</p>`;
-                        }
-                    });
-
+            resetCardStyles();
+            card.classList.add("selected");
+            const color = card.dataset.color || "#2ecc71";
+            card.style.borderColor = color;
+            hiddenInput.value = card.dataset.id;
+            const description = card.dataset.description || "توضیحاتی برای این موضوع ثبت نشده است.";
+            if (descriptionContainer) descriptionContainer.innerHTML = `<p>${description}</p>`;
+        });
         const infoBtn = card.querySelector(".info-btn");
         if (infoBtn) {
             infoBtn.addEventListener("click", (e) => {
@@ -345,12 +414,103 @@
                 alert(card.dataset.description || "توضیحاتی برای این دسته موجود نیست.");
             });
         }
-
         if (card.classList.contains("selected")) {
             const color = card.dataset.color || "#f0fff5";
             card.style.backgroundColor = color;
         }
     });
+
+    // --- Images (Formset with dropzone & previews) ---
+    const previews = document.getElementById('image-previews');
+    const dropzone = document.getElementById('upload-dropzone');
+    const addBtn = document.getElementById('add-image-form');
+    const emptyForm = document.getElementById('empty-form');
+    const totalForms = document.getElementById('id_{{ image_formset.prefix }}-TOTAL_FORMS');
+
+    // برای کارت‌های رندر شده‌ی اولیه (حالت ویرایش یا فرم extra=1)
+    Array.from(previews.querySelectorAll('.image-form')).forEach(initCard => {
+        const fileInput = initCard.querySelector('input[type="file"]');
+        const img = initCard.querySelector('img');
+        const removeBtn = initCard.querySelector('.remove-btn');
+        const deleteField = initCard.querySelector('input[name$="-DELETE"]');
+        const idField = initCard.querySelector('input[name$="-id"]');
+
+        // اگر فایل جدید انتخاب شد، پیش‌نمایش به‌روز شود
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        img.src = reader.result;
+                        img.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // پاک‌شدن انتخاب
+                    img.src = '';
+                    img.classList.add('hidden');
+                }
+            });
+        }
+
+        // حذف: اگر فرم اولیه است => DELETE; اگر جدید/خالی => پنهان و خالی
+        removeBtn.addEventListener('click', () => {
+            if (idField && deleteField) {
+                deleteField.checked = true;
+                initCard.classList.add('hidden');
+            } else {
+                if (fileInput) fileInput.value = '';
+                initCard.classList.add('hidden');
+            }
+        });
+    });
+
+    function addNewImageCard(triggerPick = true) {
+        // از empty_form، ورودی‌ها را با اندیس جدید بسازیم
+        const nextIndex = parseInt(totalForms.value, 10) || 0;
+        const html = emptyForm.innerHTML.replace(/__prefix__/g, String(nextIndex));
+        const wrapper = document.createElement('div');
+        wrapper.className = 'image-form preview-card';
+        wrapper.dataset.index = String(nextIndex);
+        wrapper.innerHTML = html + '<button type="button" class="remove-btn">حذف</button><img class="hidden" alt="preview">';
+
+        const fileInput = wrapper.querySelector('input[type="file"]');
+        const img = wrapper.querySelector('img');
+        const removeBtn = wrapper.querySelector('.remove-btn');
+
+        // رویداد انتخاب فایل برای پیش‌نمایش
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    img.src = reader.result;
+                    img.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                img.src = '';
+                img.classList.add('hidden');
+            }
+        });
+
+        removeBtn.addEventListener('click', () => {
+            // برای فرم‌های جدید: خالی و مخفی. نیازی به کاهش TOTAL_FORMS نیست.
+            fileInput.value = '';
+            img.src = '';
+            img.classList.add('hidden');
+            wrapper.classList.add('hidden');
+        });
+
+        previews.appendChild(wrapper);
+        totalForms.value = String(nextIndex + 1);
+
+        if (triggerPick) fileInput.click();
+    }
+
+    addBtn.addEventListener('click', () => addNewImageCard(true));
+    dropzone.addEventListener('click', () => addNewImageCard(true));
 
     form.addEventListener("submit", function (e) {
         const selectedTopicId = hiddenInput.value;
@@ -359,15 +519,13 @@
             showModal("توجه", "لطفاً یک موضوع برای کمپین انتخاب کنید");
             return;
         }
-
-        if (!rulesCheckbox.checked) {
+        if (!rulesCheckbox || !rulesCheckbox.checked) {
             e.preventDefault();
             showModal("توجه", "برای ایجاد کمپین جدید باید قوانین را تایید کنید");
             return;
         }
     });
 });
-
 </script>
 
 {% endblock %}
