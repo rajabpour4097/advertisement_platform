@@ -1847,73 +1847,48 @@ class RunningCampaignParticipatedListView(ManagerUserMixin, TemplateView):
         items = []
 
         def add_item(kind, obj, user, text, price):
-            items.append({
-                'id': f'{kind}-{obj.id}',
-                'kind': kind,
-                'user': user,
-                'created_at': getattr(obj, 'created_at', None),
-                'text': text or '',
-                'price': price or 0,
-            })
+            items.append(SimpleNamespace(
+                id=f"{kind}-{obj.pk}",           # برای صفحه جزئیات
+                kind=kind,                       # برچسب نوع
+                user=user,                       # برای نمایش نام/تصویر
+                created_at=getattr(obj, 'created_at', None),
+                text=text,
+                price=price,
+            ))
 
         # Generic proposals
         for tx in CampaignTransaction.objects.filter(campaign=campaign):
-            add_item('generic', tx, tx.dealer, getattr(tx, 'proposals', ''), getattr(tx, 'proposal_price', 0))
+            add_item('generic', tx, tx.dealer, tx.proposals, tx.proposal_price)
 
         # Environmental
         for env in EnvironmentalAdvertisement.objects.filter(campaign=campaign):
-            text = env.description or f"{env.location_title} | {env.get_media_type_display()} | شروع: {env.available_date} | مدت: {env.expiration_date} روز"
-            items.append(SimpleNamespace(
-                id=f'env-{env.id}',
-                dealer=env.proposed_user,
-                proposal_price=env.proposal_price,
-                proposals=text,
-                created_at=getattr(env, 'created_at', None)
-            ))
+            text = env.description or env.location_title or ''
+            price = env.proposal_price
+            add_item('environmental', env, env.proposed_user, text, price)
 
         # Social media
         for sm in SocialmediaAdvertisement.objects.filter(campaign=campaign):
-            text = sm.description or f"{sm.get_proposed_ad_template_display()} | از {sm.start_execution_time} تا {sm.end_execution_time}"
-            items.append(SimpleNamespace(
-                id=f'sm-{sm.id}',
-                dealer=sm.proposed_user,
-                proposal_price=sm.proposal_price,
-                proposals=text,
-                created_at=getattr(sm, 'created_at', None)
-            ))
+            text = sm.description or ''
+            price = sm.proposal_price
+            add_item('socialmedia', sm, sm.proposed_user, text, price)
 
         # Digital
         for dg in DigitalAdvertisement.objects.filter(campaign=campaign):
-            text = dg.description or f"{dg.get_digital_ad_type_display()} | مدت: {dg.duration} روز | بودجه: {dg.advertising_budget:,}"
-            items.append(SimpleNamespace(
-                id=f'dg-{dg.id}',
-                dealer=dg.proposed_user,
-                proposal_price=dg.proposal_price,
-                proposals=text,
-                created_at=getattr(dg, 'created_at', None)
-            ))
+            text = dg.description or ''
+            price = dg.proposal_price
+            add_item('digital', dg, dg.proposed_user, text, price)
 
         # Printing
         for pr in PrintingAdvertisement.objects.filter(campaign=campaign):
-            text = pr.description or f"{pr.get_printing_ad_type_display()} | تیراژ: {pr.circulation} | تحویل: {pr.delivery_time} روز"
-            items.append(SimpleNamespace(
-                id=f'pr-{pr.id}',
-                dealer=pr.proposed_user,
-                proposal_price=pr.total_proposal_price,
-                proposals=text,
-                created_at=getattr(pr, 'created_at', None)
-            ))
+            text = pr.description or ''
+            price = pr.total_proposal_price
+            add_item('printing', pr, pr.proposed_user, text, price)
 
         # Event marketing
         for ev in EventMarketingAdvertisement.objects.filter(campaign=campaign):
-            text = ev.description or f"{ev.get_event_type_display()} | شهر: {ev.location} | تاریخ: {ev.event_proposed_date}\n{(ev.event_content or '')}"
-            items.append(SimpleNamespace(
-                id=f'ev-{ev.id}',
-                dealer=ev.proposed_user,
-                proposal_price=ev.total_proposal_price,
-                proposals=text,
-                created_at=getattr(ev, 'created_at', None)
-            ))
+            text = ev.description or ''
+            price = ev.total_proposal_price
+            add_item('event', ev, ev.proposed_user, text, price)
 
         # Sort newest first
         items.sort(key=lambda x: x.created_at or timezone.now(), reverse=True)
@@ -2044,6 +2019,8 @@ class ProposalDetailView(ManagerUserMixin, TemplateView):
 
         user, campaign, text, price = self.get_common_fields(obj, kind)
         details = self.get_detail_pairs(obj)
+
+
 
         return render(request, self.template_name, {
 
