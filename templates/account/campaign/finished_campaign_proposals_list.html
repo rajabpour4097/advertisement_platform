@@ -7,12 +7,41 @@
 {% block title %}لیست پیشنهادات کمپین{% endblock %}
 
 {% block content %}
+
+<style>
+    .table-responsive {
+        border-radius: 0.25rem;
+        overflow: hidden;
+        text-align: center;
+    }
+    .table th,
+    .table td {
+        text-align: center;
+    }
+
+    .campaign-title {
+        font-size: 12px;
+        color: #05153dff;
+        margin-bottom: 2rem;
+        display: block;
+        height: 30px;
+        font-size: 13px;
+        padding: 8px;
+        box-shadow: 3px 3px 2px 2px lightblue;
+        width: 20%;
+    }
+</style>
+
 <div class="container mt-4">
     <div class="card shadow-sm">
         
         <div class="x_title">
             <h2>لیست پیشنهادات کمپین</h2>
+            <a href="{% url 'account:campaigns' %}" class="btn btn-secondary btn-sm" style="float: left; color: #d80d4aff; font-weight: bold;">بازگشت</a>
             <div class="clearfix"></div>
+        </div>
+        <div class="campaign-title">
+            لیست پیشنهادات کمپین {{ campaign.topic.first.name }}
         </div>
         <div class="card-body">
             {% if proposals %}
@@ -29,7 +58,7 @@
                     </div>
                 {% endif %}
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table id="datatable" class="table table-striped jambo_table bulk_action">
                         <thead>
                             <tr>
                                 <th>مجری</th>
@@ -43,16 +72,14 @@
                         <tbody>
                             {% for proposal in proposals %}
                                 <tr>
-                                    <td>{{ proposal.dealer.get_full_name }} <a href="{% if request.user.user_type == 'customer' %}{% url 'account:dealer_resume' proposal.dealer.resume.id request.user.id %}{% else %} {% url 'account:resume_detail' proposal.dealer.resume.id %} {% endif %}" style="color: #0d2fd8ff; font-size: 9px; margin-right: 5px;"> مشاهده رزومه <i class="fas fa-eye"></i></a></td>
+                                    <td>{{ proposal.dealer.get_full_name }} </td>
                                     <td>{{ proposal.proposal_price|format_price }}</td>
                                     <td>
-                                        <a href="#">
                                             <span data-bs-toggle="tooltip" 
                                                   data-bs-placement="top" 
                                                   title="{{ proposal.proposals|truncatechars:50 }}">
                                                 {{ proposal.proposals|truncatechars:30 }}
                                             </span>
-                                        </a>
                                     </td>
                                     {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
                                         <td> 

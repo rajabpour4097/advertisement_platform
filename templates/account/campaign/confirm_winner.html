@@ -17,7 +17,7 @@
                 {% csrf_token %}
                 <div class="mt-3">
                     <button type="submit" class="btn btn-success">بله، مطمئن هستم</button>
-                    <a href="{% url 'account:finished_campaign_proposals' campaign.id %}" class="btn btn-secondary">انصراف</a>
+                    <a href="{% url 'account:finished_campaign_proposals' campaign.id %}" class="btn btn-danger">انصراف</a>
                 </div>
             </form>
         </div>

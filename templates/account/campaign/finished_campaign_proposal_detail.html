@@ -77,6 +77,7 @@
             <p><strong>پیشنهاد دهنده:</strong>
               <span style="color: #1734d9ff;">
                 {{ proposal.proposed_user.get_full_name|default:proposal.proposed_user.email }}
+                <a href="{% if request.user.user_type == 'customer' %}{% url 'account:dealer_resume' proposal.proposed_user.resume.id request.user.id %}{% else %} {% url 'account:resume_detail' proposal.proposed_user.resume.id %} {% endif %}" style="color: #0d2fd8ff; font-size: 10px; margin-right: 5px;"> مشاهده رزومه <i class="fas fa-eye"></i></a>
               </span>
             </p>
             {% if campaign %}
