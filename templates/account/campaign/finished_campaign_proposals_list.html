@@ -60,7 +60,7 @@
                                                class="btn btn-success btn-sm">
                                                 انتخاب بعنوان برنده
                                             </a>
-                                            <a href="{% url 'account:select_winner' campaign.id proposal.dealer.id %}" 
+                                            <a href="{% url 'account:finished_campaign_proposal_detail' campaign.topic.first campaign.id %}" 
                                                class="btn btn-info btn-sm">
                                                 مشاهده جزئیات پیشنهاد
                                             </a>

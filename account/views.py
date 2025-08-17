@@ -2187,3 +2187,44 @@ class CustomerResumeView(LoginRequiredMixin, DetailView):
         dealer_resume = get_object_or_404(Resume, id=self.kwargs['pk'])
         context['resume'] = dealer_resume
         return context
+
+
+class FinishedCampaignProposalDetail(LoginRequiredMixin, TemplateView):
+    template_name = "account/campaign/finished_campaign_proposal_detail.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # اول کمپین رو بگیریم
+        campaign = get_object_or_404(Campaign, id=self.kwargs['pk'])
+        current_user = request.user
+
+        # چک کنیم کاربر صاحب کمپین باشه
+        if str(current_user.id) != str(campaign.customer_id):
+            return render(request, '403.html', {
+                'error_message': "شما به این کمپین دسترسی ندارید",
+                'back_url': "account:home"
+            })
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def _form_for_kind(self, kind):
+        form_map = {
+            'تبلیغات محیطی': EnvironmentalAdvertisement,
+            'شبکه های اجتماعی': SocialmediaAdvertisement,
+            'تبلیغات دیجیتال': DigitalAdvertisement,
+            'تبلیغات چاپی': PrintingAdvertisement,
+            'ایونت مارکتینگ': EventMarketingAdvertisement,
+        }
+        return form_map.get(kind, ParticipateCampaignForm)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        model_class = self._form_for_kind(self.kwargs['category'])
+
+        # همه‌ی proposalهای این کمپین در این دسته‌بندی
+        proposals = model_class.objects.filter(campaign_id=self.kwargs['pk'])
+
+        context['campaign'] = get_object_or_404(Campaign, id=self.kwargs['pk'])
+        context['proposal'] = proposals.first()
+        return context
+

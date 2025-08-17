@@ -1,0 +1,368 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load humanize %}
+{% load advplatform_tags %}
+{% load account_tags %}
+
+{% block title %}جزئیات پیشنهادات کمپین{% endblock %}
+
+{% block extra_head %}
+{% if category == "تبلیغات محیطی" %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{% endif %}
+<style>
+  /* استایل‌های بهبود یافته */
+  .content-frame {
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  @media (max-width: 576px) {
+    .content-frame { max-height: calc(100vh - 110px); padding: .75rem; }
+  }
+
+  .proposal-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .proposal-header .badge {
+    margin-right: 8px;
+  }
+  
+  .proposal-details-card {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  {% if category == "تبلیغات محیطی" %}
+  #map {
+    height: 320px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-top: 10px;
+  }
+  {% endif %}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-frame">
+  <div class="container mt-4">
+    <div class="card shadow-sm">
+      <div class="x_title">
+        <h2>جزئیات پیشنهادات کمپین</h2>
+        <div class="clearfix"></div>
+      </div>
+      <div class="card-body">
+        <div class="proposal-header">
+          <h4 class="mb-0">جزئیات پیشنهاد</h4>
+          <span class="badge bg-info">{{ category }}</span>
+          <div class="icon-wrapper">
+            <img src="{{ campaign.topic.first.icon.url }}" alt="{{ campaign.topic.first.name }}" style="width:50px; height:50px; margin-right:10px"/>
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p><strong>پیشنهاد دهنده:</strong>
+              <span style="color: #1734d9ff;">
+                {{ proposal.proposed_user.get_full_name|default:proposal.proposed_user.email }}
+              </span>
+            </p>
+            {% if campaign %}
+            <p><strong>کمپین:</strong> {{ campaign.topic.first.name|default:"-" }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if proposal %}
+          <div class="proposal-details">
+            {% if category == "تبلیغات محیطی" %}
+              <!-- Environmental Advertisement Details -->
+              <div class="card proposal-details-card">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0">جزئیات پیشنهاد {{ proposal.proposed_user.get_full_name|default:proposal.proposed_user.email }} برای تبلیغات محیطی</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>عنوان موقعیت:</strong> {{ proposal.location_title }}</p>
+                      <p><strong>نوع رسانه:</strong> {{ proposal.get_media_type_display }}</p>
+                      <p><strong>ابعاد:</strong> {{ proposal.media_width }}×{{ proposal.media_height }}</p>
+                      <p><strong>تاریخ شروع قابل رزرو:</strong> {{ proposal.available_date|jalali_date }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>مدت زمان اکران:</strong> {{ proposal.expiration_date }} روز</p>
+                      <p><strong>قیمت پیشنهادی:</strong> {{ proposal.proposal_price|format_price }}</p>
+                      <p><strong>توضیحات:</strong> {{ proposal.description|default:"-" }}</p>
+                    </div>
+                  </div>
+                  
+                  {% if proposal.service_area.all %}
+                  <div class="mt-3">
+                    <strong>مناطق سرویس دهی:</strong>
+                    <ul>
+                      {% for city in proposal.service_area.all %}
+                        <li>{{ city.name }} ({{ city.province.name }})</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                  {% endif %}
+                  
+                  <!-- محل نقشه با بهبود نمایش -->
+                  <div class="mt-3" id="map-wrap" style="{% if not proposal.media_location_latitude or not proposal.media_location_longitude %}display:none;{% endif %}">
+                    <strong>موقعیت مکانی:</strong>
+                    <div id="map"></div>
+                  </div>
+                </div>
+              </div>
+
+            {% elif category == "شبکه های اجتماعی" %}
+              <!-- Social Media Advertisement Details -->
+              <div class="card proposal-details-card">
+                <div class="card-header bg-info text-white">
+                  <h5 class="mb-0">جزئیات پیشنهاد تبلیغات شبکه‌های اجتماعی</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>نوع تبلیغ:</strong> {{ proposal.get_proposed_ad_template_display }}</p>
+                      <p><strong>زمان شروع تبلیغ:</strong> {{ proposal.start_execution_time|date:"Y/m/d H:i" }}</p>
+                      <p><strong>زمان پایان تبلیغ:</strong> {{ proposal.end_execution_time|date:"Y/m/d H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>قیمت پیشنهادی:</strong> {{ proposal.proposal_price|format_price }}</p>
+                      <p><strong>توضیحات:</strong> {{ proposal.description|default:"-" }}</p>
+                    </div>
+                  </div>
+                  
+                  {% if proposal.content_categories.all %}
+                  <div class="mt-3">
+                    <strong>دسته‌بندی‌های محتوا:</strong>
+                    <ul class="list-group">
+                      {% for category in proposal.content_categories.all %}
+                        <li class="list-group-item">{{ category.name }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% elif category == "تبلیغات دیجیتال" %}
+              <!-- Digital Advertisement Details -->
+              <div class="card proposal-details-card">
+                <div class="card-header bg-success text-white">
+                  <h5 class="mb-0">جزئیات پیشنهاد تبلیغات دیجیتال</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>نوع تبلیغ دیجیتال:</strong> {{ proposal.get_digital_ad_type_display }}</p>
+                      <p><strong>نوع هدف‌گذاری:</strong> {{ proposal.get_targeting_type_display }}</p>
+                      <p><strong>تخمین کلیک/نمایش:</strong> {{ proposal.estimated_clicks|intcomma }}</p>
+                      <p><strong>مدت زمان اجرا:</strong> {{ proposal.duration }} روز</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>بودجه تبلیغ:</strong> {{ proposal.advertising_budget|format_price }}</p>
+                      <p><strong>قیمت پیشنهادی:</strong> {{ proposal.proposal_price|format_price }}</p>
+                      <p><strong>توضیحات:</strong> {{ proposal.description|default:"-" }}</p>
+                    </div>
+                  </div>
+                  
+                  {% if proposal.proposed_platform.all %}
+                  <div class="mt-3">
+                    <strong>پلتفرم‌های هدف:</strong>
+                    <div class="table-responsive">
+                      <table class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>نام پلتفرم</th>
+                            <th>توضیحات</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for platform in proposal.proposed_platform.all %}
+                          <tr>
+                            <td>{{ platform.name }}</td>
+                            <td>{{ platform.description|default:"-" }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% elif category == "تبلیغات چاپی" %}
+              <!-- Printing Advertisement Details -->
+              <div class="card proposal-details-card">
+                <div class="card-header bg-warning text-dark">
+                  <h5 class="mb-0">جزئیات پیشنهاد تبلیغات چاپی</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>نوع اقلام چاپی:</strong> {{ proposal.get_printing_ad_type_display }}</p>
+                      <p><strong>گرماژ و جنس کاغذ:</strong> {{ proposal.paper_weight_and_type }}</p>
+                      <p><strong>ابعاد:</strong> {{ proposal.dimensions }}</p>
+                      <p><strong>تیراژ:</strong> {{ proposal.circulation|intcomma }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>زمان تحویل:</strong> {{ proposal.delivery_time }} روز کاری</p>
+                      <p><strong>قیمت کل پیشنهادی:</strong> {{ proposal.total_proposal_price|format_price }}</p>
+                      <p><strong>طراحی گرافیکی:</strong> {% if proposal.graphic_design_included %}شامل می‌شود{% else %}شامل نمی‌شود{% endif %}</p>
+                    </div>
+                  </div>
+                  
+                  {% if proposal.description %}
+                  <div class="mt-3">
+                    <div class="card">
+                      <div class="card-header">توضیحات</div>
+                      <div class="card-body">
+                        <p>{{ proposal.description }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+            {% elif category == "ایونت مارکتینگ" %}
+              <!-- Event Marketing Advertisement Details -->
+              <div class="card proposal-details-card">
+                <div class="card-header bg-danger text-white">
+                  <h5 class="mb-0">جزئیات پیشنهاد ایونت مارکتینگ</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>نوع رویداد پیشنهادی:</strong> {{ proposal.get_event_type_display }}</p>
+                      <p><strong>محل برگزاری:</strong> {{ proposal.location.name }} ({{ proposal.location.province.name }})</p>
+                      <p><strong>آدرس محل برگزاری:</strong> {{ proposal.location_address }}</p>
+                      <p><strong>تاریخ پیشنهادی رویداد:</strong> {{ proposal.event_proposed_date|date:"Y/m/d" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>قیمت پیشنهادی کل:</strong> {{ proposal.total_proposal_price|format_price }}</p>
+                      <p><strong>توضیحات:</strong> {{ proposal.description|default:"-" }}</p>
+                    </div>
+                  </div>
+                  
+                  {% if proposal.event_content %}
+                  <div class="mt-3">
+                    <div class="card">
+                      <div class="card-header">محتوا یا سناریوی کلی رویداد</div>
+                      <div class="card-body">
+                        <p style="white-space: pre-line;">{{ proposal.event_content }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% else %}
+              <!-- Generic Proposal -->
+              <div class="card proposal-details-card">
+                <div class="card-header bg-secondary text-white">
+                  <h5 class="mb-0">جزئیات پیشنهاد</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>قیمت پیشنهادی:</strong> {{ proposal.proposal_price|format_price }}</p>
+                      <p><strong>ارائه دهنده:</strong> {{ proposal.dealer.get_full_name|default:proposal.dealer.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>تاریخ ثبت:</strong> {{ proposal.created_at|date:"Y/m/d H:i" }}</p>
+                    </div>
+                  </div>
+                  
+                  {% if proposal.proposals %}
+                  <div class="mt-3">
+                    <div class="card">
+                      <div class="card-header">توضیحات پیشنهاد</div>
+                      <div class="card-body">
+                        <p style="white-space: pre-line;">{{ proposal.proposals }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            هیچ پیشنهادی برای این کمپین در دسته‌بندی {{ category }} یافت نشد.
+          </div>
+        {% endif %}
+
+        <!-- کنترل‌های عملیات -->
+        <div class="mt-4">
+          <a href="{% url 'account:finished_campaign_proposals' campaign.id %}" class="btn btn-secondary">
+            <i class="fa fa-arrow-right"></i> بازگشت به لیست پیشنهادات
+          </a>
+          
+          {% if campaign.status == 'progressing' and not campaign.campaign_dealer %}
+            <a href="{% url 'account:select_winner' campaign.id proposal.proposed_user.id %}" class="btn btn-success float-end">
+              <i class="fa fa-check"></i> انتخاب به عنوان برنده
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if category == "تبلیغات محیطی" %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  (function() {
+    // فقط اگر مختصات وجود داشته باشد نقشه را نمایش بده
+    const latRaw = "{{ proposal.media_location_latitude|default_if_none:'' }}";
+    const lonRaw = "{{ proposal.media_location_longitude|default_if_none:'' }}";
+    
+    const lat = parseFloat(latRaw);
+    const lon = parseFloat(lonRaw);
+    
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      const mapWrap = document.getElementById('map-wrap');
+      if (mapWrap) mapWrap.style.display = 'block';
+      
+      const map = L.map('map', {
+        center: [lat, lon],
+        zoom: 14,
+        zoomControl: true,
+        dragging: true,
+        scrollWheelZoom: false,
+        doubleClickZoom: true,
+        boxZoom: false,
+        keyboard: false
+      });
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+      }).addTo(map);
+      
+      L.marker([lat, lon], { draggable: false })
+        .addTo(map)
+        .bindPopup("{{ proposal.location_title }}").openPopup();
+    }
+  })();
+</script>
+{% endif %}
+{% endblock %}

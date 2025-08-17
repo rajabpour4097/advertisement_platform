@@ -136,7 +136,10 @@ class EnvironmentalAdvertisement(BaseModel):
         ordering = ['-created_at']
 
     def __str__(self):
-        return self.campaign.topic.first.name
+        first_topic = self.campaign.topic.first()
+        if first_topic:
+            return first_topic.name
+        return "No topic"
     
 
 class SocialmediaAdvertisement(BaseModel):
@@ -155,12 +158,15 @@ class SocialmediaAdvertisement(BaseModel):
     description = models.TextField(verbose_name='توضیحات', blank=True, null=True)
 
     class Meta:
-        verbose_name = 'تبلیغ رسانه اجتماعی'
-        verbose_name_plural = 'تبلیغات رسانه اجتماعی'
+        verbose_name = 'تبلیغ شبکه های اجتماعی'
+        verbose_name_plural = 'تبلیغات شبکه های اجتماعی'
         ordering = ['-created_at']
 
     def __str__(self):
-        return self.campaign.topic.first.name
+        first_topic = self.campaign.topic.first()
+        if first_topic:
+            return first_topic.name
+        return "No topic"
 
     # def check_correct_data(self):
     #     return self.start_execution_time > time.now() and self.end_execution_time > self.start_execution_time
@@ -182,8 +188,11 @@ class DigitalAdvertisement(BaseModel):
         verbose_name_plural = 'تبلیغات دیجیتال'
         ordering = ['-created_at']
     def __str__(self):
-        return self.campaign.topic.first.name
-    
+        first_topic = self.campaign.topic.first()
+        if first_topic:
+            return first_topic.name
+        return "No topic"
+
 
 class PrintingAdvertisement(BaseModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='printing_ads', verbose_name='کمپین')
@@ -203,8 +212,11 @@ class PrintingAdvertisement(BaseModel):
         ordering = ['-created_at']
 
     def __str__(self):
-        return self.campaign.topic.first.name
-    
+        first_topic = self.campaign.topic.first()
+        if first_topic:
+            return first_topic.name
+        return "No topic"
+
 
 class EventMarketingAdvertisement(BaseModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='event_marketing_ads', verbose_name='کمپین')
@@ -223,7 +235,10 @@ class EventMarketingAdvertisement(BaseModel):
         ordering = ['-created_at']
 
     def __str__(self):
-        return self.campaign.topic.first.name
+        first_topic = self.campaign.topic.first()
+        if first_topic:
+            return first_topic.name
+        return "No topic"
 
 
 # class HybridAdvertisement(BaseModel):
