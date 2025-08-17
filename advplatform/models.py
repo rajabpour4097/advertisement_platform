@@ -273,7 +273,11 @@ class Campaign(models.Model):
     
     def get_finished_proposals(self):
         return self.endtimedate >= timezone.now() - timedelta(hours=96)
-    
+
+    def is_user_in_participants(self, user):
+        if not user or not user.is_authenticated:
+            return False
+        return self.list_of_participants.filter(id=user.id).exists()
 
 class Portfolio(models.Model):
     dealer = models.ForeignKey(

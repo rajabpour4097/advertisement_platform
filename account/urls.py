@@ -15,6 +15,7 @@ from account.views import (
     CampaignReviewView,
     CampaignListView,
     CustomerResumeView,
+    FinishedCampaignDealerOwnProposal,
     FinishedCampaignProposalDetail,
     ListOfRequestForMentor,
     MentorChooseView,
@@ -104,4 +105,5 @@ urlpatterns = [
     path('ajax/cities/', CitiesByProvinceView.as_view(), name='ajax_cities'),
     path('resume/customerview/<int:pk>/<int:user_id>/', CustomerResumeView.as_view(), name='dealer_resume'),
     path('campaigns/finished-proposals/proposaldetail/<str:category>/<int:pk>/', FinishedCampaignProposalDetail.as_view(), name='finished_campaign_proposal_detail'),
+    path('campaigns/finished-proposals/dealer-own-proposal/<int:pk>/', FinishedCampaignDealerOwnProposal.as_view(), name='finished_campaign_dealer_own_proposal'),
 ]

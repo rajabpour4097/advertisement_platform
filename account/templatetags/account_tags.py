@@ -51,3 +51,7 @@ def endswith(value, suffix):
     if isinstance(value, str):
         return value.endswith(suffix)
     return False
+
+@register.filter
+def is_participant(campaign, user):
+    return campaign.list_of_participants.filter(id=user.id).exists()

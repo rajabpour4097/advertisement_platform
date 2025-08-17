@@ -202,15 +202,24 @@
                                         <span class="badge bg-secondary">پایان یافته</span>
                                     </div>
                                     {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
-                                    {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
+                                        {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
+                                            <div>
+                                                <span class="badge bg-primary" style="margin-top:2px; font-size: 10px;">
+                                                    <a href="{% url 'account:finished_campaign_proposals' campaign.id %}">
+                                                        مشاهده پیشنهادات <i class="fa fa-search"></i>
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if request.user.user_type == 'dealer' and campaign|is_participant:request.user %}
                                         <div>
                                             <span class="badge bg-primary" style="margin-top:2px; font-size: 10px;">
-                                                <a href="{% url 'account:finished_campaign_proposals' campaign.id %}">
-                                                    مشاهده پیشنهادات <i class="fa fa-search"></i>
+                                                <a href="{% url 'account:finished_campaign_dealer_own_proposal' campaign.id %}">
+                                                    مشاهده پیشنهاد شما<i class="fa fa-search"></i>
                                                 </a>
                                             </span>
                                         </div>
-                                        {% endif %}
                                     {% endif %}
                                 {% elif campaign.status == 'unpaid' %}
                                         {% if request.user.user_type == 'customer' %}

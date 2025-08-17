@@ -8,6 +8,7 @@ from django.views import View
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from httpcore import request
 from account.models import CampaignTransaction, DigitalAdvertisement, EditingCampaign, EnvironmentalAdvertisement, EventMarketingAdvertisement, PrintingAdvertisement, RequestForMentor, SocialmediaAdvertisement
 from advplatform.forms import ResumeForm, ResumeReviewForm
 from wallet.models import Wallet, Transaction
@@ -2204,4 +2205,22 @@ class FinishedCampaignProposalDetail(LoginRequiredMixin, TemplateView):
         context['campaign'] = get_object_or_404(Campaign, id=self.kwargs['pk'])
         context['proposal'] = proposals.first()
         return context
+
+
+class FinishedCampaignDealerOwnProposal(LoginRequiredMixin, TemplateView):
+    template_name = "account/campaign/finished_campaign_dealer_own_proposal.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # اول کمپین رو بگیریم
+        campaign = get_object_or_404(Campaign, id=self.kwargs['pk'])
+        current_user = request.user
+
+        # چک کنیم کاربر صاحب کمپین باشه
+        if not campaign.list_of_participants.filter(id=current_user.id).exists():
+            return render(request, '403.html', {
+                'error_message': "شما به این کمپین دسترسی ندارید",
+                'back_url': "account:home"
+            })
+
+        return super().dispatch(request, *args, **kwargs)
 
