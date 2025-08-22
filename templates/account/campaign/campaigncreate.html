@@ -176,6 +176,21 @@
 /* hide formset DELETE checkbox completely */
 .image-form input[type="checkbox"][name$="-DELETE"],
 .delete-checkbox { display: none !important; }
+
+/* Topic description container with smooth color transition */
+#topic-description-container {
+    padding: 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    background-color: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    font-size: 15px
+}
+
+#topic-description-container p {
+    margin: 0;
+    color: #374151;
+}
 </style>
 
 <div class="content-frame">
@@ -349,10 +364,10 @@
                 </div>
             </div>
 
-            <!-- افزودن پنل جدید برای توضیحات موضوع -->
+            <!-- افزودن پنل جدید برای توضیحات کمپین -->
             <div class="x_panel">
                 <div class="x_title">
-                    <h2 style="color: #028c32;">توضیحات موضوع</h2>
+                    <h2 style="color: #028c32;">توضیحات کمپین</h2>
                     <div class="clearfix"></div>
                 </div>
                 <div class="x_content">
@@ -375,6 +390,23 @@
     const form = document.querySelector("form");
     const rulesCheckbox = document.getElementById("rules_accepted"); // fixed
     const descriptionContainer = document.getElementById("topic-description-container");
+
+    // تابع برای تبدیل رنگ hex به rgba با شفافیت
+    function hexToRgba(hex, alpha) {
+        // حذف # از ابتدای رنگ اگر وجود داشته باشد
+        hex = hex.replace('#', '');
+        
+        // اگر رنگ 3 کاراکتری باشد، به 6 کاراکتری تبدیل شود
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
 
     // --- Topic cards (بدون تغییر مهم) ---
     function resetCardStyles() {
@@ -414,7 +446,13 @@
             card.style.borderColor = color;
             hiddenInput.value = card.dataset.id;
             const description = card.dataset.description || "توضیحاتی برای این موضوع ثبت نشده است.";
-            if (descriptionContainer) descriptionContainer.innerHTML = `<p>${description}</p>`;
+            if (descriptionContainer) {
+                descriptionContainer.innerHTML = `<p>${description}</p>`;
+                // تغییر رنگ پس‌زمینه قسمت توضیحات بر اساس رنگ موضوع انتخاب شده
+                const lightColor = hexToRgba(color, 0.1); // رنگ کم‌رنگ برای پس‌زمینه
+                descriptionContainer.style.backgroundColor = lightColor;
+                descriptionContainer.style.borderColor = color;
+            }
         });
         const infoBtn = card.querySelector(".info-btn");
         if (infoBtn) {
@@ -426,6 +464,14 @@
         if (card.classList.contains("selected")) {
             const color = card.dataset.color || "#f0fff5";
             card.style.backgroundColor = color;
+            // تنظیم رنگ پس‌زمینه قسمت توضیحات برای موضوع از قبل انتخاب شده
+            if (descriptionContainer) {
+                const description = card.dataset.description || "توضیحاتی برای این موضوع ثبت نشده است.";
+                descriptionContainer.innerHTML = `<p>${description}</p>`;
+                const lightColor = hexToRgba(color, 0.1);
+                descriptionContainer.style.backgroundColor = lightColor;
+                descriptionContainer.style.borderColor = color;
+            }
         }
     });
 
