@@ -49,8 +49,8 @@ class ContentCategoryAdmin(admin.ModelAdmin):
 class EnvironmentalAdImageInline(admin.TabularInline):
     model = EnvironmentalAdImage
     extra = 1
-    fields = ('image', 'caption', 'order')
-    ordering = ('order',)
+    fields = ('image',)
+    ordering = ('id',)
 
 @register(EnvironmentalAdvertisement)
 class EnvironmentalAdvertisementAdmin(admin.ModelAdmin):

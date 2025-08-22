@@ -125,6 +125,27 @@
         </div>
 
         {% if kind == 'environmental' %}
+        <!-- environmental images -->
+        <div class="mb-3">
+          <strong>تصاویر موقعیت:</strong>
+          {% with imgs=obj.images.all %}
+            {% if imgs %}
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                {% for img in imgs %}
+                  <div style="width:110px;">
+                    <img src="{{ img.image.url }}" alt="{{ img.caption|default:'image' }}" style="width:100%;height:90px;object-fit:cover;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;" onclick="openEnvImageModal('{{ img.image.url }}','{{ img.caption|default:'' }}')">
+                    {% if img.caption %}<div class="small text-muted mt-1" style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ img.caption }}</div>{% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-muted small mt-2">تصویری ثبت نشده است.</div>
+            {% endif %}
+          {% endwith %}
+        </div>
+        {% endif %}
+
+        {% if kind == 'environmental' %}
         <!-- map -->
         <div class="mb-3" id="env-map-wrap" style="display:none">
           <h5 class="mt-0 mb-2" style="font-size:15px;">موقعیت مکانی</h5>
@@ -250,6 +271,27 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
+  // simple modal for environmental images
+  (function(){
+    if(!document.getElementById('envImageModal')){
+      const modal = document.createElement('div');
+      modal.id='envImageModal';
+      modal.style.cssText='position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:1050;padding:20px;';
+      modal.innerHTML=`<div style="max-width:720px;width:100%;">
+          <div style="background:#fff;border-radius:8px;overflow:hidden;position:relative;">
+            <button type="button" id="envImageModalClose" style="position:absolute;top:6px;left:6px;background:#0008;color:#fff;border:none;border-radius:4px;padding:4px 8px;font-size:12px;cursor:pointer;">×</button>
+            <img id="envImageModalImg" src="" alt="" style="width:100%;height:auto;display:block;max-height:70vh;object-fit:contain;background:#000;">
+            <div id="envImageModalCaption" style="padding:8px 12px;font-size:12px;color:#555;white-space:pre-wrap;"></div>
+          </div>`;
+      document.body.appendChild(modal);
+      modal.addEventListener('click', e=>{ if(e.target===modal || e.target.id==='envImageModalClose'){ modal.style.display='none'; }});
+      window.openEnvImageModal = function(src, cap){
+        const imgEl=document.getElementById('envImageModalImg');
+        const capEl=document.getElementById('envImageModalCaption');
+        imgEl.src=src; capEl.textContent=cap||''; modal.style.display='flex';
+      }
+    }
+  })();
   (function () {
     const latRaw = "{{ obj.media_location_latitude|default_if_none:'' }}";
     const lonRaw = "{{ obj.media_location_longitude|default_if_none:'' }}";

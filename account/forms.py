@@ -4,9 +4,9 @@ from django.urls import reverse
 from advplatform.choices_type import CUSTOMER_TYPE, USER_TYPE
 from advplatform.models import Campaign, CampaignImages,\
     CustomUser, Portfolio, PortfolioImages, UsersImages
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.contrib.auth.forms import UserCreationForm
-from account.models import CampaignTransaction, EditingCampaign
+from account.models import CampaignTransaction, EditingCampaign, EnvironmentalAdImage
 from django.utils import timezone
 from account.models import (
     EnvironmentalAdvertisement,
@@ -670,6 +670,26 @@ class EventMarketingAdvertisementForm(forms.ModelForm):
             self.save_m2m()
 
         return obj
+
+
+class EnvironmentalAdImageFormSetBase(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        total = 0
+        for form in self.forms:
+            if getattr(form, 'cleaned_data', {}) and form.cleaned_data.get('image') and not form.cleaned_data.get('DELETE'):
+                total += 1
+        if total == 0:
+            raise ValidationError("حداقل یک تصویر برای رسانه محیطی الزامی است.")
+
+EnvironmentalAdImageFormSet = inlineformset_factory(
+    EnvironmentalAdvertisement,
+    EnvironmentalAdImage,
+    formset=EnvironmentalAdImageFormSetBase,
+    fields=['image'],
+    extra=3,
+    can_delete=True
+)
 
 
 

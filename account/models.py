@@ -263,13 +263,11 @@ class EnvironmentalAdImage(BaseModel):
         verbose_name='تبلیغ محیطی'
     )
     image = models.ImageField(upload_to='environmental_ads/%Y/%m/%d', verbose_name='تصویر')
-    caption = models.CharField(max_length=255, blank=True, null=True, verbose_name='توضیح')
-    order = models.PositiveIntegerField(default=0, verbose_name='ترتیب')
 
     class Meta:
         verbose_name = 'تصویر تبلیغ محیطی'
         verbose_name_plural = 'تصاویر تبلیغ محیطی'
-        ordering = ['order', 'created_at']
+        ordering = ['created_at']
 
     def __str__(self):
-        return f'{self.advertisement_id} - {self.caption or self.image.name}'
+        return f'{self.advertisement_id} - {self.id}'
