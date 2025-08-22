@@ -107,11 +107,19 @@
      {% endif %}
      <!-- Right column: form (smaller) -->
     <div class="col-12 col-lg-8 order-1 order-lg-2">
-      {% if ad_kind == "event" %}
-        <div class="alert alert-info">نوع پیشنهاد: ایونت مارکتینگ</div>
-      {% elif ad_kind == "environmental" %}
-        <div class="alert alert-info">نوع پیشنهاد: تبلیغ محیطی</div>
-      {% endif %}
+      {% if ad_kind == "environmental" %}
+          <div class="alert alert-info">نوع پیشنهاد: تبلیغ محیطی</div>
+        {% elif ad_kind == "socialmedia" %}
+          <div class="alert alert-info">نوع پیشنهاد: تبلیغ شبکه‌های اجتماعی</div>
+        {% elif ad_kind == "digital" %}
+          <div class="alert alert-info">نوع پیشنهاد: تبلیغ دیجیتال</div>
+        {% elif ad_kind == "printing" %}
+          <div class="alert alert-info">نوع پیشنهاد: تبلیغ چاپی</div>
+        {% elif ad_kind == "event" %}
+          <div class="alert alert-info">نوع پیشنهاد: ایونت مارکتینگ</div>
+        {% else %}
+          <div class="alert alert-warning">نوع موضوع ناشناخته است. فرم عمومی ارسال می‌شود.</div>
+        {% endif %}
 
       <form method="post" enctype="multipart/form-data" class="mt-3">
         {% csrf_token %}

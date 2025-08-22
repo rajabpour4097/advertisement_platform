@@ -195,6 +195,173 @@
     margin: 0;
     color: #374151;
 }
+
+/* Custom Modern Popup Styles */
+.custom-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.custom-popup-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.custom-popup {
+    background: white;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    transform: scale(0.7) translateY(50px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+}
+
+.custom-popup-overlay.show .custom-popup {
+    transform: scale(1) translateY(0);
+}
+
+.custom-popup-header {
+    padding: 25px 30px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.custom-popup-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+}
+
+.custom-popup-close {
+    position: absolute;
+    top: 20px;
+    left: 25px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.custom-popup-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.custom-popup-body {
+    padding: 30px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.custom-popup-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.custom-popup-message {
+    font-size: 16px;
+    color: #374151;
+    margin: 0;
+}
+
+.custom-popup-footer {
+    padding: 20px 30px 30px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.custom-popup-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: none;
+}
+
+.custom-popup-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.custom-popup-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.custom-popup-btn-secondary {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.custom-popup-btn-secondary:hover {
+    background: #f1f5f9;
+    transform: translateY(-1px);
+}
+
+/* Topic-specific popup colors */
+.popup-theme-primary {
+    --popup-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.popup-theme-success {
+    --popup-color: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+}
+
+.popup-theme-warning {
+    --popup-color: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.popup-theme-danger {
+    --popup-color: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.popup-theme-info {
+    --popup-color: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
 </style>
 
 <div class="content-frame">
@@ -420,27 +587,172 @@
             card.style.backgroundColor = "#fff";
         });
     }
-    function showModal(title, message) {
-        const modalHtml = `
-            <div class="modal fade" id="customModal" tabindex="-1" role="dialog">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">${title}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">${message}</div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">متوجه شدم</button>
-                        </div>
+    function showModal(title, message, type = 'info', options = {}) {
+        // حذف popup قبلی اگر وجود داشته باشد
+        const existingPopup = document.querySelector('.custom-popup-overlay');
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+
+        // انتخاب آیکون بر اساس نوع
+        const icons = {
+            info: '💬',
+            success: '✅',
+            warning: '⚠️',
+            danger: '❌',
+            question: '❓'
+        };
+
+        const icon = icons[type] || icons.info;
+        const themeClass = `popup-theme-${type}`;
+
+        const popupHtml = `
+            <div class="custom-popup-overlay ${themeClass}" id="customPopup">
+                <div class="custom-popup">
+                    <div class="custom-popup-header">
+                        <button type="button" class="custom-popup-close" id="closeBtn">×</button>
+                        <h3 class="custom-popup-title">${title}</h3>
+                    </div>
+                    <div class="custom-popup-body">
+                        <div class="custom-popup-icon">${icon}</div>
+                        <p class="custom-popup-message">${message}</p>
+                    </div>
+                    <div class="custom-popup-footer">
+                        ${options.showCancel ? '<button type="button" class="custom-popup-btn custom-popup-btn-secondary" id="cancelBtn">لغو</button>' : ''}
+                        <button type="button" class="custom-popup-btn custom-popup-btn-primary" id="confirmBtn">${options.confirmText || 'متوجه شدم'}</button>
                     </div>
                 </div>
             </div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        $('#customModal').modal('show');
-        $('#customModal').on('hidden.bs.modal', function () { $(this).remove(); });
+
+        document.body.insertAdjacentHTML('beforeend', popupHtml);
+        
+        // نمایش انیمیشن
+        setTimeout(() => {
+            document.getElementById('customPopup').classList.add('show');
+        }, 10);
+
+        // اضافه کردن event listener ها
+        const popup = document.getElementById('customPopup');
+        const closeBtn = document.getElementById('closeBtn');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeCustomPopup);
+        }
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', closeCustomPopup);
+        }
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeCustomPopup);
+        }
+
+        // بستن با کلید Escape
+        const escapeHandler = function(e) {
+            if (e.key === 'Escape') {
+                closeCustomPopup();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+
+        // بستن با کلیک روی overlay
+        popup.addEventListener('click', function(e) {
+            if (e.target === popup) {
+                closeCustomPopup();
+            }
+        });
+    }
+
+    // تابع بستن popup
+    window.closeCustomPopup = function() {
+        const popup = document.getElementById('customPopup');
+        if (popup) {
+            popup.classList.remove('show');
+            setTimeout(() => {
+                popup.remove();
+            }, 300);
+        }
+    }
+
+    window.closeTopicInfoPopup = function() {
+        const popup = document.getElementById('topicInfoPopup');
+        if (popup) {
+            popup.classList.remove('show');
+            setTimeout(() => {
+                popup.remove();
+            }, 300);
+        }
+    }
+
+    // تابع نمایش popup اطلاعات موضوع
+    function showTopicInfo(title, description, color) {
+        // استفاده از رنگ موضوع برای شخصی‌سازی popup
+        const popupHtml = `
+            <div class="custom-popup-overlay" id="topicInfoPopup">
+                <div class="custom-popup">
+                    <div class="custom-popup-header" style="background: linear-gradient(135deg, ${color || '#667eea'} 0%, ${adjustColor(color, -20) || '#764ba2'} 100%);">
+                        <button type="button" class="custom-popup-close" id="topicCloseBtn">×</button>
+                        <h3 class="custom-popup-title">${title}</h3>
+                    </div>
+                    <div class="custom-popup-body">
+                        <div class="custom-popup-icon" style="background: linear-gradient(135deg, ${color || '#667eea'} 0%, ${adjustColor(color, -20) || '#764ba2'} 100%);">ℹ️</div>
+                        <p class="custom-popup-message">${description}</p>
+                    </div>
+                    <div class="custom-popup-footer">
+                        <button type="button" class="custom-popup-btn custom-popup-btn-primary" id="topicConfirmBtn" style="background: linear-gradient(135deg, ${color || '#667eea'} 0%, ${adjustColor(color, -20) || '#764ba2'} 100%);">متوجه شدم</button>
+                    </div>
+                </div>
+            </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', popupHtml);
+        
+        setTimeout(() => {
+            document.getElementById('topicInfoPopup').classList.add('show');
+        }, 10);
+
+        // اضافه کردن event listener ها
+        const popup = document.getElementById('topicInfoPopup');
+        const topicCloseBtn = document.getElementById('topicCloseBtn');
+        const topicConfirmBtn = document.getElementById('topicConfirmBtn');
+
+        if (topicCloseBtn) {
+            topicCloseBtn.addEventListener('click', closeTopicInfoPopup);
+        }
+        if (topicConfirmBtn) {
+            topicConfirmBtn.addEventListener('click', closeTopicInfoPopup);
+        }
+
+        // بستن با کلید Escape
+        const topicEscapeHandler = function(e) {
+            if (e.key === 'Escape') {
+                closeTopicInfoPopup();
+                document.removeEventListener('keydown', topicEscapeHandler);
+            }
+        };
+        document.addEventListener('keydown', topicEscapeHandler);
+
+        // بستن با کلیک روی overlay
+        popup.addEventListener('click', function(e) {
+            if (e.target === popup) {
+                closeTopicInfoPopup();
+            }
+        });
+    }
+
+    // تابع کمکی برای تیره کردن رنگ
+    function adjustColor(color, amount) {
+        if (!color) return null;
+        const usePound = color[0] === "#";
+        const col = usePound ? color.slice(1) : color;
+        const num = parseInt(col, 16);
+        let r = (num >> 16) + amount;
+        let g = ((num >> 8) & 0x00FF) + amount;
+        let b = (num & 0x0000FF) + amount;
+        r = r > 255 ? 255 : r < 0 ? 0 : r;
+        g = g > 255 ? 255 : g < 0 ? 0 : g;
+        b = b > 255 ? 255 : b < 0 ? 0 : b;
+        return (usePound ? "#" : "") + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
     }
     cards.forEach(card => {
         card.addEventListener("click", () => {
@@ -462,7 +774,10 @@
         if (infoBtn) {
             infoBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
-                alert(card.dataset.description || "توضیحاتی برای این دسته موجود نیست.");
+                const title = card.querySelector('h4').textContent;
+                const description = card.dataset.description || "توضیحاتی برای این دسته موجود نیست.";
+                const color = card.dataset.color || "#667eea";
+                showTopicInfo(title, description, color);
             });
         }
         if (card.classList.contains("selected")) {
@@ -601,12 +916,12 @@
         const selectedTopicId = hiddenInput.value;
         if (!selectedTopicId) {
             e.preventDefault();
-            showModal("توجه", "لطفاً یک موضوع برای کمپین انتخاب کنید");
+            showModal("توجه", "لطفاً یک موضوع برای کمپین انتخاب کنید", "warning");
             return;
         }
         if (!rulesCheckbox || !rulesCheckbox.checked) {
             e.preventDefault();
-            showModal("توجه", "برای ایجاد کمپین جدید باید قوانین را تایید کنید");
+            showModal("توجه", "برای ایجاد کمپین جدید باید قوانین را تایید کنید", "warning");
             return;
         }
     });
