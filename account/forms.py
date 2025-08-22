@@ -451,7 +451,16 @@ class EnvironmentalAdvertisementForm(forms.ModelForm):
         label='تاریخ قابل استفاده',
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
     )
-
+    media_width = forms.IntegerField(
+        required=True,
+        label='عرض رسانه(سانتی متر)',
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+    media_height = forms.IntegerField(
+        required=True,
+        label='ارتفاع رسانه(سانتی متر)',
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
     class Meta:
         model = EnvironmentalAdvertisement
         exclude = ['campaign', 'proposed_user', 'created_at', 'modified_at']

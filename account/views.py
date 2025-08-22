@@ -1533,7 +1533,7 @@ class CampaignParticipateView(DealerUserMixin, View):
 
         if not Resume.objects.filter(user=request.user, status='approved').exists():
             return render(self.request, '403.html',
-                          {'error_message': "تا زمانی که رزومه ای ارسال نکرده اید و توسط مدیر بررسی و تایید نشده است، نمی توانید در هیچ کمپین شرکت کنید.",
+                          {'error_message': "تا زمانی که رزومه ای ارسال نکرده اید و توسط مدیر بررسی و تایید نشده است، نمی توانید در هیچ کمپینی شرکت کنید.",
                            'back_url': "account:campaigns"},
                           )
 
