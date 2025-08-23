@@ -7,9 +7,19 @@
 {% block title %}جزئیات پیشنهادات کمپین{% endblock %}
 
 {% block extra_head %}
+{# نقشه برای تبلیغات محیطی قفل شده است؛ استایل leaflet حذف شد تا مختصات و نقشه واقعی لود نشود #}
 {% if category == "تبلیغات محیطی" %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+  /* placeholders pattern for locked items */
+  .locked-thumb{width:110px;height:90px;position:relative;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:repeating-linear-gradient(45deg,#d1d5db,#d1d5db 10px,#e5e7eb 10px,#e5e7eb 20px);} 
+  .locked-thumb:before{content:"";position:absolute;inset:0;backdrop-filter:blur(6px);background:rgba(255,255,255,.35);} 
+  .locked-thumb .lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;color:#374151;z-index:2;text-shadow:0 0 6px #fff;} 
+  .locked-thumb .lock-overlay span{font-size:10px;margin-top:4px;direction:rtl;text-align:center;line-height:1.3;color:#1f2937;padding:0 4px;} 
+  .locked-map{height:320px;width:100%;border:1px solid #ddd;border-radius:6px;margin-top:10px;position:relative;overflow:hidden;background:repeating-linear-gradient(135deg,#cfd8e3,#cfd8e3 14px,#e2e8f0 14px,#e2e8f0 28px);} 
+  .locked-map:before{content:"";position:absolute;inset:0;backdrop-filter:blur(8px);background:linear-gradient(135deg,rgba(255,255,255,.5),rgba(255,255,255,.3));} 
+  .locked-map .lock-icon{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1f2937;font-size:46px;z-index:2;text-shadow:0 0 10px #fff;} 
+  .locked-map .lock-icon div{font-size:13px;margin-top:8px;direction:rtl;text-align:center;padding:0 8px;} 
+</style>
 {% endif %}
 <style>
   /* استایل‌های بهبود یافته */
@@ -111,7 +121,7 @@
                   
                   {% if proposal.service_area.all %}
                   <div class="mt-3">
-                    <strong>مناطق سرویس دهی:</strong>
+                    <strong>منطقه مورد نظر:</strong>
                     <ul>
                       {% for city in proposal.service_area.all %}
                         <li>{{ city.name }} ({{ city.province.name }})</li>
@@ -120,16 +130,16 @@
                   </div>
                   {% endif %}
                   
-                  <!-- environmental images -->
+                  <!-- environmental images (locked) -->
                   <div class="mt-3">
                     <strong>تصاویر موقعیت:</strong>
                     {% with imgs=proposal.images.all %}
                       {% if imgs %}
                         <div class="d-flex flex-wrap gap-2 mt-2">
-                          {% for img in imgs %}
-                            <div style="width:110px;">
-                              <img src="{{ img.image.url }}" alt="{{ img.caption|default:'image' }}" style="width:100%;height:90px;object-fit:cover;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;" onclick="openEnvImageModal('{{ img.image.url }}','{{ img.caption|default:'' }}')">
-                              {% if img.caption %}<div class="small text-muted mt-1" style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ img.caption }}</div>{% endif %}
+                          {# فقط جای‌نگهدارهای قفل شده؛ آدرس اصلی تصویر رندر نمی‌شود #}
+                          {% for _ in imgs %}
+                            <div class="locked-thumb" title="تصاویر این موقعیت در حال حاضر قفل هستند و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                              <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
                             </div>
                           {% endfor %}
                         </div>
@@ -138,11 +148,16 @@
                       {% endif %}
                     {% endwith %}
                   </div>
-                  
-                  <!-- محل نقشه با بهبود نمایش -->
-                  <div class="mt-3" id="map-wrap" style="{% if not proposal.media_location_latitude or not proposal.media_location_longitude %}display:none;{% endif %}">
+
+                  <!-- locked map placeholder; مختصات واقعی در این صفحه منتشر نمی‌شود -->
+                  <div class="mt-3" style="margin-top: 1rem; max-width: 900px; overflow: hidden;">
                     <strong>موقعیت مکانی:</strong>
-                    <div id="map"></div>
+                    <div class="locked-map">
+                      <div class="lock-icon">
+                        <i class="fa fa-lock"></i>
+                        <div>نمایش نقشه بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -282,10 +297,17 @@
                   
                   {% if proposal.event_content %}
                   <div class="mt-3">
-                    <div class="card">
-                      <div class="card-header">محتوا یا سناریوی کلی رویداد</div>
-                      <div class="card-body">
-                        <p style="white-space: pre-line;">{{ proposal.event_content }}</p>
+                    <div class="card border-warning">
+                      <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>محتوا یا سناریوی کلی رویداد</span>
+                        <span class="text-warning"><i class="fa fa-lock"></i> قفل شده</span>
+                      </div>
+                      <div class="card-body" style="position:relative;min-height:80px;">
+                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:repeating-linear-gradient(45deg,#f3f4f6,#f3f4f6 12px,#e5e7eb 12px,#e5e7eb 24px);border:1px dashed #d1d5db;border-radius:4px;">
+                          <div class="text-muted" style="font-size:13px;direction:rtl;text-align:center;line-height:1.6;">
+                            محتوای سناریوی رویداد در این مرحله نمایش داده نمی‌شود و پس از انتخاب طرح به عنوان برنده نمایش داده می‌شود.
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -346,65 +368,10 @@
   </div>
 </div>
 
+{# اسکریپت نقشه و نمایش تصاویر برای تبلیغات محیطی حذف شد تا از دسترسی کاربر جلوگیری شود #}
 {% if category == "تبلیغات محیطی" %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
-  // simple modal for environmental images
-  (function(){
-    if(!document.getElementById('envImageModal')){
-      const modal = document.createElement('div');
-      modal.id='envImageModal';
-      modal.style.cssText='position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:1050;padding:20px;';
-      modal.innerHTML=`<div style="max-width:720px;width:100%;">
-          <div style="background:#fff;border-radius:8px;overflow:hidden;position:relative;">
-            <button type="button" id="envImageModalClose" style="position:absolute;top:6px;left:6px;background:#0008;color:#fff;border:none;border-radius:4px;padding:4px 8px;font-size:12px;cursor:pointer;">×</button>
-            <img id="envImageModalImg" src="" alt="" style="width:100%;height:auto;display:block;max-height:70vh;object-fit:contain;background:#000;">
-            <div id="envImageModalCaption" style="padding:8px 12px;font-size:12px;color:#555;white-space:pre-wrap;"></div>
-          </div>`;
-      document.body.appendChild(modal);
-      modal.addEventListener('click', e=>{ if(e.target===modal || e.target.id==='envImageModalClose'){ modal.style.display='none'; }});
-      window.openEnvImageModal = function(src, cap){
-        const imgEl=document.getElementById('envImageModalImg');
-        const capEl=document.getElementById('envImageModalCaption');
-        imgEl.src=src; capEl.textContent=cap||''; modal.style.display='flex';
-      }
-    }
-  })();
-  
-  (function() {
-    // فقط اگر مختصات وجود داشته باشد نقشه را نمایش بده
-    const latRaw = "{{ proposal.media_location_latitude|default_if_none:'' }}";
-    const lonRaw = "{{ proposal.media_location_longitude|default_if_none:'' }}";
-    
-    const lat = parseFloat(latRaw);
-    const lon = parseFloat(lonRaw);
-    
-    if (Number.isFinite(lat) && Number.isFinite(lon)) {
-      const mapWrap = document.getElementById('map-wrap');
-      if (mapWrap) mapWrap.style.display = 'block';
-      
-      const map = L.map('map', {
-        center: [lat, lon],
-        zoom: 14,
-        zoomControl: true,
-        dragging: true,
-        scrollWheelZoom: false,
-        doubleClickZoom: true,
-        boxZoom: false,
-        keyboard: false
-      });
-      
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-      }).addTo(map);
-      
-      L.marker([lat, lon], { draggable: false })
-        .addTo(map)
-        .bindPopup("{{ proposal.location_title }}").openPopup();
-    }
-  })();
+  // هیچ داده‌ای از مختصات یا آدرس فایل اصلی تصاویر در این صفحه لود نمی‌شود.
 </script>
 {% endif %}
 {% endblock %}
