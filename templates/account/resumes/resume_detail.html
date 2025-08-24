@@ -136,6 +136,23 @@
         border-radius: 5px;
     }
 
+    /* Service area (cities) styling */
+    .province-city-wrapper {margin-top:10px;}
+    .province-city-list {list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:18px;}
+    .province-block {background:#ffffff;border:1px solid #e3e8ef;border-radius:10px;padding:14px 16px;box-shadow:0 2px 4px rgba(0,0,0,.04);}    
+    .province-name {font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;color:#0d6efd;margin-bottom:10px;}
+    .province-name:before {content:"";width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#5aa2ff,#1d72e8);display:inline-block;box-shadow:0 0 0 3px rgba(13,110,253,.15);} 
+    .city-badges {list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;}
+    .city-badge {background:linear-gradient(145deg,#f0f6ff,#e3efff);border:1px solid #c6ddfa;padding:6px 14px;font-size:12.5px;border-radius:22px;position:relative;color:#0f406e;font-weight:500;letter-spacing:.2px;display:inline-flex;align-items:center;gap:4px;}
+    .city-badge:before {content:"\f279"; /* fa-map-marker-alt */ font-family:"Font Awesome 5 Free";font-weight:900;font-size:11px;color:#1d72e8;}
+    .city-badge:hover {background:#e6f1ff;border-color:#b0d1f6;}
+    .province-block.empty {opacity:.6;}
+    .no-cities-note {font-size:13px;color:#6b7280;margin-top:6px;}
+    @media (max-width:600px){
+        .city-badge {font-size:11.5px;padding:5px 11px;}
+        .province-block {padding:12px 13px;}
+    }
+
 </style>
 
 <div class="container-fluid resume-detail">
@@ -217,12 +234,31 @@
             <div class="info-section">
                 <h4>حوزه خدمات</h4>
                 {% if resume.service_area.exists %}
-                    <div><strong>لیست شهرها:</strong></div>
-                    <ul>
-                        {% for city in resume.service_area.all %}
-                            <li>{{ city.name }} - {{ city.province.name }}</li>
-                        {% endfor %}
-                    </ul>
+                    {% regroup resume.service_area.all by province as province_list %}
+                    <div class="province-city-wrapper">
+                        <div style="font-weight:600;font-size:13px;color:#374151;display:flex;align-items:center;gap:6px;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#0d6efd;box-shadow:0 0 0 3px rgba(13,110,253,.15);"></span>
+                            لیست شهرهای تحت پوشش ({{ resume.service_area.count }})
+                        </div>
+                        <ul class="province-city-list">
+                            {% for province in province_list %}
+                                <li class="province-block {% if not province.list %}empty{% endif %}">
+                                    <div class="province-name">{{ province.grouper.name }}</div>
+                                    {% if province.list %}
+                                        <ul class="city-badges">
+                                            {% for city in province.list %}
+                                                <li class="city-badge" title="{{ city.name }} / {{ province.grouper.name }}">{{ city.name }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <div class="no-cities-note">شهری ثبت نشده</div>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% else %}
+                    <p class="no-cities-note">هیچ شهری ثبت نشده است.</p>
                 {% endif %}
             </div>
 

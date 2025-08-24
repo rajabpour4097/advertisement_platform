@@ -7,6 +7,17 @@
 
 {% block content %}
 <style>
+
+     /* placeholders pattern for locked items */
+  .locked-thumb{width:110px;height:90px;position:relative;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:repeating-linear-gradient(45deg,#d1d5db,#d1d5db 10px,#e5e7eb 10px,#e5e7eb 20px);} 
+  .locked-thumb:before{content:"";position:absolute;inset:0;backdrop-filter:blur(6px);background:rgba(255,255,255,.35);} 
+  .locked-thumb .lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;color:#374151;z-index:2;text-shadow:0 0 6px #fff;} 
+  .locked-thumb .lock-overlay span{font-size:10px;margin-top:4px;direction:rtl;text-align:center;line-height:1.3;color:#1f2937;padding:0 4px;} 
+  .locked-map{height:320px;width:100%;border:1px solid #ddd;border-radius:6px;margin-top:10px;position:relative;overflow:hidden;background:repeating-linear-gradient(135deg,#cfd8e3,#cfd8e3 14px,#e2e8f0 14px,#e2e8f0 28px);} 
+  .locked-map:before{content:"";position:absolute;inset:0;backdrop-filter:blur(8px);background:linear-gradient(135deg,rgba(255,255,255,.5),rgba(255,255,255,.3));} 
+  .locked-map .lock-icon{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1f2937;font-size:46px;z-index:2;text-shadow:0 0 10px #fff;} 
+  .locked-map .lock-icon div{font-size:13px;margin-top:8px;direction:rtl;text-align:center;padding:0 8px;}  
+
     .resume-detail {
         max-width: 1100px;
         margin: 0 auto;
@@ -136,12 +147,30 @@
         border-radius: 5px;
     }
 
+    /* Service area (cities) styling */
+    .province-city-wrapper {margin-top:10px;}
+    .province-city-list {list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:18px;}
+    .province-block {background:#ffffff;border:1px solid #e3e8ef;border-radius:10px;padding:14px 16px;box-shadow:0 2px 4px rgba(0,0,0,.04);}    
+    .province-name {font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;color:#0d6efd;margin-bottom:10px;}
+    .province-name:before {content:"";width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#5aa2ff,#1d72e8);display:inline-block;box-shadow:0 0 0 3px rgba(13,110,253,.15);} 
+    .city-badges {list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;}
+    .city-badge {background:linear-gradient(145deg,#f0f6ff,#e3efff);border:1px solid #c6ddfa;padding:6px 14px;font-size:12.5px;border-radius:22px;position:relative;color:#0f406e;font-weight:500;letter-spacing:.2px;display:inline-flex;align-items:center;gap:4px;}
+    .city-badge:before {content:"\f279"; /* fa-map-marker-alt */ font-family:"Font Awesome 5 Free";font-weight:900;font-size:11px;color:#1d72e8;}
+    .city-badge:hover {background:#e6f1ff;border-color:#b0d1f6;}
+    .province-block.empty {opacity:.6;}
+    .no-cities-note {font-size:13px;color:#6b7280;margin-top:6px;}
+    @media (max-width:600px){
+        .city-badge {font-size:11.5px;padding:5px 11px;}
+        .province-block {padding:12px 13px;}
+    }
+
 </style>
 
 <div class="container-fluid resume-detail">
     <div class="x_panel">
         <div class="x_title">
-            <h2>بررسی رزومه - {{ resume.user.get_full_name }}</h2>  
+            <h2>رزومه <h2 style="font-size:14px">آقا/خانم/شرکت</h2></h2>
+            <h2 style="color:#007bff; margin-right: 10px;">{{ resume.user.get_full_name }}</h2>  
             <button type="button" onclick="window.history.back();" style="margin-right:50px;">
                 بازگشت
             </button>
@@ -154,32 +183,30 @@
             <div class="info-section">
                 <h4>اطلاعات اصلی</h4>
                 <div class="field-row">
-                    <div><strong>نام مجری:</strong> {% if resume.user.get_full_name %}
-                                                        <a href="{% url 'account:user_detail' resume.user.id %}?from=resume_detail" title="{{resume.user.email}}">
-                                                            {{ resume.user.get_full_name }}
-                                                        </a>    
-                                                    {% else%} 
-                                                        <a href="{% url 'account:user_detail' resume.user.id %}">
-                                                            {{ resume.user.email }}
-                                                        </a>
-                                                    {% endif %}
+                    <div><strong>نام مجری:</strong> 
+                        {% if resume.user.get_full_name %}
+                            {{ resume.user.get_full_name }}
+                        {% else%} 
+                            {{ resume.user.email }}
+                        {% endif %}
                     </div>
                     <div><strong>نوع مجری:</strong> {{ resume.dealer_type|default:"تعریف نشده" }}</div>
                 </div>
                 <div class="field-row">
                     <div><strong>دسته تخصصی:</strong> {{ resume.specialty_categories|default:"تعریف نشده" }}</div>
                     <div><strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong> 
-                        {% if resume.user.customuserimages.first.image.url %}
-                            <img class="image-logo" src="{{ resume.user.customuserimages.first.image.url }}" alt="">
-                        {% else %}
-                            <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="">
-                        {% endif %}</div>
+                     
+                      {% if resume.user.customuserimages.first.image.url %}
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <div class="locked-thumb" title="تصویر این کاربر در حال حاضر قفل هستند و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                              <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                            </div>
+                        </div>
+                      {% else %}
+                         <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="">
+                      {% endif %}
+                    </div>
                 </div>
-                <div class="field-row">
-                    <div><strong>تاریخ ایجاد:</strong> {{ resume.created_at|jalali_timedate }}</div>
-                    <div><strong>تاریخ آخرین ویرایش:</strong> {{ resume.updated_at|jalali_timedate }}</div>
-                </div>
-                
                     <div>
                         <strong>معرفی مختصر از خود:</strong>
                         {% if resume.describe %}
@@ -207,12 +234,31 @@
             <div class="info-section">
                 <h4>حوزه خدمات</h4>
                 {% if resume.service_area.exists %}
-                    <div><strong>لیست شهرها:</strong></div>
-                    <ul>
-                        {% for city in resume.service_area.all %}
-                            <li>{{ city.name }} - {{ city.province.name }}</li>
-                        {% endfor %}
-                    </ul>
+                    {% regroup resume.service_area.all by province as province_list %}
+                    <div class="province-city-wrapper">
+                        <div style="font-weight:600;font-size:13px;color:#374151;display:flex;align-items:center;gap:6px;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#0d6efd;box-shadow:0 0 0 3px rgba(13,110,253,.15);"></span>
+                            لیست شهرهای تحت پوشش ({{ resume.service_area.count }})
+                        </div>
+                        <ul class="province-city-list">
+                            {% for province in province_list %}
+                                <li class="province-block {% if not province.list %}empty{% endif %}">
+                                    <div class="province-name">{{ province.grouper.name }}</div>
+                                    {% if province.list %}
+                                        <ul class="city-badges">
+                                            {% for city in province.list %}
+                                                <li class="city-badge" title="{{ city.name }} / {{ province.grouper.name }}">{{ city.name }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <div class="no-cities-note">شهری ثبت نشده</div>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% else %}
+                    <p class="no-cities-note">هیچ شهری ثبت نشده است.</p>
                 {% endif %}
             </div>
 
