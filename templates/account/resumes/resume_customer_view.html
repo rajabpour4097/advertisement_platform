@@ -18,10 +18,7 @@
   .locked-map .lock-icon{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1f2937;font-size:46px;z-index:2;text-shadow:0 0 10px #fff;} 
   .locked-map .lock-icon div{font-size:13px;margin-top:8px;direction:rtl;text-align:center;padding:0 8px;}  
 
-    .resume-detail {
-        max-width: 1100px;
-        margin: 0 auto;
-    }
+    .resume-detail {max-width:1100px;margin:0 auto;}
     /* اضافه شده: قاب اسکرول برای محتوای طولانی */
     .resume-scroll-wrapper {
         max-height: calc(100vh - 220px); /* بر اساس ارتفاع هدر/فوتر قالب قابل تنظیم است */
@@ -44,14 +41,8 @@
         background: #a0a0a0;
     }
 
-    .status-badge {
-        padding: 8px 15px;
-        border-radius: 20px;
-        font-weight: bold;
-        font-size: 14px;
-        display: inline-block;
-        margin-bottom: 20px;
-    }
+    .status-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:30px;font-weight:600;font-size:13px;line-height:1;background:linear-gradient(135deg,#eef4ff,#e3f2ff);border:1px solid #c6daf7;color:#0a4d85;box-shadow:0 2px 4px rgba(0,0,0,.05);}
+    .status-badge i{font-size:15px;color:#2474d6;}
 
     .status-pending { background-color: #fff3cd; color: #856404; }
     .status-under_review { background-color: #cce5ff; color: #004085; }
@@ -59,20 +50,10 @@
     .status-approved { background-color: #d4edda; color: #155724; }
     .status-rejected { background-color: #f8d7da; color: #721c24; }
 
-    .info-section {
-        background: #f8f9fa;
-        padding: 20px;
-        margin: 20px 0;
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
-    }
-
-    .info-section h4 {
-        color: #495057;
-        border-bottom: 2px solid #007bff;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-    }
+    .info-section{background:#ffffff;padding:22px 22px 20px;margin:18px 0;border-radius:14px;border:1px solid #e2e8f0;position:relative;box-shadow:0 4px 8px -2px rgba(0,0,0,.04),0 0 0 1px rgba(0,0,0,.02);} 
+    .info-section h4{color:#0f395c;font-size:15px;font-weight:700;margin:0 0 16px;display:flex;align-items:center;gap:8px;}
+    .info-section h4:before{content:"";width:10px;height:10px;border-radius:4px;background:linear-gradient(135deg,#1d72e8,#53a0fd);box-shadow:0 0 0 4px rgba(29,114,232,.15);} 
+    .info-section p{margin:0 0 6px;}
 
     .review-form {
         background: #ffffff;
@@ -113,13 +94,8 @@
         padding: 0;
     }
 
-    .permissions-list li, .worklinks-list li, .portfolio-list li {
-        background: #f1f3f4;
-        margin: 10px 0;
-        padding: 15px;
-        border-radius: 5px;
-        border-left: 4px solid #007bff;
-    }
+    .permissions-list li, .worklinks-list li, .portfolio-list li{background:#f6f9fc;margin:10px 0;padding:14px 16px;border-radius:10px;border:1px solid #e1e9f2;position:relative;}
+    .permissions-list li:before,.worklinks-list li:before,.portfolio-list li:before{content:"";position:absolute;inset-inline-start:0;top:0;height:100%;width:4px;border-radius:4px 0 0 4px;background:linear-gradient(180deg,#1d72e8,#559df9);} 
 
     .file-link {
         color: #007bff;
@@ -131,13 +107,9 @@
         text-decoration: underline;
     }
 
-    .comment-display {
-        background: #fff3cd;
-        padding: 15px;
-        border-radius: 5px;
-        border-left: 4px solid #ffc107;
-        margin: 15px 0;
-    }
+    .comment-display{background:#fff9e6;padding:14px 16px 14px 18px;border-radius:12px;border:1px solid #ffe5a3;margin:14px 0;position:relative;box-shadow:0 2px 4px rgba(0,0,0,.04);} 
+    .comment-display:before{content:"\f075";font-family:"Font Awesome 5 Free";font-weight:900;color:#c88807;font-size:15px;margin-inline-end:6px;position:absolute;top:12px;inset-inline-start:12px;}
+    .comment-display strong{padding-inline-start:26px;display:inline-block;}
     .image-logo {
         max-width: 60px;
         border-radius: 5px;
@@ -159,23 +131,38 @@
     .city-badge:hover {background:#e6f1ff;border-color:#b0d1f6;}
     .province-block.empty {opacity:.6;}
     .no-cities-note {font-size:13px;color:#6b7280;margin-top:6px;}
+    .chip-group{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 6px;}
+    .chip{background:#eef6ff;border:1px solid #c6defa;color:#145184;font-size:12px;padding:5px 10px;border-radius:20px;font-weight:500;display:inline-flex;align-items:center;gap:4px;}
+    .chip i{color:#1d72e8;font-size:11px;}
+    .divider-line{height:1px;background:linear-gradient(90deg,transparent,#dbe4ee,transparent);margin:10px 0 14px;}
+    .section-note{font-size:12px;color:#6b7280;margin-top:4px;}
     @media (max-width:600px){
         .city-badge {font-size:11.5px;padding:5px 11px;}
         .province-block {padding:12px 13px;}
+        .field-row{flex-direction:column;}
     }
 
 </style>
 
 <div class="container-fluid resume-detail">
     <div class="x_panel">
-        <div class="x_title">
-            <h2>رزومه <h2 style="font-size:14px">آقا/خانم/شرکت</h2></h2>
-            <h2 style="color:#007bff; margin-right: 10px;">{{ resume.user.get_full_name }}</h2>  
-            <button type="button" onclick="window.history.back();" style="margin-right:50px;">
-                بازگشت
-            </button>
-            <div class="clearfix"></div>
-        </div>
+                <div class="x_title" style="display:flex;flex-wrap:wrap;align-items:center;gap:18px;">
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <h2 style="margin:0;font-size:20px;display:flex;align-items:center;gap:8px;">
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#1d72e8,#5aa2ff);color:#fff;font-size:16px;font-weight:600;">CV</span>
+                                <span>رزومه مجری</span>
+                            </h2>
+                            <div style="font-size:14px;color:#4b5563;display:flex;align-items:center;gap:6px;">
+                                <i class="fa fa-user" style="color:#1d72e8;"></i>
+                                <strong style="color:#0f3c63;">{{ resume.user.get_full_name|default:resume.user.email }}</strong>
+                            </div>
+                        </div>
+                        <div style="margin-inline-start:auto;display:flex;align-items:center;gap:10px;">
+                            <button type="button" onclick="window.history.back();" style="background:#fff;border:1px solid #d0dae5;padding:8px 18px;border-radius:30px;font-size:13px;display:inline-flex;align-items:center;gap:6px;color:#1d4b7a;cursor:pointer;"> 
+                                <i class="fa fa-arrow-right"></i> بازگشت
+                            </button>
+                        </div>
+                </div>
 
         <div class="x_content">
            <div class="resume-scroll-wrapper">
@@ -192,19 +179,30 @@
                     </div>
                     <div><strong>نوع مجری:</strong> {{ resume.dealer_type|default:"تعریف نشده" }}</div>
                 </div>
-                <div class="field-row">
-                    <div><strong>دسته تخصصی:</strong> {{ resume.specialty_categories|default:"تعریف نشده" }}</div>
-                    <div><strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong> 
-                     
-                      {% if resume.user.customuserimages.first.image.url %}
-                        <div class="d-flex flex-wrap gap-2 mt-2">
-                            <div class="locked-thumb" title="تصویر این کاربر در حال حاضر قفل هستند و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
-                              <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                <div class="field-row" style="align-items:flex-start;">
+                    <div>
+                        <strong>دسته تخصصی:</strong>
+                        {% if resume.specialty_categories.exists %}
+                           <div class="chip-group">
+                               {% for cat in resume.specialty_categories.all %}
+                                  <span class="chip"><i class="fa fa-tag"></i>{{ cat.name }}</span>
+                               {% endfor %}
+                           </div>
+                        {% else %}
+                           <span style="color:#6b7280;">تعریف نشده</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong>
+                        {% if resume.user.customuserimages.first.image.url %}
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <div class="locked-thumb" title="تصویر این کاربر در حال حاضر قفل هستند و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                                  <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                                </div>
                             </div>
-                        </div>
-                      {% else %}
-                         <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="">
-                      {% endif %}
+                        {% else %}
+                           <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="">
+                        {% endif %}
                     </div>
                 </div>
                     <div>
@@ -221,12 +219,14 @@
             <div class="info-section">
                 <h4>خدمات و تخصص</h4>
                 {% if resume.services %}
-                    <div><strong>خدمات قابل ارائه: </strong>{{ resume.services|linebreaksbr }}</div>
-                    
+                    <div><strong>خدمات قابل ارائه: </strong></div>
+                    <div class="divider-line"></div>
+                    <div style="white-space:pre-line;line-height:1.7;">{{ resume.services }}</div>
+                {% else %}
+                    <p style="color:#6b7280;font-size:13px;">خدمتی ثبت نشده</p>
                 {% endif %}
-                
                 {% if resume.specialty_categories.exists %}
-                    <div><strong>دسته‌های تخصصی: </strong>{{ resume.specialty_categories }}</div>
+                    <div class="section-note">(دسته‌های تخصصی بالاتر نمایش داده شده‌اند)</div>
                 {% endif %}
             </div>
 
@@ -265,47 +265,34 @@
             <!-- اطلاعات تکمیلی -->
             <div class="info-section">
                 <h4>اطلاعات تکمیلی</h4>
-                
-                    <div><strong>شبکه‌های اجتماعی و وب‌سایت‌ها: </strong>
-                        {% if resume.socialmedia_and_sites %}
-                        {{ resume.socialmedia_and_sites|linebreaksbr }}
-                        {% else %}
-                            چیزی ثبت نشده
-                        {% endif %}
+                <div class="field-row" style="flex-wrap:wrap;">
+                    <div style="flex:1 1 240px;min-width:200px;">
+                        <strong>شبکه‌های اجتماعی و وب‌سایت‌ها:</strong>
+                        <div style="margin-top:4px;white-space:pre-line;">{% if resume.socialmedia_and_sites %}{{ resume.socialmedia_and_sites }}{% else %}<span style="color:#6b7280;">چیزی ثبت نشده</span>{% endif %}</div>
                     </div>
-                    <br>
-                    <div><strong>ابزارها و پلتفرم‌های مورد استفاده:</strong>
-                        {% if resume.tools_and_platforms %}
-                            {{ resume.tools_and_platforms|linebreaksbr }}
-                        {% else %}
-                            چیزی ثبت نشده
-                        {% endif %}
+                    <div style="flex:1 1 240px;min-width:200px;">
+                        <strong>ابزارها و پلتفرم‌ها:</strong>
+                        <div style="margin-top:4px;white-space:pre-line;">{% if resume.tools_and_platforms %}{{ resume.tools_and_platforms }}{% else %}<span style="color:#6b7280;">چیزی ثبت نشده</span>{% endif %}</div>
                     </div>
-                    <br>
-                    <div><strong>برندهای همکار:</strong>
-                        {% if resume.partner_brand %}
-                            {{ resume.partner_brand|linebreaksbr }}
-                        {% else %}
-                            چیزی ثبت نشده
-                        {% endif %}
+                </div>
+                <div class="field-row" style="flex-wrap:wrap;margin-top:8px;">
+                    <div style="flex:1 1 240px;min-width:200px;">
+                        <strong>برندهای همکار:</strong>
+                        <div style="margin-top:4px;white-space:pre-line;">{% if resume.partner_brand %}{{ resume.partner_brand }}{% else %}<span style="color:#6b7280;">چیزی ثبت نشده</span>{% endif %}</div>
                     </div>
-                    <br>
-                
-                    <div><strong>شماره حساب بانکی: IR </strong> 
-                        {% if resume.bank_account %}
-                            {{ resume.bank_account }}
-                        {% else %}
-                            تعریف نشده
-                        {% endif %}
+                    <div style="flex:1 1 240px;min-width:200px;">
+                        <strong>شماره حساب بانکی: IR</strong>
+                        <div style="margin-top:4px;">{% if resume.bank_account %}{{ resume.bank_account }}{% else %}<span style="color:#6b7280;">تعریف نشده</span>{% endif %}</div>
                     </div>
-                    <br>
-                    <div><strong>فایل رزومه:</strong> 
-                        {% if resume.file %}
-                            <a href="{{ resume.file.url }}" target="_blank" class="file-link">مشاهده فایل</a>
-                        {% else %}
-                            فایلی آپلود نشده
-                        {% endif %}
-                    </div>
+                </div>
+                <div style="margin-top:12px;">
+                    <strong>فایل رزومه:</strong>
+                    {% if resume.file %}
+                        <a href="{{ resume.file.url }}" target="_blank" class="file-link" style="margin-inline-start:6px;display:inline-flex;align-items:center;gap:6px;"> <i class="fa fa-file"></i> مشاهده فایل</a>
+                    {% else %}
+                        <span style="color:#6b7280;margin-inline-start:4px;">فایلی آپلود نشده</span>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- مجوزها -->
@@ -372,25 +359,30 @@
             <!-- نمونه کارها -->
             <div class="info-section">
                 {% if resume.portfolios.all %}
-                    <h4>نمونه کارها ({{ resume.portfolios.count }})</h4>    
+                    <h4>نمونه کارها ({{ resume.portfolios.count }})</h4>
                     <ul class="portfolio-list">
                         {% for portfolio in resume.portfolios.all %}
                             <li>
-                                <strongx>{{ portfolio.title }}</strongx>
-                                <p>{{ portfolio.description }}</p>
-                                <p>دسته‌بندی: {{ portfolio.topic.name }}</p>
-                                <p>تاریخ تکمیل: {{ portfolio.done_time | jalali_timedate }}</p>
-                                <br>
-                                {% for image in portfolio.portfolioimages.all %}
-                                    <a href="{{ image.image.url }}" target="_blank">
-                                        <img src="{{ image.image.url }}" class="portfolio-image">
-                                    </a>
-                                {% endfor %}
+                                <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:14px;">
+                                    <div style="flex:1 1 260px;min-width:230px;">
+                                        <p style="margin:0 0 6px;font-weight:600;color:#0f3c63;">{{ portfolio.title }}</p>
+                                        <p style="margin:0 0 6px;color:#374151;">{{ portfolio.description }}</p>
+                                        <p style="margin:0 0 4px;font-size:12px;color:#4b5563;">دسته‌بندی: {{ portfolio.topic.name }}</p>
+                                        <p style="margin:0;font-size:12px;color:#4b5563;">تاریخ تکمیل: {{ portfolio.done_time | jalali_timedate }}</p>
+                                    </div>
+                                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                                        {% for image in portfolio.portfolioimages.all %}
+                                            <a href="{{ image.image.url }}" target="_blank" style="display:inline-block;">
+                                                <img src="{{ image.image.url }}" class="portfolio-image" style="width:96px;height:auto;object-fit:cover;border:1px solid #e2e8f0;box-shadow:0 1px 2px rgba(0,0,0,.08);" loading="lazy">
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </li>
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p>هیچ نمونه کاری ثبت نشد.</p>
+                    <p style="color:#6b7280;">هیچ نمونه کاری ثبت نشد.</p>
                 {% endif %}
             </div>
 
