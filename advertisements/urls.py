@@ -41,6 +41,7 @@ urlpatterns = [
     path('notifications/', include('notifications.urls')),
     path('messages/', include('internal_messages.urls', namespace='messages')),
     path('wallet/', include('wallet.urls')),
+    path('issues/', include('issues.urls')),
 ]
 
 # Serve media files in development

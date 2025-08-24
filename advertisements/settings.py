@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'notifications',
     'internal_messages',
     'wallet.apps.WalletConfig',
+    'issues',
 ]
 
 AUTH_USER_MODEL = 'advplatform.CustomUser'

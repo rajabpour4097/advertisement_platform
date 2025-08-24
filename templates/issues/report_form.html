@@ -1,0 +1,13 @@
+<form method="post" enctype="multipart/form-data" class="issue-report-form">
+  {% csrf_token %}
+  {{ form.page_url }}
+  <div class="form-group mb-2">
+    <label>شرح مشکل</label>
+    {{ form.description }}
+  </div>
+  <div class="form-group mb-2">
+    <label>بارگذاری فایل (اختیاری)</label>
+    {{ form.attachment }}
+  </div>
+  <button type="submit" class="btn btn-success w-100">ارسال</button>
+</form>

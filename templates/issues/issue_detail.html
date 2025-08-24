@@ -1,0 +1,24 @@
+{% extends 'account/account_base.html' %}
+{% block content %}
+<div class="x_panel">
+  <div class="x_title"><h2>گزارش #{{ issue.id }}</h2><div class="clearfix"></div></div>
+  <div class="x_content">
+    <p><strong>صفحه:</strong> <a href="{{ issue.page_url }}" target="_blank">{{ issue.page_url }}</a></p>
+    <p><strong>کاربر:</strong> 
+        {% if issue.user %}
+        {% if issue.user.get_full_name %}
+                {{ issue.user.get_full_name }}
+            {% else %}
+                {{ issue.user.username }}
+            {% endif %}
+        {% else %}-
+        {% endif %}</p>
+    <p><strong>وضعیت:</strong> {{ issue.get_status_display }}</p>
+    <p><strong>شرح مشکل:</strong><br>{{ issue.description|linebreaks }}</p>
+    {% if issue.attachment %}
+      <p><strong>فایل:</strong> <a href="{{ issue.attachment.url }}" target="_blank">دانلود</a></p>
+    {% endif %}
+    <p><strong>تاریخ ایجاد:</strong> {{ issue.created_at|date:'Y-m-d H:i' }}</p>
+  </div>
+</div>
+{% endblock %}

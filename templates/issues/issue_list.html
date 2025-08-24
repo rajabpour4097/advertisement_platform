@@ -1,0 +1,45 @@
+{% extends 'account/account_base.html' %}
+{% block content %}
+<div class="x_panel">
+  <div class="x_title"><h2>گزارش مشکلات</h2><div class="clearfix"></div></div>
+  <div class="x_content">
+    <table class="table table-striped">
+      <thead><tr><th>#</th><th>صفحه</th><th>کاربر</th><th>وضعیت</th><th>تاریخ</th><th></th></tr></thead>
+      <tbody>
+      {% for issue in issues %}
+        <tr>
+          <td>{{ issue.id }}</td>
+          <td style="max-width:250px;overflow-wrap:anywhere;">{{ issue.page_url }}</td>
+          <td>{% if issue.user %}
+                {% if issue.user.get_full_name %}
+                    {{ issue.user.get_full_name }}
+                {% else %}
+                  {{ issue.user.username }}
+                {% endif %}
+              {% else %}
+            -
+             {% endif %}
+          </td>
+          <td>{{ issue.get_status_display }}</td>
+          <td>{{ issue.created_at|date:'Y-m-d H:i' }}</td>
+          <td><a class="btn btn-sm btn-primary" href="{% url 'issues:detail' issue.id %}">جزئیات</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-center">موردی ثبت نشده است.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% if is_paginated %}
+      <ul class="pagination">
+        {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">قبلی</a></li>
+        {% endif %}
+        <li class="page-item active"><a class="page-link" href="#">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</a></li>
+        {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">بعدی</a></li>
+        {% endif %}
+      </ul>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

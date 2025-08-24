@@ -340,6 +340,65 @@
 
 <!-- اسکریپت اصلی قالب سایت -->
 <script src="{% static 'advplatform/assets/js/main.js' %}"></script>
+<!--گزارش مشکل-->
+<div id="issue-report-btn" title="گزارش مشکل" style="position:fixed;bottom:20px;left:15px;right:auto;z-index:9999;cursor:pointer;background:#e84c3d;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.25);font-size:14px;">
+        <i class="fa fa-exclamation" style="line-height:1;"></i>
+    </div>
+  <div id="issue-report-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:10000;">
+    <div style="background:#fff;width:95%;max-width:480px;margin:6% auto;padding:20px;border-radius:12px;direction:rtl;position:relative;">
+      <button type="button" id="issue-close" style="position:absolute;left:10px;top:8px;background:transparent;border:none;font-size:20px;">×</button>
+      <h4 style="margin-top:0;">گزارش مشکل در این صفحه</h4>
+      <form id="issue-report-form" method="post" enctype="multipart/form-data" action="{% url 'issues:report' %}">
+        {% csrf_token %}
+        <input type="hidden" name="page_url" id="issue_page_url" />
+        <div class="form-group mb-2">
+          <label>شرح مشکل</label>
+          <textarea name="description" required rows="4" class="form-control" placeholder="شرح مشکل ..."></textarea>
+        </div>
+        <div class="form-group mb-3">
+          <label>فایل یا تصویر (اختیاری)</label>
+          <input type="file" name="attachment" class="form-control" />
+        </div>
+        <div class="text-end">
+          <button type="submit" class="btn btn-success">ارسال</button>
+        </div>
+      </form>
+      <div id="issue-success" style="display:none;" class="alert alert-success mt-2">گزارش شما ثبت شد. متشکریم.</div>
+      <div id="issue-errors" style="display:none;" class="alert alert-danger mt-2"></div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const btn=document.getElementById('issue-report-btn');
+      const modal=document.getElementById('issue-report-modal');
+      if(!btn||!modal) return;
+      const closeBtn=document.getElementById('issue-close');
+      const form=document.getElementById('issue-report-form');
+      const successBox=document.getElementById('issue-success');
+      const errorBox=document.getElementById('issue-errors');
+      const pageUrlInput=document.getElementById('issue_page_url');
+      pageUrlInput.value=window.location.href;
+      btn.addEventListener('click',()=>{modal.style.display='block';successBox.style.display='none';errorBox.style.display='none';});
+      closeBtn.addEventListener('click',()=>{modal.style.display='none';});
+      modal.addEventListener('click',e=>{if(e.target===modal) modal.style.display='none';});
+      form.addEventListener('submit',function(e){
+        e.preventDefault();
+        successBox.style.display='none';errorBox.style.display='none';
+        const formData=new FormData(form);
+        fetch(form.action,{method:'POST',body:formData,headers:{'X-Requested-With':'XMLHttpRequest'}})
+          .then(r=>r.json().then(data=>({ok:r.ok,data})))
+          .then(res=>{
+            if(res.ok&&res.data.success){
+              form.reset();pageUrlInput.value=window.location.href;successBox.style.display='block';setTimeout(()=>{modal.style.display='none';},1600);
+            }else{
+              let errs=[];try{for(const k in res.data.errors){errs.push(res.data.errors[k].join(' '));}}catch(ex){errs.push('خطا در ثبت');}
+              errorBox.innerText=errs.join('\n');errorBox.style.display='block';
+            }
+          })
+          .catch(()=>{errorBox.innerText='خطای غیرمنتظره رخ داد.';errorBox.style.display='block';});
+      });
+    })();
+  </script>
 
 {% block extra_js %}{% endblock %}
 </body>
