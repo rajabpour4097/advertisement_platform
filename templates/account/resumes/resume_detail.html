@@ -100,6 +100,14 @@
         width: 100px;
         border-radius: 5px;
     }
+    .image-logo.enlargeable{cursor:zoom-in;transition:transform .25s;}
+    .image-logo.enlargeable:hover{transform:scale(1.05);}    
+    .image-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:3000;padding:30px;backdrop-filter:saturate(160%) blur(2px);} 
+    .image-modal-overlay.active{display:flex;} 
+    .image-modal-box{position:relative;max-width:90%;max-height:90%;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px -5px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.15);} 
+    .image-modal-box img{display:block;max-width:100%;max-height:calc(100vh - 120px);object-fit:contain;background:#fff;} 
+    .image-modal-close{position:absolute;top:8px;inset-inline-end:8px;background:rgba(0,0,0,.55);color:#fff;border:none;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;backdrop-filter:blur(3px);} 
+    .image-modal-close:hover{background:rgba(0,0,0,.7);} 
 
     /* Service area (cities) styling */
     .province-city-wrapper {margin-top:10px;}
@@ -159,12 +167,15 @@
                 </div>
                 <div class="field-row">
                     <div><strong>دسته تخصصی:</strong> {{ resume.specialty_categories|default:"تعریف نشده" }}</div>
-                    <div><strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong> 
+                    <div><strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong>
                         {% if resume.user.customuserimages.first.image.url %}
-                            <img class="image-logo" src="{{ resume.user.customuserimages.first.image.url }}" alt="">
+                            <a href="{{ resume.user.customuserimages.first.image.url }}" class="user-image-link" data-full="{{ resume.user.customuserimages.first.image.url }}" aria-label="نمایش تصویر کاربر">
+                                <img class="image-logo enlargeable" src="{{ resume.user.customuserimages.first.image.url }}" alt="تصویر کاربر">
+                            </a>
                         {% else %}
-                            <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="">
-                        {% endif %}</div>
+                            <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="بدون تصویر">
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="field-row">
                     <div><strong>تاریخ ایجاد:</strong> {{ resume.created_at|jalali_timedate }}</div>
@@ -427,6 +438,49 @@ document.addEventListener('DOMContentLoaded', function() {
     // تریگر کردن event برای مقدار اولیه
     statusSelect.dispatchEvent(new Event('change'));
 });
+</script>
+
+<!-- Image Modal -->
+<div class="image-modal-overlay" id="imageModal" role="dialog" aria-modal="true" aria-label="بزرگنمایی تصویر کاربر">
+    <div class="image-modal-box">
+        <button class="image-modal-close" id="imageModalClose" aria-label="بستن">&times;</button>
+        <img src="" alt="تصویر کاربر" id="imageModalImg">
+    </div>
+</div>
+
+<script>
+(function(){
+    const overlay = document.getElementById('imageModal');
+    const modalImg = document.getElementById('imageModalImg');
+    const closeBtn = document.getElementById('imageModalClose');
+    if(!overlay || !modalImg) return;
+
+    function openModal(src){
+        modalImg.src = src;
+        overlay.classList.add('active');
+        document.body.style.overflow='hidden';
+    }
+    function closeModal(){
+        overlay.classList.remove('active');
+        modalImg.src = '';
+        document.body.style.overflow='';
+    }
+
+    document.addEventListener('click',function(e){
+        const link = e.target.closest('.user-image-link');
+        if(link){
+            e.preventDefault();
+            openModal(link.getAttribute('data-full'));
+        }
+    });
+    closeBtn && closeBtn.addEventListener('click',closeModal);
+    overlay && overlay.addEventListener('click',function(e){
+        if(e.target === overlay) closeModal();
+    });
+    document.addEventListener('keyup',function(e){
+        if(e.key==='Escape' && overlay.classList.contains('active')) closeModal();
+    });
+})();
 </script>
 
 {% endblock %}
