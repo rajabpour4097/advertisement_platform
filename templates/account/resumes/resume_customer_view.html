@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% load account_tags %}
 
-{% block title %}بررسی رزومه - {{ resume.user.get_full_name }}{% endblock %}
+{% block title %}جزئیات رزومه - {{ resume.user.get_full_name }}{% endblock %}
 
 {% block content %}
 <style>
@@ -194,14 +194,18 @@
                     </div>
                     <div>
                         <strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong>
-                        {% if resume.user.customuserimages.first.image.url %}
+                        {% if user|has_dealer:resume.user %}
+                            {% if resume.user.customuserimages.first.image.url %}
+                                <img class="image-logo" src="{{ resume.user.customuserimages.first.image.url }}" alt="">
+                            {% else %}
+                                <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="">
+                            {% endif %}
+                        {% else %}
                             <div class="d-flex flex-wrap gap-2 mt-2">
-                                <div class="locked-thumb" title="تصویر این کاربر در حال حاضر قفل هستند و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                                <div class="locked-thumb" title="تصویر این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
                                   <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
                                 </div>
                             </div>
-                        {% else %}
-                           <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="">
                         {% endif %}
                     </div>
                 </div>
@@ -268,7 +272,17 @@
                 <div class="field-row" style="flex-wrap:wrap;">
                     <div style="flex:1 1 240px;min-width:200px;">
                         <strong>شبکه‌های اجتماعی و وب‌سایت‌ها:</strong>
-                        <div style="margin-top:4px;white-space:pre-line;">{% if resume.socialmedia_and_sites %}{{ resume.socialmedia_and_sites }}{% else %}<span style="color:#6b7280;">چیزی ثبت نشده</span>{% endif %}</div>
+                        {% if user|has_dealer:resume.user %}
+                            {% if resume.user.socialmedia_and_sites %}
+                                <span>{{ resume.user.socialmedia_and_sites }}</span>
+                            {% else %}
+                                <span style="color:#6b7280;">چیزی ثبت نشده</span>
+                            {% endif %}
+                        {% else %}
+                            <div title="شبکه‌های اجتماعی و وب‌سایت‌های این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                                  <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                            </div>
+                        {% endif %}
                     </div>
                     <div style="flex:1 1 240px;min-width:200px;">
                         <strong>ابزارها و پلتفرم‌ها:</strong>
@@ -281,17 +295,35 @@
                         <div style="margin-top:4px;white-space:pre-line;">{% if resume.partner_brand %}{{ resume.partner_brand }}{% else %}<span style="color:#6b7280;">چیزی ثبت نشده</span>{% endif %}</div>
                     </div>
                     <div style="flex:1 1 240px;min-width:200px;">
-                        <strong>شماره حساب بانکی: IR</strong>
-                        <div style="margin-top:4px;">{% if resume.bank_account %}{{ resume.bank_account }}{% else %}<span style="color:#6b7280;">تعریف نشده</span>{% endif %}</div>
+                        <strong>شماره تماس:</strong>
+                        {% if user|has_dealer:resume.user %}
+                            {% if resume.user.phone_number %}
+                                {{ resume.user.phone_number }}
+                            {% else %}
+                                <span style="color:#6b7280;">چیزی ثبت نشده</span>
+                            {% endif %}
+                        {% else %}
+                            <div title="شماره تماس این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                                      <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
-                <div style="margin-top:12px;">
-                    <strong>فایل رزومه:</strong>
-                    {% if resume.file %}
-                        <a href="{{ resume.file.url }}" target="_blank" class="file-link" style="margin-inline-start:6px;display:inline-flex;align-items:center;gap:6px;"> <i class="fa fa-file"></i> مشاهده فایل</a>
-                    {% else %}
-                        <span style="color:#6b7280;margin-inline-start:4px;">فایلی آپلود نشده</span>
-                    {% endif %}
+                <div class="field-row" style="flex-wrap:wrap;margin-top:8px;">
+                    <div style="flex:1 1 240px;min-width:200px;">
+                        <strong>آدرس ایمیل:</strong>
+                        {% if user|has_dealer:resume.user %}
+                            {% if resume.user.email %}
+                                {{ resume.user.email }}
+                            {% else %}
+                                <span style="color:#6b7280;">چیزی ثبت نشده</span>
+                            {% endif %}
+                        {% else %}
+                        <div title="آدرس ایمیل این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                                  <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
@@ -299,7 +331,7 @@
             
             <div class="info-section">
                 {% if permissions %}
-                    <h4>مجوزها و گواهی‌نامه‌ها ({{ permissions.count }})</h4>
+                    <h4>مجوزها و گواهی‌نامه‌ها</h4>
                     <ul class="permissions-list">
                         {% for permission in permissions %}
                             <li>
@@ -328,7 +360,7 @@
 
             <!-- لینک‌های نمونه کار -->
             <div class="info-section">
-                <h4>لینک‌های نمونه کارها ({{ work_links.count }})</h4>
+                <h4>لینک‌های نمونه کارها</h4>
                 {% if work_links %}
                     <ul class="worklinks-list">
                         {% for link in work_links %}
@@ -359,7 +391,7 @@
             <!-- نمونه کارها -->
             <div class="info-section">
                 {% if resume.portfolios.all %}
-                    <h4>نمونه کارها ({{ resume.portfolios.count }})</h4>
+                    <h4>نمونه کارها</h4>
                     <ul class="portfolio-list">
                         {% for portfolio in resume.portfolios.all %}
                             <li>

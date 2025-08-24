@@ -1,6 +1,8 @@
 from django import template
 import jdatetime
 
+from advplatform.models import Campaign
+
 
 
 register = template.Library()
@@ -55,3 +57,7 @@ def endswith(value, suffix):
 @register.filter
 def is_participant(campaign, user):
     return campaign.list_of_participants.filter(id=user.id).exists()
+
+@register.filter
+def has_dealer(user, dealer):
+    return Campaign.objects.filter(customer=user, campaign_dealer=dealer).exists()
