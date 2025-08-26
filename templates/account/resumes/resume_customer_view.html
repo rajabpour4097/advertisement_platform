@@ -204,21 +204,11 @@
                     </div>
                     <div>
                         <strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong>
-                        {% if user|has_dealer:resume.user %}
-                            {% if resume.user.customuserimages.first.image.url %}
-                                <a href="{{ resume.user.customuserimages.first.image.url }}" class="user-image-link" data-full="{{ resume.user.customuserimages.first.image.url }}" aria-label="نمایش تصویر کاربر">
-                                    <img class="image-logo enlargeable" src="{{ resume.user.customuserimages.first.image.url }}" alt="تصویر کاربر">
-                                </a>
-                            {% else %}
-                                <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="بدون تصویر">
-                            {% endif %}
-                        {% else %}
-                            <div class="d-flex flex-wrap gap-2 mt-2">
-                                <div class="locked-thumb" title="تصویر این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
-                                  <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
-                                </div>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <div class="locked-thumb" title="تصویر این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                              <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
                             </div>
-                        {% endif %}
+                        </div>
                     </div>
                 </div>
                     <div>
@@ -284,17 +274,9 @@
                 <div class="field-row" style="flex-wrap:wrap;">
                     <div style="flex:1 1 240px;min-width:200px;">
                         <strong>شبکه‌های اجتماعی و وب‌سایت‌ها:</strong>
-                        {% if user|has_dealer:resume.user %}
-                            {% if resume.user.socialmedia_and_sites %}
-                                <span>{{ resume.user.socialmedia_and_sites }}</span>
-                            {% else %}
-                                <span style="color:#6b7280;">چیزی ثبت نشده</span>
-                            {% endif %}
-                        {% else %}
-                            <div title="شبکه‌های اجتماعی و وب‌سایت‌های این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
-                                  <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
-                            </div>
-                        {% endif %}
+                        <div title="شبکه‌های اجتماعی و وب‌سایت‌های این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                            <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                        </div>
                     </div>
                     <div style="flex:1 1 240px;min-width:200px;">
                         <strong>ابزارها و پلتفرم‌ها:</strong>
@@ -308,33 +290,17 @@
                     </div>
                     <div style="flex:1 1 240px;min-width:200px;">
                         <strong>شماره تماس:</strong>
-                        {% if user|has_dealer:resume.user %}
-                            {% if resume.user.phone_number %}
-                                {{ resume.user.phone_number }}
-                            {% else %}
-                                <span style="color:#6b7280;">چیزی ثبت نشده</span>
-                            {% endif %}
-                        {% else %}
-                            <div title="شماره تماس این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
-                                      <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
-                            </div>
-                        {% endif %}
+                        <div title="شماره تماس این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
+                            <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                        </div>
                     </div>
                 </div>
                 <div class="field-row" style="flex-wrap:wrap;margin-top:8px;">
                     <div style="flex:1 1 240px;min-width:200px;">
                         <strong>آدرس ایمیل:</strong>
-                        {% if user|has_dealer:resume.user %}
-                            {% if resume.user.email %}
-                                {{ resume.user.email }}
-                            {% else %}
-                                <span style="color:#6b7280;">چیزی ثبت نشده</span>
-                            {% endif %}
-                        {% else %}
                         <div title="آدرس ایمیل این کاربر در حال حاضر قفل میباشد و بعد از انتخاب طرح به عنوان برنده نمایش داده می‌شود">
-                                  <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
+                            <div class="lock-overlay"><i class="fa fa-lock"></i><span>قفل شده</span></div>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
