@@ -1,0 +1,13 @@
+{% extends "account/account_base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<h3>ارسال تیکت جدید</h3>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+    {{ form|crispy }}
+    <div class="mb-3">
+        <label>متن پیام اولیه</label>
+        <textarea name="first_message" class="form-control" rows="4" required></textarea>
+    </div>
+    <button class="btn btn-success" type="submit">ارسال</button>
+</form>
+{% endblock %}

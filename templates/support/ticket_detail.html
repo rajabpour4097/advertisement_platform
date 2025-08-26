@@ -1,0 +1,34 @@
+{% extends "account/account_base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<h3>تیکت #{{ ticket.id }} - {{ ticket.title }}</h3>
+<p>دپارتمان: {{ ticket.department.name }} | موضوع: {{ ticket.subject.title }} | وضعیت: {{ ticket.get_status_display }}</p>
+<div class="card mb-3">
+    <div class="card-body" style="max-height:400px;overflow-y:auto;">
+        {% for m in ticket.messages.all %}
+            <div class="mb-2 {% if m.is_staff_reply %}text-end{% endif %}">
+                <div class="p-2 border rounded {% if m.is_staff_reply %}bg-light{% endif %}">
+                    <small class="text-muted">{{ m.sender.get_full_name }} - {{ m.created_at|date:'Y-m-d H:i' }}</small><br>
+                    {{ m.message|linebreaks }}
+                    {% if m.attachment %}<a href="{{ m.attachment.url }}" target="_blank">دانلود فایل</a>{% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% if not ticket.is_closed %}
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+    {{ message_form|crispy }}
+    <button class="btn btn-primary">ارسال پاسخ</button>
+    <a href="{% url 'support:ticket_close' ticket.id %}" class="btn btn-danger">بستن تیکت</a>
+</form>
+{% endif %}
+{% if rating_form %}
+<hr>
+<h5>امتیاز به پشتیبان</h5>
+<form method="post" action="{% url 'support:ticket_rate' ticket.id %}">{% csrf_token %}
+    {{ rating_form|crispy }}
+    <button class="btn btn-warning">ثبت امتیاز</button>
+</form>
+{% endif %}
+{% endblock %}

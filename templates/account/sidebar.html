@@ -82,6 +82,15 @@
              <li><a href="#"><i class="fa fa-list-ul"></i> لیست درخواست پشتیبان</a></li>
              {% endif %}
              <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: #7d919c;"></i> مدیریت پیام</a></li>
+            <li><a><i class="fa fa-life-ring" style="color: #7d919c;"></i> پشتیبانی<span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                    <li><a href="{% url 'support:ticket_list' %}"><i class="fa fa-ticket"></i> تیکت ها</a></li>
+                    <li><a href="{% url 'support:ticket_create' %}"><i class="fa fa-plus"></i> تیکت جدید</a></li>
+                    {% if request.user.is_staff or request.user.is_am or request.user.is_supporter %}
+                        <li><a href="{% url 'support:livechat_history' %}"><i class="fa fa-comments"></i> تاریخچه گفتگوی آنلاین</a></li>
+                    {% endif %}
+                </ul>
+            </li>
              <li><a><i class="fa fa-credit-card" style="color: #7d919c;"></i> مالی<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <li><a href="{% url 'wallet:home' %}"><i class="fa fa-wallet"></i>کیف پول</a></li>

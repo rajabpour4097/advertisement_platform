@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'internal_messages',
     'wallet.apps.WalletConfig',
     'issues',
+    'support.apps.SupportConfig',
 ]
 
 AUTH_USER_MODEL = 'advplatform.CustomUser'
@@ -78,6 +79,7 @@ TEMPLATES = [
                 'account.context_processors.user_null_field_percentage',
                 'account.context_processors.latest_notifications',
                 'internal_messages.context_processors.unread_messages',
+                # 'support.context_processors.unread_tickets', # در صورت نیاز بعدا پیاده سازی شود
             ],
         },
     },
