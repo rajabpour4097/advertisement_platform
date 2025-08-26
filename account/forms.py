@@ -8,6 +8,7 @@ from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.contrib.auth.forms import UserCreationForm
 from account.models import CampaignTransaction, EditingCampaign, EnvironmentalAdImage
 from django.utils import timezone
+from datetime import timedelta
 from account.models import (
     EnvironmentalAdvertisement,
     SocialmediaAdvertisement,
@@ -264,18 +265,9 @@ class ReviewCampaignForm(forms.ModelForm):
 
 
 class StartCampaignForm(forms.ModelForm):
-    starttimedate = forms.DateTimeField(
-        required=True,
-        error_messages={
-            'required': 'لطفاً تاریخ شروع را وارد کنید.',
-        }
-    )
-    endtimedate = forms.DateTimeField(
-        required=True,
-        error_messages={
-            'required': 'لطفاً تاریخ پایان را وارد کنید.',
-        }
-    )
+    # در این نسخه تاریخ ها الزامی در فرم نیستند؛ در صورت خالی بودن به صورت خودکار پر می‌شوند
+    starttimedate = forms.DateTimeField(required=False)
+    endtimedate = forms.DateTimeField(required=False)
 
     class Meta:
         model = Campaign
@@ -284,26 +276,6 @@ class StartCampaignForm(forms.ModelForm):
             'starttimedate': forms.DateTimeInput(attrs={'class': 'form-control'}),
             'endtimedate': forms.DateTimeInput(attrs={'class': 'form-control'})
         }
-
-    def clean(self):
-        cleaned_data = super().clean()
-        starttimedate = cleaned_data.get('starttimedate')
-        endtimedate = cleaned_data.get('endtimedate')
-
-        if not starttimedate:
-            raise forms.ValidationError("لطفاً تاریخ شروع را وارد کنید.")
-        
-        if not endtimedate:
-            raise forms.ValidationError("لطفاً تاریخ پایان را وارد کنید.")
-
-        if starttimedate and endtimedate:
-            if starttimedate > endtimedate:
-                raise forms.ValidationError("تاریخ شروع نمی‌تواند بعد از تاریخ پایان باشد.")
-            
-            if starttimedate < timezone.now():
-                raise forms.ValidationError("تاریخ شروع نمی‌تواند قبل از زمان فعلی باشد.")
-
-        return cleaned_data
 
 
 class AssignMentorForm(forms.ModelForm):
@@ -507,20 +479,29 @@ class EnvironmentalAdvertisementForm(forms.ModelForm):
                 self.fields['city'].queryset = City.objects.none()
 
     def clean(self):
-        cleaned = super().clean()
-        # اعتبارسنجی مختصات
-        lat = cleaned.get('media_location_latitude')
-        lon = cleaned.get('media_location_longitude')
-        if lat in [None, ''] or lon in [None, '']:
-            raise ValidationError("لطفاً موقعیت رسانه را روی نقشه انتخاب کنید.")
-        try:
-            lat = float(lat); lon = float(lon)
-        except (TypeError, ValueError):
-            raise ValidationError("مختصات واردشده نامعتبر است.")
-        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
-            raise ValidationError("مختصات خارج از محدوده معتبر است.")
+        cleaned_data = super().clean()
+        starttimedate = cleaned_data.get('starttimedate')
+        endtimedate = cleaned_data.get('endtimedate')
 
-        # الزام انتخاب شهر
+        # اگر هیچ تاریخی وارد نشد به صورت خودکار: الان تا 10 روز بعد
+        if not starttimedate and not endtimedate:
+            start = timezone.now()
+            end = start + timedelta(days=10)
+            cleaned_data['starttimedate'] = start
+            cleaned_data['endtimedate'] = end
+            return cleaned_data
+
+        # یکی وارد و دیگری خالی نباشد
+        if starttimedate and not endtimedate:
+            raise ValidationError('تاریخ پایان را نیز مشخص کنید یا هر دو را خالی بگذارید تا خودکار تعیین شود.')
+        if endtimedate and not starttimedate:
+            raise ValidationError('تاریخ شروع را نیز مشخص کنید یا هر دو را خالی بگذارید تا خودکار تعیین شود.')
+
+        # اعتبارسنجی ترتیب
+        if starttimedate and endtimedate and endtimedate <= starttimedate:
+            raise ValidationError('تاریخ پایان باید بعد از تاریخ شروع باشد.')
+
+        return cleaned_data
         if not cleaned.get('city'):
             raise ValidationError("انتخاب شهر الزامی است.")
         return cleaned

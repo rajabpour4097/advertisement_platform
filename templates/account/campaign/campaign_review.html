@@ -131,7 +131,7 @@
             <form method="post" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="start">
-                
+
                 {% if form2.non_field_errors %}
                 <div class="alert alert-danger">
                     {% for error in form2.non_field_errors %}
@@ -140,39 +140,12 @@
                 </div>
                 {% endif %}
 
-                <!-- جایگزین کردن فیلدهای تاریخ با ورودی‌های سفارشی -->
-                <div class="form-group">
-                    <label for="id_starttimedate">تاریخ شروع:</label>
-                    <input type="text" 
-                           name="starttimedate" 
-                           id="id_starttimedate" 
-                           class="form-control persian-datepicker"
-                           value="{{ form2.starttimedate.value|default:'' }}"
-                           autocomplete="off">
-                    {% if form2.starttimedate.errors %}
-                        <div class="invalid-feedback d-block text-danger">
-                            {{ form2.starttimedate.errors }}
-                        </div>
-                    {% endif %}
-                </div>
+                <p class="text-info" style="line-height:1.8;">
+                    با تایید کمپین، تاریخ شروع کمپین از همین لحظه ثبت و به مدت ۱۰ روز بعد به عنوان تاریخ پایان تعیین می‌شود.
+                    در صورت نیاز به تغییر دستی، پس از شروع می‌توانید از بخش ویرایش کمپین اقدام کنید.
+                </p>
 
-                <div class="form-group">
-                    <label for="id_endtimedate">تاریخ پایان:</label>
-                    <input type="text" 
-                           name="endtimedate" 
-                           id="id_endtimedate" 
-                           class="form-control persian-datepicker"
-                           value="{{ form2.endtimedate.value|default:'' }}"
-                           autocomplete="off">
-                    {% if form2.endtimedate.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form2.endtimedate.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-
-                <br>
-                <button type="submit" class="btn btn-warning">تایید و شروع کمپین</button>
+                <button type="submit" class="btn btn-warning">تایید و شروع کمپین (۱۰ روزه)</button>
             </form>
         </div>
     </div>
@@ -184,25 +157,7 @@
 <script src="{% static 'account/vendors/persian-datepicker/persian-datepicker.min.js' %}"></script>
 
 <script>
-    $(document).ready(function() {
-        $('.persian-datepicker').persianDatepicker({
-            format: 'YYYY/MM/DD',
-            initialValue: false,
-            autoClose: true,
-            timePicker: {
-                enabled: true,
-                meridiem: {
-                    enabled: true
-                }
-            },
-            onSelect: function(unix) {
-                // تبدیل تاریخ به فرمت مناسب برای ارسال به سرور
-                var date = new persianDate(unix);
-                var gregorianDate = date.toCalendar('gregorian').toLocale('en').format('YYYY-MM-DD HH:mm:ss');
-                $(this.model.input.elem).val(gregorianDate);
-            }
-        });
-    });
+    // دیگر نیازی به راه‌اندازی تقویم نیست چون تاریخ‌ها خودکار تنظیم می‌شوند.
 </script>
 {% endblock %}
 {% endblock %}

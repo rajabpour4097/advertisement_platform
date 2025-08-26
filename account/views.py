@@ -69,7 +69,7 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.utils.html import format_html
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from django.utils import timezone
 
 
@@ -677,8 +677,8 @@ class CampaignReviewView(ManagerUserMixin, View):  #This view is used for Staff
 
         elif form_type == 'start' and form2.is_valid():
             # فقط starttimedate و endtimedate از فرم گرفته شوند
-            campaign.starttimedate = form2.cleaned_data['starttimedate']
-            campaign.endtimedate = form2.cleaned_data['endtimedate']
+            campaign.starttimedate = timezone.now()
+            campaign.endtimedate = timezone.now() + timedelta(days=10)  # به عنوان مثال 7 روز بعد
             campaign.is_active = True
             campaign.status = "progressing"
             
@@ -1535,10 +1535,17 @@ class CampaignParticipateView(DealerUserMixin, View):
         if self.campaign.status not in ['progressing', 'approved']:
             messages.error(request, "امکان ثبت پیشنهاد برای این کمپین وجود ندارد.")
             return redirect('account:campaigns')
-        # جلوگیری از ثبت مجدد (برای فرم عمومی)
-        if CampaignTransaction.objects.filter(dealer=request.user, campaign=self.campaign).exists():
-            # برای انواع تخصصی اجازه چند مدل مختلف می‌دهید یا خیر؟ فرض: یکی
-            messages.warning(request, "قبلاً برای این کمپین پیشنهادی ثبت کرده‌اید.")
+        
+        # جلوگیری از ثبت دیلری که رزومه ثبت شده شده ندارد
+        if not Resume.objects.filter(user=request.user).exists():
+            messages.warning(request, "شما رزومه‌ای ثبت نکرده‌اید. برای ثبت رزومه به قسمت رزومه من بروید.")
+            return redirect('account:campaigns')
+
+        # جلوگیری از ثبت دیلری که رزومه تایید شده ندارد
+        if not Resume.objects.filter(user=request.user, status='approved').exists():
+            messages.warning(request, "رزومه شما تایید نشده است.")
+            return redirect('account:campaigns')
+        
         return super().dispatch(request, *args, **kwargs)
 
     def _ad_kind(self, campaign: Campaign) -> str:
