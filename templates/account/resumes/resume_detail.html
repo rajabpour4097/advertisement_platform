@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% load account_tags %}
 
-{% block title %}بررسی رزومه - {{ resume.user.get_full_name }}{% endblock %}
+{% block title %}بررسی رزومه - {% if participant_number %}شرکت کننده شماره {{ participant_number }}{% else %}{{ resume.user.get_full_name }}{% endif %}{% endblock %}
 
 {% block content %}
 <style>
@@ -141,7 +141,7 @@
 <div class="container-fluid resume-detail">
     <div class="x_panel">
         <div class="x_title">
-            <h2>بررسی رزومه - {{ resume.user.get_full_name }}</h2>
+            <h2>بررسی رزومه - {% if participant_number %}شرکت کننده شماره {{ participant_number }}{% else %}{{ resume.user.get_full_name }}{% endif %}</h2>
             <div class="clearfix"></div>
         </div>
 
@@ -153,14 +153,18 @@
             <div class="info-section">
                 <h4>اطلاعات اصلی</h4>
                 <div class="field-row">
-                    <div><strong>نام مجری:</strong> {% if resume.user.get_full_name %}
-                                                        <a href="{% url 'account:user_detail' resume.user.id %}?from=resume_detail" title="{{resume.user.email}}">
-                                                            {{ resume.user.get_full_name }}
-                                                        </a>    
-                                                    {% else%} 
-                                                        <a href="{% url 'account:user_detail' resume.user.id %}">
-                                                            {{ resume.user.email }}
-                                                        </a>
+                    <div><strong>نام مجری:</strong> {% if participant_number %}
+                                                        شرکت کننده شماره {{ participant_number }}
+                                                    {% else %}
+                                                        {% if resume.user.get_full_name %}
+                                                            <a href="{% url 'account:user_detail' resume.user.id %}?from=resume_detail" title="{{resume.user.email}}">
+                                                                {{ resume.user.get_full_name }}
+                                                            </a>
+                                                        {% else %}
+                                                            <a href="{% url 'account:user_detail' resume.user.id %}">
+                                                                {{ resume.user.email }}
+                                                            </a>
+                                                        {% endif %}
                                                     {% endif %}
                     </div>
                     <div><strong>نوع مجری:</strong> {{ resume.dealer_type|default:"تعریف نشده" }}</div>

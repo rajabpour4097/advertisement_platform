@@ -1017,6 +1017,13 @@ class ResumeDetailView(ManagerUserMixin, UpdateView):
                 print("Notify initial under_review error:", e)
         return resume
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        n = self.request.GET.get('n')
+        if n and n.isdigit():
+            context['participant_number'] = int(n)
+        return context
+
     def form_valid(self, form):
         # لاگ اولیه
         print("[ResumeReview DEBUG] POST keys:", list(self.request.POST.keys()))
@@ -2095,12 +2102,29 @@ class CustomerResumeView(LoginRequiredMixin, DetailView):
                 'back_url': "account:home"
             })
 
+        # گرفتن شماره شرکت‌کننده از کوئری استرینگ
+        n = request.GET.get('n')
+        if not (n and n.isdigit() and int(n) > 0):
+            # تلاش برای یافتن یک کمپین مرتبط برای ریدایرکت (اولین کمپینی که کاربر جاری صاحب و این رزومه در آن شرکت کرده)
+            related_campaign = Campaign.objects.filter(
+                customer_id=current_user.id,
+                list_of_participants__in=[dealer_resume.user.id]
+            ).order_by('-id').first()
+            if related_campaign:
+                return redirect('account:finished_campaign_proposals', related_campaign.id)
+            return redirect('account:campaigns')
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         dealer_resume = get_object_or_404(Resume, id=self.kwargs['pk'])
         context['resume'] = dealer_resume
+        participant_number = self.request.GET.get('n')
+        if participant_number and participant_number.isdigit():
+            context['participant_number'] = int(participant_number)
+        else:
+            context['participant_number'] = None
         return context
 
 
@@ -2118,6 +2142,11 @@ class FinishedCampaignProposalDetail(LoginRequiredMixin, TemplateView):
                 'error_message': "شما به این کمپین دسترسی ندارید",
                 'back_url': "account:home"
             })
+
+        # اعتبارسنجی پارامتر شماره شرکت‌کننده (n)
+        n = request.GET.get('n')
+        if not (n and n.isdigit() and int(n) > 0):
+            return redirect('account:finished_campaign_proposals', campaign.id)
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -2138,9 +2167,25 @@ class FinishedCampaignProposalDetail(LoginRequiredMixin, TemplateView):
 
         # همه‌ی proposalهای این کمپین در این دسته‌بندی
         proposals = model_class.objects.filter(campaign_id=self.kwargs['pk'])
-
         context['campaign'] = get_object_or_404(Campaign, id=self.kwargs['pk'])
-        context['proposal'] = proposals.first()
+
+        # تلاش برای گرفتن آیدی پیشنهاد از پارامتر GET
+        proposal_id = self.request.GET.get('pid')
+        selected_proposal = None
+        if proposal_id and proposal_id.isdigit():
+            try:
+                selected_proposal = proposals.get(id=int(proposal_id))
+            except model_class.DoesNotExist:
+                selected_proposal = None
+        if not selected_proposal:
+            selected_proposal = proposals.first()
+        context['proposal'] = selected_proposal
+        # شماره شرکت‌کننده (از لیست) اگر ارسال شده (نباید در get_context_data ریدایرکت انجام شود)
+        participant_number = self.request.GET.get('n')
+        if participant_number and participant_number.isdigit():
+            context['participant_number'] = int(participant_number)
+        else:
+            context['participant_number'] = None
         return context
 
 

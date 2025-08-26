@@ -86,8 +86,9 @@
           <div class="col-md-6">
             <p><strong>پیشنهاد دهنده:</strong>
               <span style="color: #1734d9ff;">
-                {{ proposal.proposed_user.get_full_name|default:proposal.proposed_user.email }}
-                <a href="{% if request.user.user_type == 'customer' %}{% url 'account:dealer_resume' proposal.proposed_user.resume.id request.user.id %}{% else %} {% url 'account:resume_detail' proposal.proposed_user.resume.id %} {% endif %}" style="color: #0d2fd8ff; font-size: 10px; margin-right: 5px;"> مشاهده رزومه <i class="fas fa-eye"></i></a>
+                {% if participant_number %}شرکت کننده شماره {{ participant_number }}{% else %}شرکت کننده{% endif %}
+                {# لینک رزومه را می‌توان حذف کرد اگر نباید نام واقعی فاش شود؛ اگر می‌خواهید پنهان بماند کامنت کنید #}
+                <a href="{% if request.user.user_type == 'customer' %}{% url 'account:dealer_resume' proposal.proposed_user.resume.id request.user.id %}?n={{ participant_number }}{% else %} {% url 'account:resume_detail' proposal.proposed_user.resume.id %} {% endif %}" style="color: #0d2fd8ff; font-size: 10px; margin-right: 5px;"> مشاهده رزومه <i class="fas fa-eye"></i></a>
               </span>
             </p>
             {% if campaign %}
@@ -102,7 +103,7 @@
               <!-- Environmental Advertisement Details -->
               <div class="card proposal-details-card">
                 <div class="card-header bg-primary text-white">
-                  <h5 class="mb-0">جزئیات پیشنهاد {{ proposal.proposed_user.get_full_name|default:proposal.proposed_user.email }} برای تبلیغات محیطی</h5>
+                  <h5 class="mb-0">جزئیات پیشنهاد {% if participant_number %}شرکت کننده شماره {{ participant_number }}{% else %}شرکت کننده{% endif %} برای تبلیغات محیطی</h5>
                 </div>
                 <div class="card-body">
                   <div class="row">
@@ -324,7 +325,7 @@
                   <div class="row">
                     <div class="col-md-6">
                       <p><strong>قیمت پیشنهادی:</strong> {{ proposal.proposal_price|format_price }}</p>
-                      <p><strong>ارائه دهنده:</strong> {{ proposal.dealer.get_full_name|default:proposal.dealer.email }}</p>
+                      <p><strong>ارائه دهنده:</strong> {% if participant_number %}شرکت کننده شماره {{ participant_number }}{% else %}شرکت کننده{% endif %}</p>
                     </div>
                     <div class="col-md-6">
                       <p><strong>تاریخ ثبت:</strong> {{ proposal.created_at|date:"Y/m/d H:i" }}</p>

@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% load account_tags %}
 
-{% block title %}جزئیات رزومه - {{ resume.user.get_full_name }}{% endblock %}
+{% block title %}جزئیات رزومه - شرکت کننده شماره {{ participant_number }}{% endblock %}
 
 {% block content %}
 <style>
@@ -164,7 +164,7 @@
                             </h2>
                             <div style="font-size:14px;color:#4b5563;display:flex;align-items:center;gap:6px;">
                                 <i class="fa fa-user" style="color:#1d72e8;"></i>
-                                <strong style="color:#0f3c63;">{{ resume.user.get_full_name|default:resume.user.email }}</strong>
+                                <strong style="color:#0f3c63;">شرکت کننده شماره {{ participant_number }}</strong>
                             </div>
                         </div>
                         <div style="margin-inline-start:auto;display:flex;align-items:center;gap:10px;">
@@ -180,12 +180,7 @@
             <div class="info-section">
                 <h4>اطلاعات اصلی</h4>
                 <div class="field-row">
-                    <div><strong>نام مجری:</strong> 
-                        {% if resume.user.get_full_name %}
-                            {{ resume.user.get_full_name }}
-                        {% else%} 
-                            {{ resume.user.email }}
-                        {% endif %}
+                    <div><strong>شرکت کننده شماره {{ participant_number }}</strong> 
                     </div>
                     <div><strong>نوع مجری:</strong> {{ resume.dealer_type|default:"تعریف نشده" }}</div>
                 </div>

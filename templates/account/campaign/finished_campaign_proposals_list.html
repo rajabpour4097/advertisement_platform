@@ -72,7 +72,7 @@
                         <tbody>
                             {% for proposal in proposals %}
                                 <tr>
-                                    <td>{{ proposal.dealer.get_full_name }} </td>
+                                    <td>شرکت کننده شماره {{ forloop.counter }}</td>
                                     <td>{{ proposal.proposal_price|format_price }}</td>
                                     <td>
                                             <span data-bs-toggle="tooltip" 
@@ -87,7 +87,7 @@
                                                class="btn btn-success btn-sm">
                                                 انتخاب بعنوان برنده
                                             </a>
-                                            <a href="{% url 'account:finished_campaign_proposal_detail' campaign.topic.first campaign.id %}" 
+                                            <a href="{% url 'account:finished_campaign_proposal_detail' campaign.topic.first campaign.id %}?n={{ forloop.counter }}&pid={{ proposal.id }}" 
                                                class="btn btn-info btn-sm">
                                                 مشاهده جزئیات پیشنهاد
                                             </a>
