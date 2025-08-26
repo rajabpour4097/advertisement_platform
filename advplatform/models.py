@@ -143,6 +143,7 @@ class CustomUser(AbstractUser):
     company_name = models.CharField(max_length=150, blank=True, null=True, verbose_name='نام شرکت')
     modified_time = models.DateTimeField(auto_now=True, verbose_name='آخرین تغییر پروفایل')
     is_am = models.BooleanField(default=False, verbose_name='مدیر تبلیغات')
+    is_supporter = models.BooleanField(default=False, verbose_name='پشتیبان')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
 
     # استفاده از CustomUserManager برای مدیریت کاربران
