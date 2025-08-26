@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from advplatform.models import BaseModel
+from django.utils import timezone
+from datetime import timedelta
 
 User = settings.AUTH_USER_MODEL
 
@@ -155,3 +157,30 @@ class LiveChatMessage(BaseModel):
 
     def __str__(self):
         return f"ChatMsg {self.session_id} - {self.sender_id}"
+
+
+class SupporterPresence(BaseModel):
+    """وضعیت آنلاین بودن پشتیبان"""
+    supporter = models.OneToOneField(
+        User, on_delete=models.CASCADE,
+        related_name='supportpresence',
+        limit_choices_to={'is_supporter': True},
+        verbose_name='پشتیبان'
+    )
+    last_seen = models.DateTimeField(auto_now=True, verbose_name='آخرین مشاهده')
+    is_manual_offline = models.BooleanField(default=False, verbose_name='آفلاین دستی')
+
+    ONLINE_THRESHOLD_SECONDS = 90
+
+    class Meta:
+        verbose_name = 'حضور پشتیبان'
+        verbose_name_plural = 'حضور پشتیبانان'
+
+    def __str__(self):
+        return f"Presence {self.supporter_id}"
+
+    @property
+    def is_online(self):
+        if self.is_manual_offline:
+            return False
+        return self.last_seen >= timezone.now() - timedelta(seconds=self.ONLINE_THRESHOLD_SECONDS)

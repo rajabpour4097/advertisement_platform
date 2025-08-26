@@ -59,6 +59,29 @@
   function startPolling(){if(pollTimer) clearInterval(pollTimer);fetchMessages();pollTimer=setInterval(fetchMessages,3500);} 
   form.addEventListener('submit',e=>{e.preventDefault();if(!input.value.trim()) return;const text=input.value.trim();const fd=new FormData();fd.append('message',text);fd.append('csrfmiddlewaretoken','{{ csrf_token }}');fetch(`{% url 'support:livechat_send' 999999 %}`.replace('999999',sessionId),{method:'POST',body:fd,headers:{'X-Requested-With':'XMLHttpRequest'}}).then(r=>r.json()).then(d=>{if(d.ok){/* optimistic add */addMessage({id:d.message_id,message:text,is_supporter:false,created_at:new Date().toISOString()});input.value='';input.style.height='auto';}});});
   input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,120)+'px';});
+  {% if user.is_supporter %}
+  // حضور پشتیبان: ارسال پینگ دوره‌ای
+  setInterval(()=>{fetch('{% url "support:livechat_ping" %}',{headers:{'X-Requested-With':'XMLHttpRequest'}})},30000);
+  // پایش جلسات جدید منتسب به پشتیبان
+  let supporterLastCheck=null;
+  function checkAssignedSessions(){
+    // استفاده مجدد از endpoint history (فقط برای شما مجاز است) و یافتن جدیدترین سشن باز که هنوز در ویجت باز نشده
+    fetch('{% url "support:livechat_history" %}?ajax=1',{headers:{'X-Requested-With':'XMLHttpRequest'}})
+      .then(r=>r.text()) // ساده: پاسخ HTML؛ استخراج id با regex
+      .then(html=>{
+        const ids=[...html.matchAll(/data-session-id="(\d+)"/g)].map(m=>m[1]);
+        if(ids.length){
+          // انتخاب اولین سشن فعال که id != sessionId
+          const candidate=ids.find(id=>id!==String(sessionId));
+          if(candidate){
+            // بارگذاری پیام ها
+            sessionId=candidate;selectBox.style.display='none';messagesWrap.style.display='block';form.style.display='block';if(panel.style.display==='none') openPanel();startPolling();
+          }
+        }
+      });
+  }
+  setInterval(checkAssignedSessions,5000);
+  {% endif %}
 })();
 </script>
 {% endif %}

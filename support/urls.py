@@ -15,4 +15,5 @@ urlpatterns = [
     path('livechat/<int:session_id>/send/', views.livechat_send_message, name='livechat_send'),
     path('livechat/<int:session_id>/messages/', views.livechat_messages, name='livechat_messages'),
     path('livechat/departments/', views.livechat_departments, name='livechat_departments'),
+    path('livechat/ping/', views.livechat_ping, name='livechat_ping'),
 ]

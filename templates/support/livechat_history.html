@@ -5,8 +5,8 @@
 <table class="table mt-3">
     <thead><tr><th>#</th><th>دپارتمان</th><th>پشتیبان</th><th>وضعیت</th><th>شروع</th></tr></thead>
     <tbody>
-        {% for s in sessions %}
-        <tr>
+    {% for s in sessions %}
+    <tr data-session-id="{{ s.id }}">
             <td>{{ s.id }}</td>
             <td>{{ s.department.name }}</td>
             <td>{{ s.supporter.get_full_name|default:'-' }}</td>

@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponseForbidden
 from django.db.models import Q, Max
-from .models import Ticket, TicketMessage, TicketRating, LiveChatSession, LiveChatMessage, SupportDepartment, SupportSubject
+from .models import Ticket, TicketMessage, TicketRating, LiveChatSession, LiveChatMessage, SupportDepartment, SupportSubject, SupporterPresence
 from .forms import (
     TicketCreateForm, TicketMessageForm, TicketRatingForm,
     LiveChatStartForm, LiveChatMessageForm
@@ -164,7 +164,18 @@ def livechat_start_view(request):
             session = form.save(commit=False)
             session.user = request.user
             dept = session.department
-            supporter = dept.supporters.filter(is_active=True).order_by('id').first()
+            # انتخاب پشتیبان: اول آنلاین ها سپس کمترین تعداد سشن فعال
+            dept_supporters = dept.supporters.filter(is_active=True, is_supporter=True)
+            # annotate presence
+            online_ids = [p.supporter_id for p in SupporterPresence.objects.filter(supporter__in=dept_supporters) if p.is_online]
+            candidates = dept_supporters
+            if online_ids:
+                candidates = candidates.filter(id__in=online_ids)
+            # annotate active sessions count
+            from django.db.models import Count, Q
+            candidates = candidates.annotate(active_sessions=Count('assigned_live_chats', filter=Q(assigned_live_chats__is_active=True)))\
+                                 .order_by('active_sessions', 'id')
+            supporter = candidates.first()
             if supporter:
                 session.supporter = supporter
             session.save()
@@ -222,3 +233,11 @@ def livechat_departments(request):
     # return list of active departments for widget
     depts = SupportDepartment.objects.filter(is_active=True).values('id', 'name')
     return JsonResponse({'ok': True, 'departments': list(depts)})
+
+
+def livechat_ping(request):
+    if not request.user.is_authenticated or not request.user.is_supporter:
+        return JsonResponse({'ok': False}, status=403)
+    presence, _ = SupporterPresence.objects.get_or_create(supporter=request.user)
+    # auto last_seen updated by save (auto_now)
+    return JsonResponse({'ok': True, 'online': presence.is_online})

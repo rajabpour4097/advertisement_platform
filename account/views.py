@@ -824,7 +824,6 @@ class SelectCampaignWinnerView(EditCampaignUserMixin, View):
             status='completed',
             campaign=campaign,
             description=f"واریز جایزه برنده شدن در کمپین {campaign.id}",
-            wallet_amount=gift_amount,
         )
 
         # Send notifications

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     SupportDepartment, SupportSubject, Ticket, TicketMessage, TicketRating,
-    LiveChatSession, LiveChatMessage
+    LiveChatSession, LiveChatMessage, SupporterPresence
 )
 
 
@@ -68,3 +68,15 @@ class LiveChatMessageAdmin(admin.ModelAdmin):
     list_display = ('session', 'sender', 'is_supporter', 'created_at')
     list_filter = ('is_supporter',)
     search_fields = ('session__id', 'sender__email')
+
+
+@admin.register(SupporterPresence)
+class SupporterPresenceAdmin(admin.ModelAdmin):
+    list_display = ('supporter', 'last_seen', 'is_manual_offline', 'online_status')
+    list_filter = ('is_manual_offline',)
+    search_fields = ('supporter__email', 'supporter__first_name', 'supporter__last_name')
+
+    def online_status(self, obj):
+        return obj.is_online
+    online_status.boolean = True
+    online_status.short_description = 'آنلاین'
