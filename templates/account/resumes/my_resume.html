@@ -658,7 +658,7 @@
                              <p style="color: red;">{{ error }}</p>
                         {% endfor %}
                     <label for="id_bank_account">
-                        شماره حساب بانکی (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)
+                        شماره شبای بانکی (<p style="font-size: 10px; color: red; display: inline;">اجباری</p>)
                     </label>
                     <div class="iban-wrapper">
                         <span class="iban-prefix">IR</span>
@@ -1018,19 +1018,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (filter && filteredCities.length === 0 && !prov.name.includes(filter)) return;
             const wrap = document.createElement('div');
             wrap.style.marginBottom = '10px';
-            wrap.innerHTML = `
-              <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
-                <div>
-                  <input type="checkbox" class="province-all" data-province="${prov.id}">
-                  <span style="font-weight:bold;">${prov.name}</span>
-                </div>
-                <span class="toggle-cities" data-province="${prov.id}" style="font-size:18px;cursor:pointer;">&#x25BC;</span>
-              </div>
-              <div class="cities-list" id="cities-list-${prov.id}" style="display:none; margin-right:20px; margin-top:5px;"></div>
-            `;
+                        wrap.innerHTML = `
+                            <div class="province-header" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;">
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <input type="checkbox" class="province-all" data-province="${prov.id}">
+                                    <span class="province-name" style="font-weight:bold;">${prov.name}</span>
+                                </div>
+                                <span class="toggle-cities" data-province="${prov.id}" style="font-size:16px;cursor:pointer;">&#x25BC;</span>
+                            </div>
+                            <div class="cities-list" id="cities-list-${prov.id}" style="display:none; margin-right:20px; margin-top:5px;"></div>
+                        `;
             container.appendChild(wrap);
             const citiesList = wrap.querySelector('.cities-list');
-            prov.cities.forEach(city => {
+                        prov.cities.forEach(city => {
                 const div = document.createElement('div');
                 div.innerHTML = `
                   <label style="display:flex;align-items:center;">
@@ -1039,10 +1039,22 @@ document.addEventListener('DOMContentLoaded', function() {
                   </label>`;
                 citiesList.appendChild(div);
             });
-            wrap.querySelector('.toggle-cities').onclick = function() {
-                citiesList.style.display = citiesList.style.display === 'none' ? 'block' : 'none';
-                this.innerHTML = citiesList.style.display === 'none' ? '&#x25BC;' : '&#x25B2;';
-            };
+                        const toggle = () => {
+                                const arrow = wrap.querySelector('.toggle-cities');
+                                const isHidden = citiesList.style.display === 'none';
+                                citiesList.style.display = isHidden ? 'block' : 'none';
+                                arrow.innerHTML = isHidden ? '&#x25B2;' : '&#x25BC;';
+                        };
+                        // کلیک روی فلش
+                        wrap.querySelector('.toggle-cities').addEventListener('click', e => {
+                                e.stopPropagation();
+                                toggle();
+                        });
+                        // کلیک روی کل هدر (به جز چک‌باکس)
+                        wrap.querySelector('.province-header').addEventListener('click', e => {
+                                if (e.target.classList.contains('province-all') || e.target.tagName === 'INPUT') return; // نادیده گرفتن کلیک روی تیک
+                                toggle();
+                        });
             wrap.querySelector('.province-all').onclick = function() {
                 const checked = this.checked;
                 citiesList.querySelectorAll('.city-checkbox').forEach(cb => {

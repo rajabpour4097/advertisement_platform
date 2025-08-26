@@ -1538,12 +1538,12 @@ class CampaignParticipateView(DealerUserMixin, View):
         
         # جلوگیری از ثبت دیلری که رزومه ثبت شده شده ندارد
         if not Resume.objects.filter(user=request.user).exists():
-            messages.warning(request, "شما رزومه‌ای ثبت نکرده‌اید. برای ثبت رزومه به قسمت رزومه من بروید.")
+            messages.warning(request, "شما برای شرکت در کمپین رزومه‌ای ثبت نکرده‌اید. برای ثبت رزومه به قسمت رزومه من بروید.")
             return redirect('account:campaigns')
 
         # جلوگیری از ثبت دیلری که رزومه تایید شده ندارد
         if not Resume.objects.filter(user=request.user, status='approved').exists():
-            messages.warning(request, "رزومه شما تایید نشده است.")
+            messages.warning(request, "رزومه شما برای شرکت در کمپین تایید نشده است.")
             return redirect('account:campaigns')
         
         return super().dispatch(request, *args, **kwargs)
