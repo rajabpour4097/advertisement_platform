@@ -113,7 +113,17 @@
             <td>{{ user.modified_time|jalali_timedate }}</td>
 
             <!-- نوع کاربر -->
-            <td>{{ user.get_user_type_display }}</td>
+            <td>
+                {% if user.get_user_type_display %}
+                    {{ user.get_user_type_display }}
+                {% elif user.is_supporter %}
+                        پشتیبان
+                {% elif user.is_am %}
+                        مدیر تبلیغات
+                {% elif user.is_staff %}
+                        مدیر سیستم
+                {% endif %}
+            </td>
 
             <!-- نوع مشتری -->
             <td>{{ user.get_cutomer_type_display }}</td>

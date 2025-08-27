@@ -73,12 +73,19 @@
              {% if request.user.is_staff  or request.user.is_am %}
                 <li><a><i class="fa fa-group" style="color: #7d919c;"></i> پشتیبانان<span class="fa fa-chevron-down"></span></a>
                    <ul class="nav child_menu">
-                       <li><a href="{% url 'account:mentorslist' %}"><i class="fa fa-edit"></i>لیست پشتیبانان</a></li>
+                       <li><a href="#"><i class="fa fa-edit"></i>لیست پشتیبانان</a></li>
                    </ul>
                 </li>
              {% endif %}
-             <li><a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: #7d919c;"></i> مدیریت پیام</a></li>
-                <li><a><i class="fa fa-life-ring" style="color: #7d919c;"></i> پشتیبانی<span class="fa fa-chevron-down"></span></a>
+
+             <!-- مدیریت پیام -->
+             <li>
+                <a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: #7d919c;"></i> مدیریت پیام</a>
+            </li>
+
+            <!-- پشتیبانی -->
+            <li>
+                <a><i class="fa fa-life-ring" style="color: #7d919c;"></i> پشتیبانی<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                     <li><a href="{% url 'support:ticket_list' %}"><i class="fa fa-ticket"></i> تیکت ها</a></li>
                     {% if request.user.user_type == 'dealer' or request.user.user_type == 'customer' %}
@@ -89,12 +96,24 @@
                     {% endif %}
                 </ul>
             </li>
-             <li><a><i class="fa fa-credit-card" style="color: #7d919c;"></i> مالی<span class="fa fa-chevron-down"></span></a>
+
+            <!-- مالی -->
+            <li>
+                <a><i class="fa fa-credit-card" style="color: #7d919c;"></i> مالی<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
-                    <li><a href="{% url 'wallet:home' %}"><i class="fa fa-wallet"></i>کیف پول</a></li>
+                    <li>
+                        <a href="{% url 'wallet:home' %}"><i class="fa fa-wallet"></i>کیف پول</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'wallet:transactions' %}"><i class="fa fa-wallet"></i>لیست تراکنش ها</a>
+                    </li>
                     {% if request.user.is_staff or request.user.is_am %}
-                        <li><a href="{% url 'wallet:receipts' %}"><i class="fa fa-money"></i>مدیریت فیش ها</a></li>
-                        <li><a href="{% url 'wallet:receipt_management' %}"><i class="fa fa-clock-o"></i>فیش های در انتظار تایید</a></li>
+                        <li>
+                            <a href="{% url 'wallet:receipts' %}"><i class="fa fa-money"></i>مدیریت فیش ها</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'wallet:receipt_management' %}"><i class="fa fa-clock-o"></i>فیش های در انتظار تایید</a>
+                        </li>
                     {% endif %}
                 </ul>
             </li>
