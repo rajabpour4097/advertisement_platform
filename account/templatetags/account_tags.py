@@ -1,11 +1,31 @@
 from django import template
 import jdatetime
-
+from django.core import signing
+from django.utils import timezone
 from advplatform.models import Campaign
 
 
 
 register = template.Library()
+
+# ثابت برای salt امضا
+RESUME_TOKEN_SALT = "resume.secure.link.v1"
+
+@register.simple_tag
+def make_resume_token(resume_id, customer_id, participant_number=None, max_age=3600):
+    """تولید توکن امضا شده برای لینک رزومه جهت مخفی کردن آیدی واقعی
+    payload شامل: rid (resume id) , cid (customer id) , ts (timestamp) , n (participant number)
+    max_age فقط جهت اطلاع مستندات است (اعتبارسنجی در view انجام می‌شود)
+    """
+    if participant_number is None:
+        participant_number = 0
+    data = {
+        'rid': int(resume_id),
+        'cid': int(customer_id),
+        'ts': int(timezone.now().timestamp()),
+        'n': int(participant_number),
+    }
+    return signing.dumps(data, salt=RESUME_TOKEN_SALT)
 
 @register.filter(name='jalali_timedate')
 def jalali_timedate(value):

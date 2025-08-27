@@ -71,6 +71,7 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.utils.html import format_html
 from datetime import date, datetime, time, timedelta
 from django.utils import timezone
+from django.core import signing
 
 
 
@@ -2074,58 +2075,7 @@ class FinishedCampaignProposalsListView(EditCampaignUserMixin, ListView):
         return context
 
 
-class CustomerResumeView(LoginRequiredMixin, DetailView):
-    model = Resume
-    template_name = "account/resumes/resume_customer_view.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        dealer_resume = get_object_or_404(Resume, id=self.kwargs['pk'])
-        current_user = request.user
-
-        # بررسی اینکه کاربر لاگین شده با user_id برابر هست
-        if str(current_user.id) != str(self.kwargs.get('user_id')):
-            # Forbidden یا ریدایرکت
-            return render(request, '403.html', {
-                'error_message': "شما به این رزومه دسترسی ندارید",
-                'back_url': "account:home"
-            })
-
-        # بررسی وجود کمپین مرتبط
-        campaign_exists = Campaign.objects.filter(
-            list_of_participants__in=[dealer_resume.user.id],
-            customer_id=current_user.id
-        ).exists()
-
-        if not campaign_exists:
-            return render(request, '403.html', {
-                'error_message': "شما به این رزومه دسترسی ندارید",
-                'back_url': "account:home"
-            })
-
-        # گرفتن شماره شرکت‌کننده از کوئری استرینگ
-        n = request.GET.get('n')
-        if not (n and n.isdigit() and int(n) > 0):
-            # تلاش برای یافتن یک کمپین مرتبط برای ریدایرکت (اولین کمپینی که کاربر جاری صاحب و این رزومه در آن شرکت کرده)
-            related_campaign = Campaign.objects.filter(
-                customer_id=current_user.id,
-                list_of_participants__in=[dealer_resume.user.id]
-            ).order_by('-id').first()
-            if related_campaign:
-                return redirect('account:finished_campaign_proposals', related_campaign.id)
-            return redirect('account:campaigns')
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        dealer_resume = get_object_or_404(Resume, id=self.kwargs['pk'])
-        context['resume'] = dealer_resume
-        participant_number = self.request.GET.get('n')
-        if participant_number and participant_number.isdigit():
-            context['participant_number'] = int(participant_number)
-        else:
-            context['participant_number'] = None
-        return context
+## CustomerResumeView حذف شد و نمایش رزومه مشتری از طریق SecureCustomerResumeLinkView انجام می‌شود.
 
 
 class FinishedCampaignProposalDetail(LoginRequiredMixin, TemplateView):
@@ -2205,4 +2155,51 @@ class FinishedCampaignDealerOwnProposal(LoginRequiredMixin, TemplateView):
             })
 
         return super().dispatch(request, *args, **kwargs)
+
+
+class SecureCustomerResumeLinkView(LoginRequiredMixin, TemplateView):
+    """نمایش مستقیم رزومه با استفاده از توکن امضا شده بدون نمایش آیدی ها در URL
+    ساختار توکن: {'rid': resume_id, 'cid': customer_id, 'ts': timestamp, 'n': participant_number}
+    """
+    template_name = "account/resumes/resume_customer_view.html"
+    token_max_age = 3600
+    token_salt = "resume.secure.link.v1"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.token = kwargs.get('token')
+        if not self.token:
+            return render(request, '403.html', {'error_message': 'توکن نامعتبر است', 'back_url': 'account:home'})
+        try:
+            self.data = signing.loads(self.token, max_age=self.token_max_age, salt=self.token_salt)
+        except signing.SignatureExpired:
+            return render(request, '403.html', {'error_message': 'انقضای توکن سپری شده است', 'back_url': 'account:home'})
+        except signing.BadSignature:
+            return render(request, '403.html', {'error_message': 'توکن نامعتبر است', 'back_url': 'account:home'})
+
+        # اعتبارسنجی مالک کمپین (کاربر جاری همان مشتری توکن باشد)
+        if str(request.user.id) != str(self.data.get('cid')):
+            return render(request, '403.html', {'error_message': 'دسترسی مجاز نیست', 'back_url': 'account:home'})
+
+        # وجود رزومه
+        self.resume = Resume.objects.filter(id=self.data.get('rid')).first()
+        if not self.resume:
+            return render(request, '404.html', {'error_message': 'رزومه یافت نشد'})
+
+        # وجود حداقل یک کمپین که این مشتری صاحب و این کاربر شرکت‌کننده باشد
+        participated = Campaign.objects.filter(
+            customer_id=request.user.id,
+            list_of_participants__in=[self.resume.user.id]
+        ).exists()
+        if not participated:
+            return render(request, '403.html', {'error_message': 'دسترسی مجاز نیست', 'back_url': 'account:home'})
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['resume'] = self.resume
+        n = self.data.get('n')
+        if n and int(n) > 0:
+            context['participant_number'] = int(n)
+        return context
 

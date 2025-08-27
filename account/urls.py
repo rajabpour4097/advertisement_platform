@@ -14,7 +14,6 @@ from account.views import (
     CampaignParticipateView,
     CampaignReviewView,
     CampaignListView,
-    CustomerResumeView,
     FinishedCampaignDealerOwnProposal,
     FinishedCampaignProposalDetail,
     ListOfRequestForMentor,
@@ -51,6 +50,7 @@ from account.views import (
     CitiesByProvinceView,
 )
 from advplatform.views import custom_404_view
+from account.views import SecureCustomerResumeLinkView
 
 
 app_name = 'account'
@@ -103,7 +103,7 @@ urlpatterns = [
     path('userslist/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
     path('campaigns/proposal/<str:kind>/<int:obj_id>/', ProposalDetailView.as_view(), name='proposal_detail'),
     path('ajax/cities/', CitiesByProvinceView.as_view(), name='ajax_cities'),
-    path('resume/customerview/<int:pk>/<int:user_id>/', CustomerResumeView.as_view(), name='dealer_resume'),
+    path('resume/secure/<str:token>/', SecureCustomerResumeLinkView.as_view(), name='secure_dealer_resume'),
     path('campaigns/finished-proposals/proposaldetail/<str:category>/<int:pk>/', FinishedCampaignProposalDetail.as_view(), name='finished_campaign_proposal_detail'),
     path('campaigns/finished-proposals/dealer-own-proposal/<int:pk>/', FinishedCampaignDealerOwnProposal.as_view(), name='finished_campaign_dealer_own_proposal'),
 ]
