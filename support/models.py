@@ -46,7 +46,8 @@ class SupportSubject(BaseModel):
         ordering = ['department__name', 'title']
 
     def __str__(self):
-        return f"{self.department.name} - {self.title}"
+        # نمایش فقط عنوان موضوع بدون نام دپارتمان (در فرم ایجاد تیکت)
+        return self.title
 
 
 class Ticket(BaseModel):

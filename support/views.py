@@ -18,6 +18,7 @@ from .forms import (
 )
 
 from account.utils.send_notification import send_notification
+from django.http import JsonResponse
 
 
 def _pick_supporter_for_department(department: SupportDepartment):
@@ -37,6 +38,13 @@ def _pick_supporter_for_department(department: SupportDepartment):
         )
     ).order_by('active_tickets', 'id')
     return supporters.first()
+
+
+def ajax_subjects_by_department(request, department_id):
+    """Return JSON list of active subjects for a department (AJAX)."""
+    qs = SupportSubject.objects.filter(department_id=department_id, is_active=True).order_by('title')
+    data = {'results': [{'id': s.id, 'title': s.title} for s in qs]}
+    return JsonResponse(data)
 
 
 class TicketListView(LoginRequiredMixin, ListView):

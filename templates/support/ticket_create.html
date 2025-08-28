@@ -3,11 +3,42 @@
 {% block content %}
 <h3>ارسال تیکت جدید</h3>
 <form method="post" enctype="multipart/form-data">{% csrf_token %}
-    {{ form|crispy }}
+        {{ form.department|as_crispy_field }}
+        {{ form.subject|as_crispy_field }}
+        {{ form.title|as_crispy_field }}
+        {{ form.priority|as_crispy_field }}
+        {{ form.attachment|as_crispy_field }}
     <div class="mb-3">
         <label>متن پیام اولیه</label>
         <textarea name="first_message" class="form-control" rows="4" required></textarea>
     </div>
     <button class="btn btn-success" type="submit">ارسال</button>
 </form>
+<script>
+// Ajax load subjects after department selection
+document.addEventListener('DOMContentLoaded', function(){
+    const deptSel = document.getElementById('id_department_select');
+    const subjSel = document.getElementById('id_subject_select');
+    function clearSubjects(){
+        subjSel.innerHTML = '<option value="">---------</option>';
+        subjSel.setAttribute('disabled','disabled');
+    }
+    clearSubjects();
+    deptSel.addEventListener('change', function(){
+        const deptId = this.value;
+        if(!deptId){ clearSubjects(); return; }
+        fetch(`/support/ajax/subjects/${deptId}/`, {headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(r=>r.json())
+            .then(data=>{
+                clearSubjects();
+                data.results.forEach(obj=>{
+                    const opt=document.createElement('option');
+                    opt.value=obj.id; opt.textContent=obj.title; subjSel.appendChild(opt);
+                });
+                subjSel.removeAttribute('disabled');
+            })
+            .catch(()=>clearSubjects());
+    });
+});
+</script>
 {% endblock %}

@@ -13,7 +13,9 @@ class TicketCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # limit active departments/subjects
         self.fields['department'].queryset = SupportDepartment.objects.filter(is_active=True)
-        self.fields['subject'].queryset = SupportSubject.objects.filter(is_active=True)
+        self.fields['subject'].queryset = SupportSubject.objects.none()
+        self.fields['department'].widget.attrs.update({'id': 'id_department_select'})
+        self.fields['subject'].widget.attrs.update({'id': 'id_subject_select', 'disabled': 'disabled'})
 
     
 class TicketMessageForm(forms.ModelForm):
