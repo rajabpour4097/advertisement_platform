@@ -1,46 +1,65 @@
+"""Support ticket views (live chat removed)."""
+
 from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.db import transaction
+from django.db.models import Count, Q
 from django.utils import timezone
-from django.http import JsonResponse, HttpResponseForbidden
-from django.db.models import Q, Max
-from .models import Ticket, TicketMessage, TicketRating, LiveChatSession, LiveChatMessage, SupportDepartment, SupportSubject, SupporterPresence
-from .forms import (
-    TicketCreateForm, TicketMessageForm, TicketRatingForm,
-    LiveChatStartForm, LiveChatMessageForm
+
+from .models import (
+    Ticket, TicketMessage, TicketRating,
+    SupportDepartment, SupportSubject
 )
+from .forms import (
+    TicketCreateForm, TicketMessageForm, TicketRatingForm
+)
+
+from account.utils.send_notification import send_notification
+
+
+def _pick_supporter_for_department(department: SupportDepartment):
+    """Return the supporter in the department with the lowest number of open/answering tickets.
+
+    If no supporters are attached or all inactive, returns None.
+    """
+    supporters = department.supporters.filter(is_active=True, is_supporter=True)
+    if not supporters.exists():
+        return None
+    # Count only tickets that are not closed
+    supporters = supporters.annotate(
+        active_tickets=Count('assigned_tickets', filter=~Q(assigned_tickets__status='closed'))
+    ).order_by('active_tickets', 'id')
+    return supporters.first()
 
 
 class TicketListView(LoginRequiredMixin, ListView):
+    model = Ticket
     template_name = 'support/ticket_list.html'
     context_object_name = 'tickets'
-    paginate_by = 20
 
     def get_queryset(self):
         user = self.request.user
         qs = Ticket.objects.select_related('department', 'subject', 'supporter')
-        if user.is_staff or user.is_am:
-            # staff can filter
-            dept = self.request.GET.get('department')
-            supporter = self.request.GET.get('supporter')
-            status = self.request.GET.get('status')
-            if dept:
-                qs = qs.filter(department_id=dept)
-            if supporter:
-                qs = qs.filter(supporter_id=supporter)
-            if status:
-                qs = qs.filter(status=status)
+        if user.is_supporter:
+            # Only tickets assigned to supporter OR unassigned in their departments
+            dept_ids = user.departments.values_list('id', flat=True)
+            qs = qs.filter(
+                Q(supporter=user) | (Q(supporter__isnull=True) & Q(department_id__in=dept_ids))
+            )
         else:
             qs = qs.filter(user=user)
-        return qs
+        status = self.request.GET.get('status')
+        if status:
+            qs = qs.filter(status=status)
+        return qs.order_by('-modified_at')
 
 
 class TicketCreateView(LoginRequiredMixin, CreateView):
-    template_name = 'support/ticket_create.html'
     model = Ticket
     form_class = TicketCreateForm
-    success_url = reverse_lazy('support:ticket_list')
+    template_name = 'support/ticket_create.html'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -49,73 +68,177 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        # auto assign supporter based on department if only one supporter or round-robin can be added later
-        department = form.cleaned_data['department']
-        supporter = department.supporters.filter(is_active=True).order_by('id').first()
+        # auto assign supporter if available
+        supporter = _pick_supporter_for_department(form.instance.department)
         if supporter:
             form.instance.supporter = supporter
         response = super().form_valid(form)
-        # create initial message
-        first_message = self.request.POST.get('first_message')
-        if first_message:
+        # initial message if provided in POST 'message'
+        message_text = self.request.POST.get('message')
+        if message_text:
             TicketMessage.objects.create(
                 ticket=self.object,
                 sender=self.request.user,
-                message=first_message,
+                message=message_text,
                 is_staff_reply=False
             )
-            self.object.last_response_time = self.object.created_at
-            self.object.save(update_fields=['last_response_time'])
+        if supporter:
+            send_notification(
+                user=supporter,
+                verb='تیکت جدید',
+                description=f'تیکت جدید #{self.object.id} به شما منتسب شد.'
+            )
         return response
+
+    def get_success_url(self):
+        return reverse('support:ticket_detail', args=[self.object.pk])
 
 
 class TicketDetailView(LoginRequiredMixin, DetailView):
-    template_name = 'support/ticket_detail.html'
     model = Ticket
+    template_name = 'support/ticket_detail.html'
     context_object_name = 'ticket'
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['message_form'] = TicketMessageForm()
-        if self.object.is_closed() and self.object.supporter and not hasattr(self.object, 'rating') and self.request.user == self.object.user:
-            ctx['rating_form'] = TicketRatingForm()
-        return ctx
+    def dispatch(self, request, *args, **kwargs):
+        ticket = self.get_object()
+        user = request.user
+        if user.is_supporter:
+            # supporter can view only their assigned tickets or unassigned in their departments
+            dept_ids = user.departments.values_list('id', flat=True)
+            if not (ticket.supporter == user or (ticket.supporter is None and ticket.department_id in dept_ids)):
+                return redirect('support:ticket_list')
+        else:
+            if ticket.user != user:
+                return redirect('support:ticket_list')
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        # posting a message
+        ticket = self.object
         form = TicketMessageForm(request.POST, request.FILES)
-        if form.is_valid():
+        if form.is_valid() and ticket.status != 'closed':
             msg = form.save(commit=False)
-            msg.ticket = self.object
+            msg.ticket = ticket
             msg.sender = request.user
-            msg.is_staff_reply = request.user.is_supporter or request.user.is_staff or request.user.is_am
+            msg.is_staff_reply = request.user.is_supporter
             msg.save()
-            self.object.last_response_time = timezone.now()
-            # update status
-            if msg.is_staff_reply:
-                self.object.status = 'waiting'
-            else:
-                self.object.status = 'answering'
-            self.object.save(update_fields=['last_response_time', 'status'])
-        return redirect('support:ticket_detail', pk=self.object.pk)
+            # notify other side
+            target = ticket.supporter if not request.user.is_supporter else ticket.user
+            if target:
+                send_notification(
+                    user=target,
+                    verb='پیام جدید تیکت',
+                    description=f'پیام جدید در تیکت #{ticket.id}'
+                )
+            # update ticket status
+            if request.user.is_supporter and ticket.status == 'open':
+                ticket.status = 'answering'
+                ticket.save(update_fields=['status', 'modified_at'])
+            elif not request.user.is_supporter and ticket.status in ['waiting', 'answering']:
+                ticket.status = 'answering'
+                ticket.save(update_fields=['status', 'modified_at'])
+            return redirect('support:ticket_detail', pk=ticket.pk)
+        context = self.get_context_data(object=self.object, form=form)
+        return render(request, self.template_name, context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'form' not in context:
+            context['form'] = TicketMessageForm()
+        context['can_rate'] = (
+            self.object.status == 'closed' and
+            self.request.user == self.object.user and
+            not hasattr(self.object, 'rating') and
+            self.object.supporter is not None
+        )
+        return context
 
 
 def ticket_close_view(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
-    if request.user != ticket.user and not (request.user.is_supporter or request.user.is_staff or request.user.is_am):
-        return HttpResponseForbidden()
-    ticket.status = 'closed'
-    ticket.closed_at = timezone.now()
-    ticket.save(update_fields=['status', 'closed_at'])
+    user = request.user
+    if not user.is_authenticated:
+        return redirect('login')
+    if user != ticket.user and user != ticket.supporter:
+        return redirect('support:ticket_list')
+    if ticket.status != 'closed':
+        ticket.status = 'closed'
+        ticket.closed_at = timezone.now()
+    ticket.save(update_fields=['status', 'closed_at', 'modified_at'])
     return redirect('support:ticket_detail', pk=pk)
+
+
+def ticket_claim_view(request, pk):
+    """Supporter claims an unassigned ticket from their department."""
+    ticket = get_object_or_404(Ticket, pk=pk)
+    user = request.user
+    if not user.is_authenticated or not user.is_supporter:
+        return redirect('support:ticket_list')
+    dept_ids = user.departments.values_list('id', flat=True)
+    if ticket.supporter is not None or ticket.department_id not in dept_ids:
+        return redirect('support:ticket_detail', pk=pk)
+    with transaction.atomic():
+        # re-fetch with lock
+        locked = Ticket.objects.select_for_update().get(pk=pk)
+        if locked.supporter is None:
+            locked.supporter = user
+            locked.status = 'answering'
+            locked.save(update_fields=['supporter', 'status', 'modified_at'])
+            send_notification(
+                user=locked.user,
+                verb='تیکت منتسب شد',
+                description=f'تیکت #{locked.id} به پشتیبان {user.get_full_name() or user.username} منتسب شد.'
+            )
+    return redirect('support:ticket_detail', pk=pk)
+
+
+from .forms import TicketReassignForm
+
+def ticket_reassign_view(request, pk):
+    ticket = get_object_or_404(Ticket, pk=pk)
+    user = request.user
+    if not user.is_authenticated or not user.is_supporter:
+        return redirect('support:ticket_list')
+    # only current supporter or staff can reassign
+    if ticket.supporter != user and not (user.is_staff or user.is_superuser):
+        return redirect('support:ticket_detail', pk=pk)
+    if request.method == 'POST':
+        form = TicketReassignForm(request.POST, user=user)
+        if form.is_valid():
+            new_supporter = form.cleaned_data['supporter']
+            if new_supporter and new_supporter != ticket.supporter:
+                old_supporter = ticket.supporter
+                ticket.supporter = new_supporter
+                ticket.status = 'answering'
+                ticket.save(update_fields=['supporter', 'status', 'modified_at'])
+                # notifications
+                if old_supporter:
+                    send_notification(
+                        user=old_supporter,
+                        verb='تیکت واگذار شد',
+                        description=f'تیکت #{ticket.id} به {new_supporter.get_full_name() or new_supporter.username} واگذار شد.'
+                    )
+                send_notification(
+                    user=new_supporter,
+                    verb='تیکت جدید',
+                    description=f'تیکت #{ticket.id} به شما واگذار شد.'
+                )
+                send_notification(
+                    user=ticket.user,
+                    verb='واگذاری تیکت',
+                    description=f'تیکت #{ticket.id} به پشتیبان جدید واگذار شد.'
+                )
+            return redirect('support:ticket_detail', pk=pk)
+    else:
+        form = TicketReassignForm(user=user)
+    return render(request, 'support/ticket_reassign.html', {'ticket': ticket, 'form': form})
 
 
 def ticket_rate_view(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
-    if request.user != ticket.user or not ticket.is_closed() or not ticket.supporter:
-        return HttpResponseForbidden()
-    if hasattr(ticket, 'rating'):
+    if not request.user.is_authenticated or request.user != ticket.user:
+        return redirect('support:ticket_list')
+    if ticket.status != 'closed' or ticket.supporter is None or hasattr(ticket, 'rating'):
         return redirect('support:ticket_detail', pk=pk)
     if request.method == 'POST':
         form = TicketRatingForm(request.POST)
@@ -125,119 +248,13 @@ def ticket_rate_view(request, pk):
             rating.supporter = ticket.supporter
             rating.user = request.user
             rating.save()
-            # update supporter rank simple average
-            from django.db.models import Avg
-            avg_rank = TicketRating.objects.filter(supporter=ticket.supporter).aggregate(a=Avg('score'))['a'] or 0
-            ticket.supporter.rank = round(avg_rank)
-            ticket.supporter.save(update_fields=['rank'])
-    return redirect('support:ticket_detail', pk=pk)
-
-
-# ---- Live Chat Views ----
-class LiveChatHistoryListView(LoginRequiredMixin, ListView):
-    template_name = 'support/livechat_history.html'
-    context_object_name = 'sessions'
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = LiveChatSession.objects.select_related('department', 'supporter')\
-            .annotate(last_time=Max('messages__created_at'))
-        # فقط برای نقش های مجاز (is_staff, is_am, is_supporter) قابل مشاهده است
-        if user.is_supporter or user.is_staff or user.is_am:
-            return qs
-        # کاربران عادی اجازه دسترسی ندارند (برمی گردیم queryset خالی)
-        return qs.none()
-
-    def dispatch(self, request, *args, **kwargs):
-        if not (request.user.is_authenticated and (request.user.is_supporter or request.user.is_staff or request.user.is_am)):
-            from django.http import HttpResponseForbidden
-            return HttpResponseForbidden('دسترسی مجاز نیست')
-        return super().dispatch(request, *args, **kwargs)
-
-
-def livechat_start_view(request):
-    if not request.user.is_authenticated:
-        return HttpResponseForbidden()
-    if request.method == 'POST':
-        form = LiveChatStartForm(request.POST)
-        if form.is_valid():
-            session = form.save(commit=False)
-            session.user = request.user
-            dept = session.department
-            # انتخاب پشتیبان: اول آنلاین ها سپس کمترین تعداد سشن فعال
-            dept_supporters = dept.supporters.filter(is_active=True, is_supporter=True)
-            # annotate presence
-            online_ids = [p.supporter_id for p in SupporterPresence.objects.filter(supporter__in=dept_supporters) if p.is_online]
-            candidates = dept_supporters
-            if online_ids:
-                candidates = candidates.filter(id__in=online_ids)
-            # annotate active sessions count
-            from django.db.models import Count, Q
-            candidates = candidates.annotate(active_sessions=Count('assigned_live_chats', filter=Q(assigned_live_chats__is_active=True)))\
-                                 .order_by('active_sessions', 'id')
-            supporter = candidates.first()
-            if supporter:
-                session.supporter = supporter
-            session.save()
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'ok': True, 'session_id': session.id})
-            return redirect('support:livechat_history')
+            send_notification(
+                user=ticket.supporter,
+                verb='امتیاز جدید',
+                description=f'کاربر برای تیکت #{ticket.id} امتیاز {rating.score} ثبت کرد.'
+            )
+            return redirect('support:ticket_detail', pk=pk)
     else:
-        form = LiveChatStartForm()
-    from django.shortcuts import render
-    return render(request, 'support/livechat_start.html', {'form': form})
+        form = TicketRatingForm()
+    return render(request, 'support/ticket_rate.html', {'ticket': ticket, 'form': form})
 
-
-def livechat_send_message(request, session_id):
-    session = get_object_or_404(LiveChatSession, pk=session_id)
-    if request.user not in [session.user, session.supporter] and not (request.user.is_staff or request.user.is_am):
-        return HttpResponseForbidden()
-    if request.method == 'POST':
-        form = LiveChatMessageForm(request.POST, request.FILES)
-        if form.is_valid():
-            msg = form.save(commit=False)
-            msg.session = session
-            msg.sender = request.user
-            msg.is_supporter = request.user.is_supporter or request.user.is_staff or request.user.is_am
-            msg.save()
-            return JsonResponse({'ok': True, 'message_id': msg.id, 'created_at': msg.created_at})
-        return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
-    return JsonResponse({'ok': False}, status=405)
-
-
-def livechat_messages(request, session_id):
-    session = get_object_or_404(LiveChatSession, pk=session_id)
-    if request.user not in [session.user, session.supporter] and not (request.user.is_staff or request.user.is_am):
-        return HttpResponseForbidden()
-    since = request.GET.get('since')  # ISO datetime string
-    msgs = session.messages.select_related('sender').order_by('id')
-    if since:
-        from django.utils.dateparse import parse_datetime
-        dt = parse_datetime(since)
-        if dt:
-            msgs = msgs.filter(created_at__gt=dt)
-    data = []
-    for m in msgs:
-        data.append({
-            'id': m.id,
-            'sender': m.sender.get_full_name(),
-            'is_supporter': m.is_supporter,
-            'message': m.message,
-            'created_at': m.created_at.isoformat(),
-            'attachment': m.attachment.url if m.attachment else None,
-        })
-    return JsonResponse({'ok': True, 'messages': data})
-
-
-def livechat_departments(request):
-    # return list of active departments for widget
-    depts = SupportDepartment.objects.filter(is_active=True).values('id', 'name')
-    return JsonResponse({'ok': True, 'departments': list(depts)})
-
-
-def livechat_ping(request):
-    if not request.user.is_authenticated or not request.user.is_supporter:
-        return JsonResponse({'ok': False}, status=403)
-    presence, _ = SupporterPresence.objects.get_or_create(supporter=request.user)
-    # auto last_seen updated by save (auto_now)
-    return JsonResponse({'ok': True, 'online': presence.is_online})

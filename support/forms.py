@@ -1,5 +1,6 @@
 from django import forms
-from .models import Ticket, TicketMessage, TicketRating, SupportDepartment, SupportSubject, LiveChatSession, LiveChatMessage
+from .models import Ticket, TicketMessage, TicketRating, SupportDepartment, SupportSubject
+from django.contrib.auth import get_user_model
 
 
 class TicketCreateForm(forms.ModelForm):
@@ -34,20 +35,25 @@ class TicketRatingForm(forms.ModelForm):
         }
 
 
-class LiveChatStartForm(forms.ModelForm):
-    class Meta:
-        model = LiveChatSession
-        fields = ['department']
+"""Live chat forms removed."""
+
+
+class TicketReassignForm(forms.Form):
+    supporter = forms.ModelChoiceField(
+        queryset=None,
+        required=False,
+        label='پشتیبان جدید'
+    )
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        self.fields['department'].queryset = SupportDepartment.objects.filter(is_active=True)
-
-
-class LiveChatMessageForm(forms.ModelForm):
-    class Meta:
-        model = LiveChatMessage
-        fields = ['message', 'attachment']
-        widgets = {
-            'message': forms.Textarea(attrs={'rows': 2, 'placeholder': 'پیام خود را بنویسید...'})
-        }
+        User = get_user_model()
+        qs = User.objects.filter(is_supporter=True, is_active=True)
+        if user and hasattr(user, 'departments'):
+            dept_ids = user.departments.values_list('id', flat=True)
+            qs = qs.filter(departments__in=dept_ids).distinct()
+            # معمولاً خود پشتیبان جاری نیازی نیست در لیست باشد
+            qs = qs.exclude(pk=user.pk)
+        self.fields['supporter'].queryset = qs
+        self.fields['supporter'].help_text = 'انتخاب پشتیبان برای واگذاری (اختیاری)'

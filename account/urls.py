@@ -1,51 +1,8 @@
 from django.urls import path
 from django.conf.urls import handler404
-from account.views import (
-    AccountView,
-    CampaignEditProposalView,
-    ChangeStatusRequestForMentor,
-    CampaignActivateView,
-    CampaignCancelParticipateView,
-    CampaignCancelView,
-    CampaignCreateView,
-    CampaignDeactivateView,
-    CampaignDeleteView,
-    CampaignEditView,
-    CampaignParticipateView,
-    CampaignReviewView,
-    CampaignListView,
-    FinishedCampaignDealerOwnProposal,
-    FinishedCampaignProposalDetail,
-    ListOfRequestForMentor,
-    NotificationDetailView,
-    NotificationsView,
-    PasswordChange,
-    PasswordChangeDone, 
-    PortfolioCreateView,
-    PortfolioDeleteView, 
-    PortfolioEditView, 
-    PortfolioListView,
-    ProfileView,
-    CampaignConfirmMentorView,
-    ResumeDeleteView,
-    ResumeDetailView,
-    ResumeReviewListView,
-    RunningCampaignParticipatedListView,
-    FinishedCampaignProposalsListView,
-    SelectCampaignWinnerView,
-    UserDetailView,
-    UsersList,
-    WinnedProposalDetail,
-    MyResumeView,
-    ajax_add_permission,
-    ajax_add_portfolio,
-    ajax_add_worklink,  # View جدید برای مشاهده رزومه کاربر
-    get_specialty_categories,  # View جدید برای دریافت دسته‌بندی‌های تخصصی
-    ProposalDetailView,
-    CitiesByProvinceView,
-)
+from account import views
 from advplatform.views import custom_404_view
-from account.views import SecureCustomerResumeLinkView
+from account.views import *
 
 
 app_name = 'account'

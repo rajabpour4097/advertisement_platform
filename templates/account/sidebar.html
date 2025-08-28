@@ -91,9 +91,7 @@
                     {% if request.user.user_type == 'dealer' or request.user.user_type == 'customer' %}
                         <li><a href="{% url 'support:ticket_create' %}"><i class="fa fa-plus"></i> تیکت جدید</a></li>
                     {% endif %}
-                    {% if request.user.is_staff or request.user.is_am or request.user.is_supporter %}
-                        <li><a href="{% url 'support:livechat_history' %}"><i class="fa fa-comments"></i> تاریخچه گفتگوی آنلاین</a></li>
-                    {% endif %}
+                    {# Live chat history link removed #}
                 </ul>
             </li>
 

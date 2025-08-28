@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import (
-    SupportDepartment, SupportSubject, Ticket, TicketMessage, TicketRating,
-    LiveChatSession, LiveChatMessage, SupporterPresence
+    SupportDepartment, SupportSubject, Ticket, TicketMessage, TicketRating
 )
 
 
@@ -49,34 +48,4 @@ class TicketRatingAdmin(admin.ModelAdmin):
     search_fields = ('ticket__id', 'supporter__email', 'user__email')
 
 
-class LiveChatMessageInline(admin.TabularInline):
-    model = LiveChatMessage
-    extra = 0
-    readonly_fields = ('sender', 'message', 'created_at')
-
-
-@admin.register(LiveChatSession)
-class LiveChatSessionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'department', 'supporter', 'is_active', 'created_at')
-    list_filter = ('is_active', 'department', 'supporter')
-    search_fields = ('id', 'user__email')
-    inlines = [LiveChatMessageInline]
-
-
-@admin.register(LiveChatMessage)
-class LiveChatMessageAdmin(admin.ModelAdmin):
-    list_display = ('session', 'sender', 'is_supporter', 'created_at')
-    list_filter = ('is_supporter',)
-    search_fields = ('session__id', 'sender__email')
-
-
-@admin.register(SupporterPresence)
-class SupporterPresenceAdmin(admin.ModelAdmin):
-    list_display = ('supporter', 'last_seen', 'is_manual_offline', 'online_status')
-    list_filter = ('is_manual_offline',)
-    search_fields = ('supporter__email', 'supporter__first_name', 'supporter__last_name')
-
-    def online_status(self, obj):
-        return obj.is_online
-    online_status.boolean = True
-    online_status.short_description = 'آنلاین'
+"""Admin موارد مربوط به چت آنلاین حذف شد."""
