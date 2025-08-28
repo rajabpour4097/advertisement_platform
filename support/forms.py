@@ -15,7 +15,7 @@ class TicketCreateForm(forms.ModelForm):
         self.fields['department'].queryset = SupportDepartment.objects.filter(is_active=True)
         self.fields['subject'].queryset = SupportSubject.objects.filter(is_active=True)
 
-
+    
 class TicketMessageForm(forms.ModelForm):
     class Meta:
         model = TicketMessage

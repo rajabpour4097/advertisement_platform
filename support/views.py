@@ -27,9 +27,13 @@ def _pick_supporter_for_department(department: SupportDepartment):
     supporters = department.supporters.filter(is_active=True, is_supporter=True)
     if not supporters.exists():
         return None
-    # Count only tickets that are not closed
+    # Count only this department's tickets that are not closed (open / waiting / answering)
+    open_statuses = ['open', 'waiting', 'answering']
     supporters = supporters.annotate(
-        active_tickets=Count('assigned_tickets', filter=~Q(assigned_tickets__status='closed'))
+        active_tickets=Count(
+            'assigned_tickets',
+            filter=Q(assigned_tickets__department=department) & Q(assigned_tickets__status__in=open_statuses)
+        )
     ).order_by('active_tickets', 'id')
     return supporters.first()
 
@@ -68,13 +72,12 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        # auto assign supporter if available
         supporter = _pick_supporter_for_department(form.instance.department)
         if supporter:
             form.instance.supporter = supporter
-        response = super().form_valid(form)
-        # initial message if provided in POST 'message'
-        message_text = self.request.POST.get('message')
+        self.object = form.save()
+        # create initial message
+        message_text = (self.request.POST.get('first_message') or self.request.POST.get('message') or '').strip()
         if message_text:
             TicketMessage.objects.create(
                 ticket=self.object,
@@ -84,11 +87,12 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
             )
         if supporter:
             send_notification(
-                user=supporter,
+                sender=self.request.user,
+                recipient=supporter,
                 verb='تیکت جدید',
                 description=f'تیکت جدید #{self.object.id} به شما منتسب شد.'
             )
-        return response
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse('support:ticket_detail', args=[self.object.pk])
@@ -126,7 +130,8 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
             target = ticket.supporter if not request.user.is_supporter else ticket.user
             if target:
                 send_notification(
-                    user=target,
+                    sender=request.user,
+                    recipient=target,
                     verb='پیام جدید تیکت',
                     description=f'پیام جدید در تیکت #{ticket.id}'
                 )
@@ -145,6 +150,21 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         if 'form' not in context:
             context['form'] = TicketMessageForm()
+        # backward compatibility for templates expecting message_form
+        context['message_form'] = context['form']
+        # ordered messages for template (chronological)
+        context['ordered_messages'] = self.object.messages.select_related('sender').order_by('created_at')
+        # permission for posting new message
+        user = self.request.user
+        if self.object.status == 'closed':
+            can_post = False
+        elif user.is_supporter:
+            can_post = True
+        else:
+            # user: block if their own message is the last one (منتظر پاسخ پشتیبان)
+            last = context['ordered_messages'].last() if context['ordered_messages'].exists() else None
+            can_post = (last is None) or (last.sender_id != user.id)
+        context['can_post_message'] = can_post
         context['can_rate'] = (
             self.object.status == 'closed' and
             self.request.user == self.object.user and
@@ -185,7 +205,8 @@ def ticket_claim_view(request, pk):
             locked.status = 'answering'
             locked.save(update_fields=['supporter', 'status', 'modified_at'])
             send_notification(
-                user=locked.user,
+                sender=user,
+                recipient=locked.user,
                 verb='تیکت منتسب شد',
                 description=f'تیکت #{locked.id} به پشتیبان {user.get_full_name() or user.username} منتسب شد.'
             )
@@ -214,17 +235,20 @@ def ticket_reassign_view(request, pk):
                 # notifications
                 if old_supporter:
                     send_notification(
-                        user=old_supporter,
+                        sender=user,
+                        recipient=old_supporter,
                         verb='تیکت واگذار شد',
                         description=f'تیکت #{ticket.id} به {new_supporter.get_full_name() or new_supporter.username} واگذار شد.'
                     )
                 send_notification(
-                    user=new_supporter,
+                    sender=user,
+                    recipient=new_supporter,
                     verb='تیکت جدید',
                     description=f'تیکت #{ticket.id} به شما واگذار شد.'
                 )
                 send_notification(
-                    user=ticket.user,
+                    sender=user,
+                    recipient=ticket.user,
                     verb='واگذاری تیکت',
                     description=f'تیکت #{ticket.id} به پشتیبان جدید واگذار شد.'
                 )
@@ -249,7 +273,8 @@ def ticket_rate_view(request, pk):
             rating.user = request.user
             rating.save()
             send_notification(
-                user=ticket.supporter,
+                sender=request.user,
+                recipient=ticket.supporter,
                 verb='امتیاز جدید',
                 description=f'کاربر برای تیکت #{ticket.id} امتیاز {rating.score} ثبت کرد.'
             )
