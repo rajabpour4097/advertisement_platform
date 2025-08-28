@@ -80,6 +80,8 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
         supporter = _pick_supporter_for_department(form.instance.department)
         if supporter:
             form.instance.supporter = supporter
+            # بلافاصله وارد حالت بررسی توسط پشتیبان شود
+            form.instance.status = 'answering'
         self.object = form.save()
         # create initial message
         message_text = (self.request.POST.get('first_message') or self.request.POST.get('message') or '').strip()
@@ -143,13 +145,17 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
                     verb='پیام جدید تیکت',
                     description=f'پیام جدید در تیکت #{ticket.id}'
                 )
-            # update ticket status
-            if request.user.is_supporter and ticket.status == 'open':
-                ticket.status = 'answering'
-                ticket.save(update_fields=['status', 'modified_at'])
-            elif not request.user.is_supporter and ticket.status in ['waiting', 'answering']:
-                ticket.status = 'answering'
-                ticket.save(update_fields=['status', 'modified_at'])
+            # update ticket status per new workflow
+            if request.user.is_supporter:
+                # پاسخ پشتیبان -> «پاسخ داده شد» (waiting for user)
+                if ticket.status != 'closed':
+                    ticket.status = 'waiting'
+                    ticket.save(update_fields=['status', 'modified_at'])
+            else:
+                # پیام کاربر -> «در حال بررسی»
+                if ticket.status != 'closed':
+                    ticket.status = 'answering'
+                    ticket.save(update_fields=['status', 'modified_at'])
             return redirect('support:ticket_detail', pk=ticket.pk)
         context = self.get_context_data(object=self.object, form=form)
         return render(request, self.template_name, context)

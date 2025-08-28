@@ -52,8 +52,8 @@ class SupportSubject(BaseModel):
 class Ticket(BaseModel):
     STATUS_CHOICES = (
         ('open', 'باز'),
-        ('waiting', 'در انتظار کاربر'),
-        ('answering', 'در حال بررسی'),
+        ('answering', 'در حال بررسی'),  # در حال بررسی توسط پشتیبان
+        ('waiting', 'پاسخ داده شد'),     # پاسخ داده شده و منتظر کاربر
         ('closed', 'بسته شده'),
     )
     PRIORITY_CHOICES = (
