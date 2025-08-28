@@ -15,50 +15,16 @@ from wallet.models import Wallet, Transaction
 from .tokens import account_activation_token
 from django.db.models import Q, Count, DecimalField, IntegerField, BigIntegerField, FloatField
 from django.views.generic import TemplateView, UpdateView, CreateView, DeleteView, ListView, DetailView
-from account.forms import (
-    AssignMentorForm,
-    CampaignCreateForm,
-    CampaignImageFormSet,
-    EditCampaignForm,
-    ParticipateCampaignForm,
-    PortfolioCreateForm,
-    PortfolioEditForm, 
-    PortfolioImageFormSet, 
-    ProfileForm,
-    ReviewCampaignForm, 
-    SignupForm,
-    StartCampaignForm,
-    EnvironmentalAdvertisementForm,
-    SocialmediaAdvertisementForm,
-    DigitalAdvertisementForm,
-    PrintingAdvertisementForm,
-    EventMarketingAdvertisementForm,
-    ParticipateCampaignForm,
-    EnvironmentalAdImageFormSet,
-)
-from account.mixins import (
-                            CampaignUserMixin,
-                            ContextsMixin,
-                            CreateCampaignUserMixin,
-                            CancelUserMixin,
-                            CustomerUserMixin,
-                            DealerUserMixin,
-                            EditCampaignUserMixin,
-                            ManagerUserMixin,
-                            MentorUserMixin,
-                            NotLoginedMixin, 
-                            PortfolioDeleteMixin, 
-                            PortfolioEditMixin,
-                            StaffUserMixin
-                            )
+from account.forms import *
+from account.mixins import *
 from advplatform.models import Campaign, CustomUser, Portfolio, PortfolioImages, Resume, UsersImages, Topic, Province, City, Permission, WorkLink
 from django.contrib.auth import logout
 from notifications.models import Notification
 from django.contrib.auth.decorators import login_required
 from notifications.signals import notify
 from django.utils import timezone
-from .utils.send_notification import notify_campaign_actions, notify_campaign_mentor_assignment, notify_campaign_participation, notify_campaign_winner, notify_mentor_activation, notify_mentor_request, notify_mentor_request_status, notify_profile_update, notify_portfolio_actions, notify_user_registration, notify_password_change, notify_resume_review, notify_resume_actions
-from .utils.send_sms import send_activation_sms, send_campaign_winner_sms, verify_otp, send_campaign_confirmation_sms, send_campaign_review_sms, send_campaign_start_sms, send_campaign_mentor_assignment_sms, send_resume_review_sms
+from .utils.send_notification import *
+from .utils.send_sms import *
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator

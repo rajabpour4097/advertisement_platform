@@ -145,6 +145,7 @@ class CustomUser(AbstractUser):
     is_am = models.BooleanField(default=False, verbose_name='مدیر تبلیغات')
     is_supporter = models.BooleanField(default=False, verbose_name='پشتیبان')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
+    # last_login = models.DateTimeField(null=True, blank=True, verbose_name="آخرین ورود")
 
     # استفاده از CustomUserManager برای مدیریت کاربران
     objects = CustomUserManager()

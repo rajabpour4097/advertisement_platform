@@ -83,6 +83,7 @@
             <th>آخرین تغییر</th>
             <th>نوع کاربر</th>
             <th>نوع مشتری</th>
+            <th>آخرین ورود</th>
             <th>وضعیت</th>
         </tr>
     </thead>
@@ -128,7 +129,11 @@
             <!-- نوع مشتری -->
             <td>{{ user.get_cutomer_type_display }}</td>
 
-             <td>
+            <!-- آخرین ورود -->
+            <td>{{ user.last_login|jalali_timedate }}</td>
+            
+            <!-- وضعیت -->
+            <td>
                 <span class="status 
                     {% if user.is_active == True %}status-active
                     {% elif user.is_active == False %}status-inactive
