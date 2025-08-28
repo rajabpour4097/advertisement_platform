@@ -24,71 +24,75 @@
 </style>
 <div class="col-md-10 col-xs-12">
       <div class="x_panel">
-<div class="ticket-layout">
-    <section class="ticket-conv">
-        <div id="messages" class="ticket-messages">
-            {% if ordered_messages %}
-                {% for m in ordered_messages %}
-                    <div class="bubble {% if m.is_staff_reply %}bubble-support{% else %}bubble-user{% endif %}">
-                        {{ m.message|linebreaks }}
-                        {% if m.attachment %}
-                            <div><a href="{{ m.attachment.url }}" target="_blank" style="font-size: 10px; color: #1659e0ff;">فایل پیوست <i class="fa fa-file"></i></a></div>
-                        {% endif %}
-                        <small>{{ m.sender.get_full_name }} • {{ m.created_at|date:'Y/m/d H:i' }}</small>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-msg">هیچ پیامی هنوز ثبت نشده است.</div>
-            {% endif %}
-        </div>
-        {% if not ticket.is_closed %}
-            <div class="ticket-form-wrap">
-                {% if can_post_message %}
-                    <form method="post" enctype="multipart/form-data" class="mb-0">{% csrf_token %}
-                        {{ form.message|as_crispy_field }}
-                        {{ form.attachment|as_crispy_field }}
-                        <div class="d-flex gap-2 justify-content-end mt-2">
-                            <button class="btn btn-primary">ارسال پاسخ تیکت</button>
-                            <a href="{% url 'support:ticket_close' ticket.id %}" class="btn btn-outline-danger">بستن</a>
-                        </div>
-                    </form>
-                {% else %}
-                    <div class="text-center text-muted small">منتظر پاسخ پشتیبان هستید…</div>
-                {% endif %}
-            </div>
-        {% else %}
-            <div class="p-3 text-center text-muted">این تیکت بسته شده است.</div>
-            {% if can_rate %}
-                <div class="ticket-form-wrap">
-                    <form method="post" action="{% url 'support:ticket_rate' ticket.id %}">{% csrf_token %}
-                        {{ rating_form|crispy }}
-                        <button class="btn btn-warning">ثبت امتیاز</button>
-                    </form>
+        <div class="ticket-layout">
+            <section class="ticket-conv">
+                <div id="messages" class="ticket-messages">
+                    {% if ordered_messages %}
+                        {% for m in ordered_messages %}
+                            <div class="bubble {% if m.is_staff_reply %}bubble-support{% else %}bubble-user{% endif %}">
+                                {{ m.message|linebreaks }}
+                                {% if m.attachment %}
+                                    <div>
+                                        <a href="{{ m.attachment.url }}" target="_blank" style="font-size: 10px; color: #1659e0ff;">فایل پیوست <i class="fa fa-file"></i></a>
+                                    </div>
+                                {% endif %}
+                                <small>{{ m.sender.get_full_name }} • {{ m.created_at|date:'Y/m/d H:i' }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-msg">هیچ پیامی هنوز ثبت نشده است.</div>
+                    {% endif %}
                 </div>
-            {% endif %}
-        {% endif %}
-    </section>
-    <aside class="ticket-sidebar">
-        <div class="ticket-meta">
-            <h5>تیکت #{{ ticket.id }}</h5>
-            <div class="status-badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</div>
+                {% if not ticket.is_closed and not request.user.is_am and not request.user.is_staff %}
+                    <div class="ticket-form-wrap">
+                        {% if can_post_message %}
+                            <form method="post" enctype="multipart/form-data" class="mb-0">{% csrf_token %}
+                                {{ form.message|as_crispy_field }}
+                                {{ form.attachment|as_crispy_field }}
+                                <div class="d-flex gap-2 justify-content-end mt-2">
+                                    <button class="btn btn-primary">ارسال پاسخ تیکت</button>
+                                    <a href="{% url 'support:ticket_close' ticket.id %}" class="btn btn-outline-danger">بستن</a>
+                                </div>
+                            </form>
+                        {% else %}
+                            <div class="text-center text-muted small">منتظر پاسخ پشتیبان هستید…</div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    {% if not request.user.is_am and not request.user.is_staff %}
+                    <div class="p-3 text-center text-muted">این تیکت بسته شده است.</div>
+                    {% endif %}
+                    {% if can_rate %}
+                        <div class="ticket-form-wrap">
+                            <form method="post" action="{% url 'support:ticket_rate' ticket.id %}">{% csrf_token %}
+                                {{ rating_form|crispy }}
+                                <button class="btn btn-warning">ثبت امتیاز</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </section>
+            <aside class="ticket-sidebar">
+                <div class="ticket-meta">
+                    <h5>تیکت #{{ ticket.id }}</h5>
+                    <div class="status-badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</div>
+                </div>
+                <div class="meta-row"><span>عنوان:</span><span>{{ ticket.title }}</span></div>
+                <div class="meta-row"><span>دپارتمان:</span><span>{{ ticket.department.name }}</span></div>
+                <div class="meta-row"><span>موضوع:</span><span>{{ ticket.subject.title }}</span></div>
+                <div class="meta-row"><span>ایجاد:</span><span>{{ ticket.created_at|date:'Y/m/d H:i' }}</span></div>
+                <div class="meta-row"><span>آخرین تغییر:</span><span>{{ ticket.modified_at|date:'Y/m/d H:i' }}</span></div>
+                {% if ticket.attachment %}
+                    <div class="meta-row"><span>فایل اولیه:</span><span><a href="{{ ticket.attachment.url }}" target="_blank">دانلود</a></span></div>
+                {% endif %}
+                {% if ticket.supporter %}<div class="meta-row"><span>پشتیبان:</span><span>{{ ticket.supporter.get_full_name }}</span></div>{% endif %}
+                {% if not ticket.is_closed and not request.user.is_am  and not request.user.is_staff %}
+                        <a href="{% url 'support:ticket_close' ticket.id %}" class="btn btn-sm btn-danger w-100">بستن این تیکت</a>
+                {% endif %}
+                <a href="{% url 'support:ticket_list' %}" class="btn btn-sm btn-secondary w-100">بازگشت به تیکت ها</a>
+            </aside>
         </div>
-        <div class="meta-row"><span>عنوان:</span><span>{{ ticket.title }}</span></div>
-        <div class="meta-row"><span>دپارتمان:</span><span>{{ ticket.department.name }}</span></div>
-        <div class="meta-row"><span>موضوع:</span><span>{{ ticket.subject.title }}</span></div>
-        <div class="meta-row"><span>ایجاد:</span><span>{{ ticket.created_at|date:'Y/m/d H:i' }}</span></div>
-        <div class="meta-row"><span>آخرین تغییر:</span><span>{{ ticket.modified_at|date:'Y/m/d H:i' }}</span></div>
-    {% if ticket.attachment %}
-    <div class="meta-row"><span>فایل اولیه:</span><span><a href="{{ ticket.attachment.url }}" target="_blank">دانلود</a></span></div>
-    {% endif %}
-        {% if ticket.supporter %}<div class="meta-row"><span>پشتیبان:</span><span>{{ ticket.supporter.get_full_name }}</span></div>{% endif %}
-        {% if not ticket.is_closed %}
-            <a href="{% url 'support:ticket_close' ticket.id %}" class="btn btn-sm btn-danger w-100">بستن این تیکت</a>
-        {% endif %}
-        <a href="{% url 'support:ticket_list' %}" class="btn btn-sm btn-secondary w-100">بازگشت به تیکت ها</a>
-    </aside>
-</div>
-</div>
+    </div>
 </div>
 
 <script>
