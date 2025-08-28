@@ -5,7 +5,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.db import transaction
-from django.db.models import Count, Q, F
+from django.db.models import Count, Q, F, Max, OuterRef, Subquery
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .models import (
@@ -60,8 +61,15 @@ class TicketListView(LoginRequiredMixin, ListView):
         status = self.request.GET.get('status')
         if status:
             qs = qs.filter(status=status)
-        # annotate rating score for optional display
-        qs = qs.annotate(rating_score=F('rating__score'))
+        # annotate rating score and effective last response (fallback to latest message time)
+        # Subquery for last message text
+        from .models import TicketMessage
+        last_msg_qs = TicketMessage.objects.filter(ticket=OuterRef('pk')).order_by('-created_at')
+        qs = qs.annotate(
+            rating_score=F('rating__score'),
+            last_resp=Coalesce('last_response_time', Max('messages__created_at')),
+            last_msg=Subquery(last_msg_qs.values('message')[:1])
+        )
         return qs.order_by('-modified_at')
 
 
@@ -92,6 +100,9 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
                 message=message_text,
                 is_staff_reply=False
             )
+            # set initial last_response_time
+            self.object.last_response_time = timezone.now()
+            self.object.save(update_fields=['last_response_time','modified_at'])
         if supporter:
             send_notification(
                 sender=self.request.user,
@@ -136,6 +147,8 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
             msg.sender = request.user
             msg.is_staff_reply = request.user.is_supporter
             msg.save()
+            # update last_response_time now
+            ticket.last_response_time = msg.created_at
             # notify other side
             target = ticket.supporter if not request.user.is_supporter else ticket.user
             if target:
@@ -145,17 +158,14 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
                     verb='پیام جدید تیکت',
                     description=f'پیام جدید در تیکت #{ticket.id}'
                 )
-            # update ticket status per new workflow
+            # status transitions
             if request.user.is_supporter:
-                # پاسخ پشتیبان -> «پاسخ داده شد» (waiting for user)
                 if ticket.status != 'closed':
                     ticket.status = 'waiting'
-                    ticket.save(update_fields=['status', 'modified_at'])
             else:
-                # پیام کاربر -> «در حال بررسی»
                 if ticket.status != 'closed':
                     ticket.status = 'answering'
-                    ticket.save(update_fields=['status', 'modified_at'])
+            ticket.save(update_fields=['status', 'last_response_time', 'modified_at'])
             return redirect('support:ticket_detail', pk=ticket.pk)
         context = self.get_context_data(object=self.object, form=form)
         return render(request, self.template_name, context)

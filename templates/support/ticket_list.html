@@ -33,7 +33,14 @@
             {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
             <td>{% if t.rating_score %}{{ t.rating_score }}{% else %}-{% endif %}</td>
             {% endif %}
-            <td>{{ t.last_response_time|date:'Y-m-d H:i' }}</td>
+            <td>
+                {% if t.last_resp %}
+                    {{ t.last_resp|date:'Y-m-d H:i' }}<br>
+                    <span class="text-muted" style="font-size:11px;direction:rtl;display:inline-block;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ t.last_msg|default:''|striptags|truncatechars:70 }}
+                    </span>
+                {% else %}-{% endif %}
+            </td>
         </tr>
         {% empty %}
         <tr><td colspan="7">موردی یافت نشد</td></tr>
