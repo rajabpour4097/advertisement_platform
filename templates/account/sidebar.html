@@ -72,10 +72,12 @@
              {% endif %}
              
 
-             <!-- مدیریت پیام -->
-             <li>
-                <a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: #7d919c;"></i> مدیریت پیام</a>
-            </li>
+            <!-- مدیریت پیام -->
+            {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
+                <li>
+                   <a href="{% url 'messages:inbox' %}"><i class="fa fa-envelope" style="color: #7d919c;"></i> مدیریت پیام</a>
+                </li>
+            {% endif %}
 
             <!-- پشتیبانی -->
             <li>
