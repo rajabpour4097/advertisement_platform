@@ -5,7 +5,18 @@
 <table class="table table-striped mt-3">
     <thead>
         <tr>
-            <th>#</th><th>عنوان</th><th>دپارتمان</th><th>موضوع</th><th>وضعیت</th><th>پشتیبان</th><th>آخرین پاسخ</th>
+            <th>#</th>
+            <th>عنوان</th>
+            <th>دپارتمان</th>
+            <th>موضوع</th>
+            <th>وضعیت</th>
+            {% if request.user.is_am or request.user.is_staff %}
+                <th>پشتیبان</th>
+            {% endif %}
+            {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
+                <th>امتیاز</th>
+            {% endif %}
+            <th>آخرین پاسخ</th>
         </tr>
     </thead>
     <tbody>
@@ -16,7 +27,12 @@
             <td>{{ t.department.name }}</td>
             <td>{{ t.subject.title }}</td>
             <td>{{ t.get_status_display }}</td>
-            <td>{{ t.supporter.get_full_name|default:'-' }}</td>
+            {% if request.user.is_am or request.user.is_staff %}
+                <td>{{ t.supporter.get_full_name|default:'-' }}</td>
+            {% endif %}
+            {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
+            <td>{% if t.rating_score %}{{ t.rating_score }}{% else %}-{% endif %}</td>
+            {% endif %}
             <td>{{ t.last_response_time|date:'Y-m-d H:i' }}</td>
         </tr>
         {% empty %}

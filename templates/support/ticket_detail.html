@@ -32,7 +32,7 @@
                     <div class="bubble {% if m.is_staff_reply %}bubble-support{% else %}bubble-user{% endif %}">
                         {{ m.message|linebreaks }}
                         {% if m.attachment %}
-                            <div><a href="{{ m.attachment.url }}" target="_blank">فایل پیوست</a></div>
+                            <div><a href="{{ m.attachment.url }}" target="_blank" style="font-size: 10px; color: #1659e0ff;">فایل پیوست <i class="fa fa-file"></i></a></div>
                         {% endif %}
                         <small>{{ m.sender.get_full_name }} • {{ m.created_at|date:'Y/m/d H:i' }}</small>
                     </div>
@@ -78,6 +78,9 @@
         <div class="meta-row"><span>موضوع:</span><span>{{ ticket.subject.title }}</span></div>
         <div class="meta-row"><span>ایجاد:</span><span>{{ ticket.created_at|date:'Y/m/d H:i' }}</span></div>
         <div class="meta-row"><span>آخرین تغییر:</span><span>{{ ticket.modified_at|date:'Y/m/d H:i' }}</span></div>
+    {% if ticket.attachment %}
+    <div class="meta-row"><span>فایل اولیه:</span><span><a href="{{ ticket.attachment.url }}" target="_blank">دانلود</a></span></div>
+    {% endif %}
         {% if ticket.supporter %}<div class="meta-row"><span>پشتیبان:</span><span>{{ ticket.supporter.get_full_name }}</span></div>{% endif %}
         {% if not ticket.is_closed %}
             <a href="{% url 'support:ticket_close' ticket.id %}" class="btn btn-sm btn-danger w-100">بستن این تیکت</a>

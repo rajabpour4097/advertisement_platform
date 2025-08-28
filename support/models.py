@@ -1,10 +1,8 @@
 from django.db import models
 from django.conf import settings
-from advplatform.models import BaseModel
+from advplatform.models import BaseModel, CustomUser
 from django.utils import timezone
 from datetime import timedelta
-
-User = settings.AUTH_USER_MODEL
 
 
 class SupportDepartment(BaseModel):
@@ -12,7 +10,7 @@ class SupportDepartment(BaseModel):
     name = models.CharField(max_length=120, unique=True, verbose_name='نام دپارتمان')
     description = models.TextField(blank=True, null=True, verbose_name='توضیحات')
     supporters = models.ManyToManyField(
-        User,
+        CustomUser,
         blank=True,
         related_name='departments',
         limit_choices_to={'is_supporter': True, 'is_active': True},
@@ -65,10 +63,10 @@ class Ticket(BaseModel):
         ('urgent', 'فوری'),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets', verbose_name='کاربر ارسال کننده')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tickets', verbose_name='کاربر ارسال کننده')
     department = models.ForeignKey(SupportDepartment, on_delete=models.PROTECT, related_name='tickets', verbose_name='دپارتمان')
     subject = models.ForeignKey(SupportSubject, on_delete=models.PROTECT, related_name='tickets', verbose_name='موضوع')
-    supporter = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, limit_choices_to={'is_supporter': True}, related_name='assigned_tickets', verbose_name='پشتیبان پاسخگو')
+    supporter = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True, limit_choices_to={'is_supporter': True}, related_name='assigned_tickets', verbose_name='پشتیبان پاسخگو')
     title = models.CharField(max_length=180, verbose_name='عنوان (نمایشی در لیست)')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open', verbose_name='وضعیت')
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal', verbose_name='اولویت')
@@ -91,7 +89,7 @@ class Ticket(BaseModel):
 
 class TicketMessage(BaseModel):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='messages', verbose_name='تیکت')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ticket_messages', verbose_name='ارسال کننده')
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='ticket_messages', verbose_name='ارسال کننده')
     message = models.TextField(verbose_name='متن پیام')
     attachment = models.FileField(upload_to='tickets/messages/', blank=True, null=True, verbose_name='فایل پیوست')
     is_staff_reply = models.BooleanField(default=False, verbose_name='پاسخ پشتیبان')
@@ -108,8 +106,8 @@ class TicketMessage(BaseModel):
 
 class TicketRating(BaseModel):
     ticket = models.OneToOneField(Ticket, on_delete=models.CASCADE, related_name='rating', verbose_name='تیکت')
-    supporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='support_ratings', verbose_name='پشتیبان')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_support_ratings', verbose_name='کاربر')
+    supporter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='support_ratings', verbose_name='پشتیبان')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='given_support_ratings', verbose_name='کاربر')
     score = models.PositiveSmallIntegerField(verbose_name='امتیاز (۱ تا ۵)')
     comment = models.TextField(blank=True, null=True, verbose_name='توضیح امتیاز')
 

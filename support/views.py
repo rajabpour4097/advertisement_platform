@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Q, F
 from django.utils import timezone
 
 from .models import (
@@ -46,7 +46,10 @@ class TicketListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
         qs = Ticket.objects.select_related('department', 'subject', 'supporter')
-        if user.is_supporter:
+        # Managers (staff or is_am or superuser) see all tickets
+        if user.is_staff or getattr(user, 'is_am', False) or user.is_superuser:
+            qs = qs
+        elif user.is_supporter:
             # Only tickets assigned to supporter OR unassigned in their departments
             dept_ids = user.departments.values_list('id', flat=True)
             qs = qs.filter(
@@ -57,6 +60,8 @@ class TicketListView(LoginRequiredMixin, ListView):
         status = self.request.GET.get('status')
         if status:
             qs = qs.filter(status=status)
+        # annotate rating score for optional display
+        qs = qs.annotate(rating_score=F('rating__score'))
         return qs.order_by('-modified_at')
 
 
@@ -106,7 +111,10 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
     def dispatch(self, request, *args, **kwargs):
         ticket = self.get_object()
         user = request.user
-        if user.is_supporter:
+        # managers (staff / is_am / superuser) have full access
+        if user.is_staff or getattr(user, 'is_am', False) or user.is_superuser:
+            pass
+        elif user.is_supporter:
             # supporter can view only their assigned tickets or unassigned in their departments
             dept_ids = user.departments.values_list('id', flat=True)
             if not (ticket.supporter == user or (ticket.supporter is None and ticket.department_id in dept_ids)):
