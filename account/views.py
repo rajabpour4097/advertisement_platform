@@ -765,9 +765,41 @@ class SelectCampaignWinnerView(EditCampaignUserMixin, View):
             messages.error(request, "زمان انتخاب برنده به پایان رسیده است.")
             return redirect('account:finished_campaign_proposals', pk=campaign_id)
         
+        # محاسبه شماره شرکت کننده مشابه لیست پیشنهادات (بر اساس ترتیب نمایش فعلی)
+        from types import SimpleNamespace
+        items = []
+        # Generic
+        for tx in CampaignTransaction.objects.filter(campaign=campaign):
+            items.append(SimpleNamespace(dealer=tx.dealer, created_at=getattr(tx, 'created_at', None)))
+        # Environmental
+        for env in EnvironmentalAdvertisement.objects.filter(campaign=campaign):
+            items.append(SimpleNamespace(dealer=env.proposed_user, created_at=getattr(env, 'created_at', None)))
+        # Social media
+        for sm in SocialmediaAdvertisement.objects.filter(campaign=campaign):
+            items.append(SimpleNamespace(dealer=sm.proposed_user, created_at=getattr(sm, 'created_at', None)))
+        # Digital
+        for dg in DigitalAdvertisement.objects.filter(campaign=campaign):
+            items.append(SimpleNamespace(dealer=dg.proposed_user, created_at=getattr(dg, 'created_at', None)))
+        # Printing
+        for pr in PrintingAdvertisement.objects.filter(campaign=campaign):
+            items.append(SimpleNamespace(dealer=pr.proposed_user, created_at=getattr(pr, 'created_at', None)))
+        # Event marketing
+        for ev in EventMarketingAdvertisement.objects.filter(campaign=campaign):
+            items.append(SimpleNamespace(dealer=ev.proposed_user, created_at=getattr(ev, 'created_at', None)))
+        # Sort newest first (مانند FinishedCampaignProposalsListView)
+        items.sort(key=lambda x: x.created_at or timezone.now(), reverse=True)
+        participant_number = None
+        for idx, item in enumerate(items, start=1):
+            try:
+                if item.dealer and item.dealer.id == dealer.id:
+                    participant_number = idx
+                    break
+            except AttributeError:
+                continue
         return render(request, self.template_name, {
             'dealer': dealer,
-            'campaign': campaign
+            'campaign': campaign,
+            'participant_number': participant_number
         })
 
     def post(self, request, campaign_id, dealer_id):

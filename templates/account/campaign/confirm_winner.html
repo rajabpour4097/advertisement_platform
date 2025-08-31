@@ -10,7 +10,7 @@
             <h5 class="mb-0">تایید انتخاب برنده کمپین</h5>
         </div>
         <div class="card-body">
-            <p>آیا مطمئن هستید که می‌خواهید <strong>{{ dealer.get_full_name }}</strong> را به عنوان برنده کمپین 
+            <p>آیا مطمئن هستید که می‌خواهید <strong>شرکت کننده شماره {% if participant_number %}{{ participant_number }}{% else %}؟{% endif %}</strong> را به عنوان برنده کمپین 
                "<strong>{{ campaign.get_describe_summrize }}</strong>" انتخاب کنید؟</p>
             
             <form method="post">
