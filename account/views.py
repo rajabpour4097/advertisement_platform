@@ -852,15 +852,18 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
             proposal_obj = None
             price = None
             text = None
+            created = None
+            kind = None
+
             # 1. Generic transaction
-            try:
-                ct = CampaignTransaction.objects.filter(campaign=campaign, dealer=dealer).first()
-                if ct:
-                    proposal_obj = ct
-                    price = ct.proposal_price
-                    text = ct.proposals
-            except Exception:
-                pass
+            ct = CampaignTransaction.objects.filter(campaign=campaign, dealer=dealer).first()
+            if ct:
+                proposal_obj = ct
+                price = ct.proposal_price
+                text = ct.proposals
+                created = getattr(ct, 'created_at', None)
+                kind = 'generic'
+
             # 2. Environmental
             if not proposal_obj:
                 env = EnvironmentalAdvertisement.objects.filter(campaign=campaign, proposed_user=dealer).first()
@@ -868,6 +871,9 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
                     proposal_obj = env
                     price = env.proposal_price
                     text = env.description or env.location_title
+                    created = getattr(env, 'created_at', None)
+                    kind = 'environmental'
+
             # 3. Social media
             if not proposal_obj:
                 sm = SocialmediaAdvertisement.objects.filter(campaign=campaign, proposed_user=dealer).first()
@@ -875,6 +881,9 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
                     proposal_obj = sm
                     price = sm.proposal_price
                     text = sm.description
+                    created = getattr(sm, 'created_at', None)
+                    kind = 'social'
+
             # 4. Digital
             if not proposal_obj:
                 dg = DigitalAdvertisement.objects.filter(campaign=campaign, proposed_user=dealer).first()
@@ -882,6 +891,9 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
                     proposal_obj = dg
                     price = dg.proposal_price
                     text = dg.description
+                    created = getattr(dg, 'created_at', None)
+                    kind = 'digital'
+
             # 5. Printing
             if not proposal_obj:
                 pr = PrintingAdvertisement.objects.filter(campaign=campaign, proposed_user=dealer).first()
@@ -889,6 +901,9 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
                     proposal_obj = pr
                     price = pr.total_proposal_price
                     text = pr.description
+                    created = getattr(pr, 'created_at', None)
+                    kind = 'printing'
+
             # 6. Event Marketing
             if not proposal_obj:
                 ev = EventMarketingAdvertisement.objects.filter(campaign=campaign, proposed_user=dealer).first()
@@ -896,6 +911,8 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
                     proposal_obj = ev
                     price = ev.total_proposal_price
                     text = ev.description
+                    created = getattr(ev, 'created_at', None)
+                    kind = 'event'
 
             if not proposal_obj:
                 messages.error(request, "هیچ پیشنهادی برای برنده پیدا نشد.")
@@ -903,12 +920,33 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
 
             # ساخت آبجکت ساده برای استفاده در قالب موجود
             from types import SimpleNamespace
-            propsal = SimpleNamespace(
-                dealer=dealer,
-                proposals=text,
-                proposal_price=price,
-            )
-            return render(request, self.template_name, {'proposal': propsal})
+            propsal = SimpleNamespace(dealer=dealer, proposals=text, proposal_price=price, created_at=created, kind=kind)
+            # participant number calculation
+            from types import SimpleNamespace as _SN
+            items = []
+            for tx in CampaignTransaction.objects.filter(campaign=campaign):
+                items.append(_SN(dealer=tx.dealer, created_at=getattr(tx, 'created_at', None)))
+            for env in EnvironmentalAdvertisement.objects.filter(campaign=campaign):
+                items.append(_SN(dealer=env.proposed_user, created_at=getattr(env, 'created_at', None)))
+            for sm in SocialmediaAdvertisement.objects.filter(campaign=campaign):
+                items.append(_SN(dealer=sm.proposed_user, created_at=getattr(sm, 'created_at', None)))
+            for dg in DigitalAdvertisement.objects.filter(campaign=campaign):
+                items.append(_SN(dealer=dg.proposed_user, created_at=getattr(dg, 'created_at', None)))
+            for pr in PrintingAdvertisement.objects.filter(campaign=campaign):
+                items.append(_SN(dealer=pr.proposed_user, created_at=getattr(pr, 'created_at', None)))
+            for ev in EventMarketingAdvertisement.objects.filter(campaign=campaign):
+                items.append(_SN(dealer=ev.proposed_user, created_at=getattr(ev, 'created_at', None)))
+            items.sort(key=lambda x: x.created_at or timezone.now(), reverse=True)
+            participant_number = None
+            for idx, it in enumerate(items, start=1):
+                if it.dealer.id == dealer.id:
+                    participant_number = idx
+                    break
+            return render(request, self.template_name, {
+                'proposal': propsal,
+                'campaign': campaign,
+                'participant_number': participant_number,
+            })
             
         else:
             messages.error(request, "این کمپین برنده ای نداشته یا هنوز انتخاب نشده.")
