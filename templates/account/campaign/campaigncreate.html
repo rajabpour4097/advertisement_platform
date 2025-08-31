@@ -397,10 +397,11 @@
                         <label for="id_topic">دسته‌بندی کمپین:</label>
                         <div class="topic-card-list">
                             {% for topic in form.fields.topic.queryset %}
-                            <div class="topic-card {% if topic.id in form.topic.value %}selected{% endif %}" 
-                                 data-id="{{ topic.id }}" 
-                                 data-description="{{ topic.description|default:'' }}"
-                                 data-color="{{ topic.color }}">
+                       <div class="topic-card {% if topic.id in form.topic.value %}selected{% endif %}" 
+                           data-id="{{ topic.id }}" 
+                           data-description="{{ topic.description|default:'' }}"
+                           data-color="{{ topic.color }}"
+                           data-min-price="{{ topic.min_price|default:'' }}">
                                 <div class="icon-wrapper">
                                     <img src="{{ topic.icon.url }}" alt="{{ topic.name }}" />
                                 </div>
@@ -561,6 +562,16 @@
     const form = document.querySelector("form");
     const rulesCheckbox = document.getElementById("rules_accepted"); // fixed
     const descriptionContainer = document.getElementById("topic-description-container");
+    const priceInputInit = document.getElementById('id_purposed_price');
+    // If a topic is already selected (edit form scenario), set placeholder
+    const preSelected = document.querySelector('.topic-card.selected');
+    if (preSelected && priceInputInit) {
+        const rawMin = preSelected.dataset.minPrice;
+        if (rawMin) {
+            const formatted = Number(rawMin).toLocaleString('fa-IR');
+            priceInputInit.setAttribute('placeholder', `حداقل قیمت: ${formatted} تومان`);
+        }
+    }
 
     // تابع برای تبدیل رنگ hex به rgba با شفافیت
     function hexToRgba(hex, alpha) {
@@ -761,6 +772,17 @@
             const color = card.dataset.color || "#2ecc71";
             card.style.borderColor = color;
             hiddenInput.value = card.dataset.id;
+            // Update price placeholder with topic min price if available
+            const priceInput = document.getElementById('id_purposed_price');
+            if (priceInput) {
+                const rawMin = card.dataset.minPrice; // data-min-price
+                if (rawMin) {
+                    const formatted = Number(rawMin).toLocaleString('fa-IR');
+                    priceInput.setAttribute('placeholder', `حداقل قیمت: ${formatted} تومان`);
+                } else {
+                    priceInput.setAttribute('placeholder', 'مثلاً 10.000.000 تومان');
+                }
+            }
             const description = card.dataset.description || "توضیحاتی برای این موضوع ثبت نشده است.";
             if (descriptionContainer) {
                 descriptionContainer.innerHTML = `<p>${description}</p>`;
