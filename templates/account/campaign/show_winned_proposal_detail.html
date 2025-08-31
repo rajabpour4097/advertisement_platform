@@ -54,6 +54,64 @@
             <div class="winner-proposal">
                 <h4>متن پیشنهاد</h4>
                 <p class="proposal-text">{{ proposal.proposals|linebreaksbr }}</p>
+                                {% if proposal.kind == 'environmental' %}
+                                <div class="mt-3">
+                                    <h5>جزئیات تبلیغ محیطی</h5>
+                                    <ul style="padding-right:18px;line-height:1.9;font-size:.95em;">
+                                        <li>عنوان موقعیت: {{ proposal.raw_obj.location_title }}</li>
+                                        <li>نوع رسانه: {{ proposal.raw_obj.get_media_type_display }}</li>
+                                        <li>ابعاد رسانه: {{ proposal.raw_obj.media_width }} × {{ proposal.raw_obj.media_height }}</li>
+                                        <li>تاریخ شروع: {{ proposal.raw_obj.available_date }}</li>
+                                        <li>مدت اکران (روز): {{ proposal.raw_obj.expiration_date }}</li>
+                                        <li>مختصات: {{ proposal.raw_obj.media_location_latitude }}, {{ proposal.raw_obj.media_location_longitude }}</li>
+                                    </ul>
+                                </div>
+                                {% elif proposal.kind == 'social' %}
+                                <div class="mt-3">
+                                    <h5>جزئیات تبلیغ شبکه اجتماعی</h5>
+                                    <ul style="padding-right:18px;line-height:1.9;font-size:.95em;">
+                                        <li>نوع رسانه: {{ proposal.raw_obj.get_proposed_ad_template_display }}</li>
+                                        <li>شروع: {{ proposal.raw_obj.start_execution_time|date:'Y-m-d H:i' }}</li>
+                                        <li>پایان: {{ proposal.raw_obj.end_execution_time|date:'Y-m-d H:i' }}</li>
+                                        <li>دسته‌های محتوا: {% for c in proposal.raw_obj.content_categories.all %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}</li>
+                                    </ul>
+                                </div>
+                                {% elif proposal.kind == 'digital' %}
+                                <div class="mt-3">
+                                    <h5>جزئیات تبلیغ دیجیتال</h5>
+                                    <ul style="padding-right:18px;line-height:1.9;font-size:.95em;">
+                                        <li>نوع رسانه: {{ proposal.raw_obj.get_digital_ad_type_display }}</li>
+                                        <li>نوع هدف‌گذاری: {{ proposal.raw_obj.get_targeting_type_display }}</li>
+                                        <li>تخمین کلیک/نمایش: {{ proposal.raw_obj.estimated_clicks|intcomma }}</li>
+                                        <li>مدت (روز): {{ proposal.raw_obj.duration }}</li>
+                                        <li>بودجه تبلیغ: {{ proposal.raw_obj.advertising_budget|intcomma }} تومان</li>
+                                        <li>پلتفرم‌ها: {% for p in proposal.raw_obj.proposed_platform.all %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}</li>
+                                    </ul>
+                                </div>
+                                {% elif proposal.kind == 'printing' %}
+                                <div class="mt-3">
+                                    <h5>جزئیات تبلیغ چاپی</h5>
+                                    <ul style="padding-right:18px;line-height:1.9;font-size:.95em;">
+                                        <li>نوع اقلام: {{ proposal.raw_obj.get_printing_ad_type_display }}</li>
+                                        <li>گرماژ و جنس کاغذ: {{ proposal.raw_obj.paper_weight_and_type }}</li>
+                                        <li>ابعاد: {{ proposal.raw_obj.dimensions }}</li>
+                                        <li>تیراژ: {{ proposal.raw_obj.circulation|intcomma }}</li>
+                                        <li>زمان تحویل (روز کاری): {{ proposal.raw_obj.delivery_time }}</li>
+                                        <li>طراحی گرافیکی: {{ proposal.raw_obj.graphic_design_included|yesno:'بله,خیر' }}</li>
+                                    </ul>
+                                </div>
+                                {% elif proposal.kind == 'event' %}
+                                <div class="mt-3">
+                                    <h5>جزئیات ایونت مارکتینگ</h5>
+                                    <ul style="padding-right:18px;line-height:1.9;font-size:.95em;">
+                                        <li>نوع رویداد: {{ proposal.raw_obj.get_event_type_display }}</li>
+                                        <li>شهر: {{ proposal.raw_obj.location }}</li>
+                                        <li>آدرس محل: {{ proposal.raw_obj.location_address }}</li>
+                                        <li>تاریخ پیشنهادی: {{ proposal.raw_obj.event_proposed_date }}</li>
+                                        <li>سناریو رویداد: {{ proposal.raw_obj.event_content|default:'-' }}</li>
+                                    </ul>
+                                </div>
+                                {% endif %}
             </div>
             <div class="actions">
                 <a href="{% url 'account:campaigns' %}" class="btn btn-secondary btn-sm">بازگشت به کمپین ها</a>

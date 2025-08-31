@@ -920,7 +920,7 @@ class WinnedProposalDetail(EditCampaignUserMixin, View):
 
             # ساخت آبجکت ساده برای استفاده در قالب موجود
             from types import SimpleNamespace
-            propsal = SimpleNamespace(dealer=dealer, proposals=text, proposal_price=price, created_at=created, kind=kind)
+            propsal = SimpleNamespace(dealer=dealer, proposals=text, proposal_price=price, created_at=created, kind=kind, raw_obj=proposal_obj)
             # participant number calculation
             from types import SimpleNamespace as _SN
             items = []
