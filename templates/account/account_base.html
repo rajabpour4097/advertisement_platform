@@ -59,7 +59,7 @@
     #sidebar-menu hr{border:none;height:1px;background:var(--ap-border);margin:.55rem 0 .45rem;}
         .top_nav{background:var(--ap-surface);border-bottom:1px solid var(--ap-border);box-shadow:0 2px 8px rgba(0,0,0,.05);}        
         .nav_menu{padding:.6rem 1.25rem;}        
-        .user-profile{background:linear-gradient(90deg,rgba(99,102,241,.12),rgba(124,58,237,.12));padding:.55rem .9rem;border-radius:40px;border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:600;color:var(--ap-text);}        
+        .user-profile{background:linear-gradient(90deg,rgba(99,102,241,.12),rgba(124,58,237,.12));padding:.55rem .9rem;border-radius:40px;border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;gap:.5rem;font-size:.99rem;font-weight:600;color:var(--ap-text);}        
         .user-profile img{width:34px;height:34px;object-fit:cover;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 3px rgba(99,102,241,.25);}        
         .dropdown-menu{border:1px solid var(--ap-border);border-radius:16px;box-shadow:0 10px 26px -6px rgba(0,0,0,.18);padding:.4rem .35rem;min-width:200px;}        
         .dropdown-menu li a{padding:.6rem .85rem;border-radius:10px;font-size:.75rem;display:flex;align-items:center;gap:.45rem;color:var(--ap-text);}        
@@ -72,12 +72,28 @@
     .msg_list li a:hover{background:linear-gradient(95deg,rgba(99,102,241,.08),rgba(124,58,237,.08));border-color:rgba(99,102,241,.35);}        
     .msg_list li a > span:first-child{display:flex;width:100%;justify-content:space-between;align-items:center;gap:.75rem;}
     .msg_list li a > span:first-child > span{display:inline-block;}
-    .msg_list li a .time{font-size:.65rem;color:var(--ap-text-muted);white-space:nowrap;flex-shrink:0;}
+    .msg_list li a .time{font-size:.75rem;color:var(--ap-text-muted);white-space:nowrap;flex-shrink:0;}
     .msg_list li a .message{display:block;width:100%;color:var(--ap-text);font-weight:500;white-space:normal;overflow:hidden;}
     .msg_list::-webkit-scrollbar{width:8px;}
     .msg_list::-webkit-scrollbar-track{background:rgba(99,102,241,.08);border-radius:10px;}
     .msg_list::-webkit-scrollbar-thumb{background:rgba(99,102,241,.4);border-radius:10px;}
     @media (max-width:600px){.msg_list{width:300px;}}
+    /* Notifications read/unread differentiation */
+    .notifications-dropdown{width:320px;max-width:320px;padding:.45rem .55rem;}
+    @media (max-width:600px){.notifications-dropdown{width:300px;max-width:300px;}}
+    .notifications-dropdown li{list-style:none;}
+    .notifications-dropdown li a{display:flex;flex-direction:column;gap:.4rem;padding:.7rem .85rem;margin:.18rem 0;background:#fff;border:1px solid var(--ap-border);border-radius:12px;position:relative;transition:.25s;line-height:1.45;font-size:.73rem;white-space:normal;}
+    .notifications-dropdown li a:hover{border-color:rgba(99,102,241,.35);background:linear-gradient(95deg,rgba(99,102,241,.07),rgba(124,58,237,.07));}
+    .notifications-dropdown li.unread a{background:linear-gradient(120deg,#eef2ff,#f5f3ff);border-color:rgba(99,102,241,.45);}    
+    .notifications-dropdown li.unread a:before{content:"";position:absolute;top:10px;right:10px;width:9px;height:9px;background:var(--ap-primary);border-radius:50%;box-shadow:0 0 0 4px rgba(99,102,241,.25);}    
+    .notifications-dropdown li.read a{opacity:.78;}
+    .notifications-dropdown li.read a:hover{opacity:1;}
+    .notifications-dropdown li.unread a .message{font-weight:600;}
+    .notifications-dropdown li.read a .message{font-weight:400;color:var(--ap-text-muted);}    
+    .notifications-dropdown .message{-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;}
+    .notifications-dropdown .meta-row{display:flex;justify-content:space-between;align-items:center;gap:.75rem;font-size:.65rem;color:var(--ap-text-muted);}    
+    .notifications-dropdown .meta-row .actor{font-size:.7rem;font-weight:600;color:var(--ap-text);} 
+
     </style>
      {% block extra_head %}{% endblock %}
 </head>
@@ -161,13 +177,13 @@
                                 <span class=" fa fa-angle-down"></span>
                             </a>
                             <ul class="dropdown-menu dropdown-usermenu pull-right">
-                                <li><a href="{% url 'account:profile' %}"> پروفایل کاربری <span class="badge pull-right" style="background:var(--ap-primary-grad);border-radius:20px;padding:.25rem .55rem;min-width:38px;">{{ null_field_count_percent|floatformat:2 }}%</span></a></li>
+                                <li><a href="{% url 'account:profile' %}" style="font-size: .99rem;"> پروفایل کاربری <span class="badge pull-right" style="background:var(--ap-primary-grad);border-radius:20px;padding:.25rem .55rem;min-width:38px;">{{ null_field_count_percent|floatformat:2 }}%</span></a></li>
                                 <li>
                                     <a href="javascript:;">
-                                        <span>تنظیمات</span>
+                                        <span style="font-size: .99rem;">تنظیمات</span>
                                     </a>
                                 </li>
-                                <li><a href="#"  onclick="logout()"><i class="fa fa-sign-out pull-right"></i> خروج</a></li>
+                                <li><a href="#"  onclick="logout()" style="font-size: .99rem;"><i class="fa fa-sign-out pull-right"></i> خروج</a></li>
                             </ul>
                         </li>
                         <!-- Message header -->
@@ -223,23 +239,24 @@
                                 <i class="fa fa-bell-o"></i>
                                 <span class="badge" style="background:linear-gradient(135deg,#ef4444,#dc2626);border-radius:14px;padding:.25rem .55rem;"> {% notifications_unread %} </span>
                             </a>
-                            <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
+                            <ul id="menu1" class="dropdown-menu list-unstyled notifications-dropdown" role="menu" style="width: 320px;">
                                 {% for notice in latest_notifications %}
-                                <li>
+                                <li class="{% if notice.unread %}unread{% else %}read{% endif %}">
                                     <a href="{% url 'account:notifications_detail' notice.pk %}">
-                                        <span>
-                                            <span>{{ notice.actor.get_full_name }}</span>
-                                            <span class="time">{{ notice.timesince }} دقیقه پیش</span>
-                                        </span>
-                                        <span class="message">{{ notice.verb }} {{ notice.description | truncatewords:5 }}</span>
+                                        <div class="meta-row">
+                                            <span class="actor" style="font-size: .99rem;">{{ notice.actor.get_full_name|default:'سیستم' }}</span>
+                                            <span class="time" style="font-size: .85rem;">{{ notice.timesince }} دقیقه پیش</span>
+                                        </div>
+                                        <span class="message" style="font-size: .99rem; font-weight: 400;">{{ notice.verb }} {% if notice.description %}{{ notice.description|truncatewords:8 }}{% endif %}</span>
                                     </a>
                                 </li>
+                                {% empty %}
+                                <li><a style="text-align:center;cursor:default;opacity:.65;">اعلانی موجود نیست</a></li>
                                 {% endfor %}
                                 <li>
-                                    <div class="text-center">
-                                        <a href="{% url 'account:notifications_list' %}">
-                                            <strong>مشاهده تمام اعلان ها</strong>
-                                            <i class="fa fa-angle-right"></i>
+                                    <div style="text-align:center;">
+                                        <a href="{% url 'account:notifications_list' %}" style="font-weight:600;display:inline-flex;align-items:center;gap:.4rem;">
+                                            <i class="fa fa-angle-left"></i> مشاهده تمام اعلان ها
                                         </a>
                                     </div>
                                 </li>
@@ -320,6 +337,29 @@
         })
         .catch(error => console.error("Error:", error));
     }
+</script>
+<script>
+// Mark notifications read on click (optimistic UI)
+document.addEventListener('DOMContentLoaded', function(){
+    const notifContainer = document.querySelector('.notifications-dropdown');
+    const badge = document.querySelector('.dropdown-toggle.info-number .badge');
+    function decrementBadge(){
+        if(!badge) return; let n=parseInt(badge.textContent); if(!isNaN(n) && n>0){ n--; badge.textContent=' '+n+' '; }
+    }
+    if(notifContainer){
+        notifContainer.addEventListener('click', function(e){
+            const link = e.target.closest('a');
+            if(!link) return; const li = link.parentElement; if(li.classList.contains('unread')){
+                li.classList.remove('unread'); li.classList.add('read'); decrementBadge();
+                // Fire background request to mark read (endpoint assumed)
+                const href = link.getAttribute('href');
+                if(href){
+                    fetch(href + '?as_read=1', {headers:{'X-Requested-With':'XMLHttpRequest'}}).catch(()=>{});
+                }
+            }
+        });
+    }
+});
 </script>
 <!-- jQuery (فقط یک بار) -->
 <script src="{% static 'account/vendors/jquery/dist/jquery.min.js' %}"></script>
