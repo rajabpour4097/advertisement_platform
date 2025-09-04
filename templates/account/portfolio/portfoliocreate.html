@@ -6,130 +6,558 @@
 
 {% block content %}
 <style>
-    strong {
-        color: red;
-        font-size: small;
-        font-weight: normal;
+    /* ===================== Theming (consistent with campaign design) ===================== */
+    :root {
+        --cp-bg: #ffffff;
+        --cp-border: #e5e7eb;
+        --cp-radius: 14px;
+        --cp-shadow-sm: 0 4px 10px rgba(0,0,0,.06);
+        --cp-shadow-md: 0 8px 24px -4px rgba(0,0,0,.12);
+        --cp-gradient: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#5a3d9b 100%);
+        --cp-gradient-soft: linear-gradient(140deg, rgba(102,126,234,.15), rgba(118,75,162,.15));
+        --cp-primary: #667eea;
+        --cp-primary-accent: #764ba2;
+        --cp-accent-green: #028c32;
+        --cp-text-dark: #1e293b;
+        --cp-text-muted: #64748b;
+        --cp-danger: #ef4444;
+        --cp-success: #16a34a;
+        --cp-focus-ring: 0 0 0 3px rgba(102,126,234,.35);
     }
-    
+
+    /* Content frame styling */
+    .portfolio-content-frame {
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: var(--cp-bg);
+        padding: 1.5rem 2rem 2.5rem;
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-radius);
+        box-shadow: var(--cp-shadow-sm);
+        position: relative;
+        backdrop-filter: blur(2px);
+        margin: 1rem auto;
+        max-width: 700px;
+    }
+
+    .portfolio-content-frame:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        background: radial-gradient(circle at 60% 0%, rgba(102,126,234,.08), transparent 70%);
+    }
+
+    /* Panel styling */
+    .portfolio-panel {
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-radius);
+        box-shadow: var(--cp-shadow-sm);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .portfolio-panel-header {
+        background: var(--cp-gradient);
+        padding: 1.5rem 2rem;
+        margin: 0;
+        border-bottom: none;
+    }
+
+    .portfolio-panel-header h2 {
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 1.6rem;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,.2);
+        text-align: center;
+    }
+
+    .portfolio-panel-body {
+        padding: 2rem;
+        background: rgba(255,255,255,.95);
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Form styling */
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
     .form-group label {
-        margin-top: 10px;  
-        font-size: 1.0em;
-        color: #34495e;
+        font-weight: 600;
+        color: var(--cp-text-dark);
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+        display: block;
     }
-    
-    .form-group .form-control {
-        margin-top: 5px;
+
+    .form-control, .form-select {
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,.98);
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--cp-primary);
+        box-shadow: var(--cp-focus-ring);
+        outline: none;
+        background: #ffffff;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* Image management section */
+    .image-management-section {
+        background: linear-gradient(135deg, rgba(102,126,234,.04), rgba(118,75,162,.06));
+        border: 2px dashed rgba(102,126,234,.2);
+        border-radius: var(--cp-radius);
+        padding: 2rem;
+        margin: 1.5rem 0;
+        text-align: center;
+        position: relative;
+    }
+
+    .image-management-section h3 {
+        color: var(--cp-text-dark);
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+    }
+
+    .image-forms-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .image-form-card {
+        background: #ffffff;
+        border: 1px solid var(--cp-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--cp-shadow-sm);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .image-form-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--cp-shadow-md);
+    }
+
+    .preview-image {
+        width: 100%;
+        max-width: 200px;
+        height: 150px;
+        object-fit: cover;
         border-radius: 8px;
-        padding: 10px;
-        border: 1px solid #ccc;
+        margin-bottom: 1rem;
+        border: 2px solid var(--cp-border);
+        display: none;
     }
-    
-    .form-group .form-control:focus {
-        border-color: #028c32;
-        box-shadow: 0 0 5px rgba(2, 140, 50, 0.5);
+
+    .preview-image.show {
+        display: block;
     }
-    
-    .btn {
-        border-radius: 8px;
-        padding: 10px 20px;
+
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
     }
-    
-    .btn-success {
-        background-color: #028c32;
-        border-color: #028c32;
+
+    .file-input-custom {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        width: 100%;
+        background: linear-gradient(135deg, rgba(102,126,234,.1), rgba(118,75,162,.15));
+        border: 2px dashed var(--cp-primary);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
     }
-    
-    .btn-success:hover {
-        background-color: #026a24;
-        border-color: #026a24;
+
+    .file-input-custom:hover {
+        background: linear-gradient(135deg, rgba(102,126,234,.15), rgba(118,75,162,.2));
+        border-color: var(--cp-primary-accent);
     }
-    
+
+    .file-input-custom input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-input-text {
+        color: var(--cp-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* Button styling */
+    .btn-modern {
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-add-image {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        box-shadow: 0 4px 12px rgba(34,197,94,.3);
+    }
+
+    .btn-add-image:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(34,197,94,.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-submit {
+        background: var(--cp-gradient);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102,126,234,.3);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102,126,234,.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-back {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        color: var(--cp-text-dark);
+        border: 1px solid var(--cp-border);
+    }
+
+    .btn-back:hover {
+        background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+        transform: translateY(-2px);
+        color: var(--cp-text-dark);
+        text-decoration: none;
+    }
+
+    /* Error styling */
+    .error-text {
+        color: var(--cp-danger);
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-top: 0.25rem;
+    }
+
+    /* Action buttons container */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--cp-border);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .portfolio-content-frame {
+            padding: 1rem 1.5rem 2rem;
+            margin: 0.5rem;
+        }
+        
+        .portfolio-panel-body {
+            padding: 1.5rem;
+        }
+        
+        .image-forms-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn-modern {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Hide management form */
+    .formset-management {
+        display: none;
+    }
+
+    /* Enhanced crispy forms styling */
+    .crispy-form .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .crispy-form .control-label {
+        font-weight: 600;
+        color: var(--cp-text-dark);
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
 </style>
 
-<div class="col-md-6 col-xs-12 form-group" style="scale:90%;">
-  <div class="x_panel">
-    <div class="x_title">
-        <h2>نمونه کار</h2>
-
-        <div class="clearfix"></div>
-    </div>
-    <form method="post" enctype="multipart/form-data" novalidate>
-        {% csrf_token %}
-
-        {{ form|crispy }}  <!-- فرم اصلی Portfolio -->
-    
-        {% comment %} <h3>تصاویر نمونه کار</h3> {% endcomment %}
-        {{ image_formset.management_form|crispy }}  <!-- مدیریت FormSet -->
-        <div id="image-form-container">  
-            {% for form in image_formset %}
-                <div class="image-form">
-                    <img class="preview-image" src="{% static 'images/default-placeholder.png' %}" width="100" style="display: none; margin-bottom: 10px;">
-                    {{ form | crispy }}  
-                </div>
-            {% endfor %}
+<div class="portfolio-content-frame">
+    <div class="portfolio-panel">
+        <div class="portfolio-panel-header">
+            <h2>ایجاد نمونه کار جدید</h2>
         </div>
-  
-          <!-- دکمه افزودن تصویر -->
-          <button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
-            
-        <br>
-        <a href="{% url 'account:portfolios' %}" class="btn btn-primary">بازگشت</a>
-        <button type="submit" class="btn btn-success">ارسال</button>
-    </form>
-  </div>
+        
+        <div class="portfolio-panel-body">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                <!-- فرم اصلی Portfolio -->
+                <div class="portfolio-form-section">
+                    {{ form|crispy }}
+                </div>
+
+                <!-- بخش مدیریت تصاویر -->
+                <div class="image-management-section">
+                    <h3>
+                        <i class="fas fa-images" style="color: var(--cp-primary); margin-left: 0.5rem;"></i>
+                        تصاویر نمونه کار
+                    </h3>
+                    
+                    <!-- مدیریت FormSet (مخفی) -->
+                    <div class="formset-management">
+                        {{ image_formset.management_form }}
+                    </div>
+                    
+                    <div id="image-form-container" class="image-forms-container">
+                        {% for form in image_formset %}
+                            <div class="image-form image-form-card">
+                                <img class="preview-image" src="{% static 'images/default-placeholder.png' %}" alt="پیش‌نمایش">
+                                <div class="file-input-wrapper">
+                                    <div class="file-input-custom">
+                                        {{ form.image }}
+                                        <div class="file-input-text">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                            انتخاب تصویر
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- سایر فیلدهای فرم تصویر -->
+                                <div style="display: none;">
+                                    {{ form.DELETE }}
+                                    {{ form.id }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- دکمه افزودن تصویر -->
+                    <button type="button" id="add-image-form" class="btn-modern btn-add-image">
+                        <i class="fas fa-plus"></i>
+                        افزودن تصویر جدید
+                    </button>
+                </div>
+
+                <!-- دکمه‌های عملیات -->
+                <div class="action-buttons">
+                    <a href="{% url 'account:portfolios' %}" class="btn-modern btn-back">
+                        <i class="fas fa-arrow-right"></i>
+                        بازگشت
+                    </a>
+                    <button type="submit" class="btn-modern btn-submit">
+                        <i class="fas fa-check"></i>
+                        ارسال نمونه کار
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        let formCount = 0;
+        const container = document.querySelector("#image-form-container");
+        const addButton = document.querySelector("#add-image-form");
+        const totalFormsInput = document.querySelector("#id_portfolioimages-TOTAL_FORMS");
+        
+        // Initialize form count
+        if (totalFormsInput) {
+            formCount = parseInt(totalFormsInput.value) || 0;
+        }
+
         function previewImage(input, previewElement) {
             if (input.files && input.files[0]) {
-                let reader = new FileReader();
+                const reader = new FileReader();
                 reader.onload = function (e) {
                     previewElement.src = e.target.result;
-                    previewElement.style.display = "block";
+                    previewElement.classList.add('show');
                 };
                 reader.readAsDataURL(input.files[0]);
             } else {
-                previewElement.style.display = "none";
+                previewElement.classList.remove('show');
+                previewElement.src = "{% static 'images/default-placeholder.png' %}";
             }
         }
 
-        // برای فرم‌های موجود در ابتدا
-        document.querySelectorAll(".image-form").forEach(function (form) {
-            let input = form.querySelector("input[type='file']");
-            let preview = form.querySelector(".preview-image");
-
-            if (input) {
-                input.addEventListener("change", function () {
+        function initializeImageForm(formElement) {
+            const input = formElement.querySelector("input[type='file']");
+            const preview = formElement.querySelector(".preview-image");
+            
+            if (input && preview) {
+                // Remove any existing event listeners
+                input.removeEventListener("change", handleImageChange);
+                
+                // Add event listener for image preview
+                function handleImageChange() {
                     previewImage(input, preview);
-                });
+                }
+                
+                input.addEventListener("change", handleImageChange);
+                
+                // If the input already has a file, show preview
+                if (input.files && input.files[0]) {
+                    previewImage(input, preview);
+                }
             }
+        }
+
+        // Initialize existing forms
+        document.querySelectorAll(".image-form").forEach(function (form) {
+            initializeImageForm(form);
         });
 
-        // برای فرم‌های جدیدی که با دکمه اضافه می‌شوند
-        document.querySelector("#add-image-form").addEventListener("click", function () {
-            let totalForms = document.querySelector("#id_portfolioimages-TOTAL_FORMS");
-            let formContainer = document.querySelector("#image-form-container");
-            let firstForm = formContainer.querySelector(".image-form");
-            let formCount = parseInt(totalForms.value);
-
-            let newForm = firstForm.cloneNode(true);
-            newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
-
-            // مقدار فیلد‌های جدید را پاک کنیم
-            let input = newForm.querySelector("input[type='file']");
-            let preview = newForm.querySelector(".preview-image");
-            input.value = "";
-            preview.src = "{% static 'images/default-placeholder.png' %}";
-            preview.style.display = "none";
-
-            input.addEventListener("change", function () {
-                previewImage(input, preview);
+        // Add new image form functionality
+        if (addButton) {
+            addButton.addEventListener("click", function (e) {
+                e.preventDefault();
+                
+                // Create new form based on the first form template
+                const firstForm = container.querySelector(".image-form");
+                if (!firstForm) return;
+                
+                const newForm = firstForm.cloneNode(true);
+                
+                // Update form field names with new index
+                const inputs = newForm.querySelectorAll("input, select, textarea");
+                inputs.forEach(input => {
+                    if (input.name) {
+                        input.name = input.name.replace(/-\d+-/, `-${formCount}-`);
+                    }
+                    if (input.id) {
+                        input.id = input.id.replace(/-\d+-/, `-${formCount}-`);
+                    }
+                    // Clear the value
+                    if (input.type !== 'hidden') {
+                        input.value = '';
+                    }
+                });
+                
+                // Reset preview image
+                const preview = newForm.querySelector(".preview-image");
+                if (preview) {
+                    preview.src = "{% static 'images/default-placeholder.png' %}";
+                    preview.classList.remove('show');
+                }
+                
+                // Add the new form to container
+                container.appendChild(newForm);
+                
+                // Initialize the new form
+                initializeImageForm(newForm);
+                
+                // Update total forms count
+                formCount++;
+                if (totalFormsInput) {
+                    totalFormsInput.value = formCount;
+                }
+                
+                // Scroll to the new form
+                newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Add some visual feedback
+                newForm.style.transform = 'scale(0.95)';
+                newForm.style.opacity = '0.7';
+                setTimeout(() => {
+                    newForm.style.transition = 'all 0.3s ease';
+                    newForm.style.transform = 'scale(1)';
+                    newForm.style.opacity = '1';
+                }, 100);
             });
+        }
 
-            formContainer.appendChild(newForm);
-            totalForms.value = formCount + 1;
+        // Form validation before submit
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                let hasError = false;
+                const requiredFields = form.querySelectorAll('input[required], textarea[required], select[required]');
+                
+                // Remove previous error messages
+                document.querySelectorAll('.error-text').forEach(error => error.remove());
+                
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        hasError = true;
+                        field.style.borderColor = 'var(--cp-danger)';
+                        
+                        // Add error message
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'error-text';
+                        errorDiv.textContent = 'این فیلد الزامی است';
+                        field.parentNode.appendChild(errorDiv);
+                    } else {
+                        field.style.borderColor = '';
+                    }
+                });
+                
+                if (hasError) {
+                    e.preventDefault();
+                    // Scroll to first error
+                    const firstError = document.querySelector('.error-text');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        }
+
+        // Add smooth transitions to form elements
+        const formElements = document.querySelectorAll('.form-control, .form-select');
+        formElements.forEach(element => {
+            element.addEventListener('focus', function() {
+                this.parentNode.style.transform = 'translateY(-2px)';
+            });
+            
+            element.addEventListener('blur', function() {
+                this.parentNode.style.transform = 'translateY(0)';
+            });
         });
     });
 </script>
