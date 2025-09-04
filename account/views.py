@@ -2295,3 +2295,29 @@ class SecureCustomerResumeLinkView(LoginRequiredMixin, TemplateView):
             context['participant_number'] = int(n)
         return context
 
+
+class WinnedDealerResume(LoginRequiredMixin, TemplateView):
+    template_name = "account/campaign/winned_dealer_resume.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # اول کمپین رو بگیریم
+        campaign = get_object_or_404(Campaign, id=self.kwargs['pk'])
+        current_user = request.user
+
+        # چک کنیم کاربر صاحب کمپین باشه
+        if not campaign.list_of_participants.filter(id=current_user.id).exists():
+            return render(request, '403.html', {
+                'error_message': "شما به این کمپین دسترسی ندارید",
+                'back_url': "account:home"
+            })
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['resume'] = self.resume
+        n = self.data.get('n')
+        if n and int(n) > 0:
+            context['participant_number'] = int(n)
+        return context
+
