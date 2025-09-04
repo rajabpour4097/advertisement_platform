@@ -8,27 +8,367 @@
 
 {% block extra_head %}
 <link href="{% static 'account/build/css/campaignlist_style.css' %}" rel="stylesheet">
-{% endblock %}
 <style>
-
-    /* scrollable frame for content */
-  .content-frame {
+/* Enhanced Campaigns List Styling */
+.content-frame {
     max-height: calc(100vh - 140px);
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    background: #fff;
-    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     -webkit-overflow-scrolling: touch;
-  }
-  @media (max-width: 576px) {
-    .content-frame { max-height: calc(100vh - 110px); padding: .75rem; }
-  }
+}
+
+
+.x_title {
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+}
+
+.x_title h2 {
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 1.89rem;
+    margin: 0;  
+    position: relative;
+}
+
+.x_title h2::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    border-radius: 2px;
+}
+
+/* Search and Filter Section */
+.search-filter-section {
+    background: rgba(255,255,255,0.7);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(226,232,240,0.6);
+    backdrop-filter: blur(10px);
+}
+
+.custom-input {
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    padding: 0.7rem 1.2rem;
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.9);
+    font-size: 1rem;
+}
+
+.custom-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    background: #ffffff;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    z-index: 10;
+}
+
+/* Enhanced Table Styling */
+.table-container {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border: 1px solid #e2e8f0;
+}
+
+.table {
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.945rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1.2rem 1rem;
+    border-bottom: 2px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table tbody tr:hover {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.table tbody td {
+    padding: 1.2rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.945rem;
+    line-height: 1.5;
+}
+
+/* Campaign Row States */
+.campaign-row-active {
+    border-left: 4px solid #10b981;
+}
+
+.campaign-row-inactive {
+    border-left: 4px solid #ef4444;
+    opacity: 0.8;
+}
+
+/* Enhanced Badges */
+.badge {
+    font-size: 0.84rem;
+    font-weight: 500;
+    padding: 0.5rem 0.8rem;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white;
+    border-color: #059669;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white;
+    border-color: #d97706;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: white;
+    border-color: #dc2626;
+}
+
+.badge.bg-info {
+    background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+    color: white;
+    border-color: #0891b2;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    color: white;
+    border-color: #2563eb;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+    color: white;
+    border-color: #4b5563;
+}
+
+/* User Info Cards */
+.avatar-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name, .winner-user-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.945rem;
+    display: block;
+}
+
+/* Action Buttons */
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.84rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin: 0.2rem;
+}
+
+.btn-outline-primary {
+    border: 2px solid #3b82f6;
+    color: #3b82f6;
+    background: rgba(59,130,246,0.05);
+}
+
+.btn-outline-primary:hover {
+    background: #3b82f6;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+
+.btn-outline-danger {
+    border: 2px solid #ef4444;
+    color: #ef4444;
+    background: rgba(239,68,68,0.05);
+}
+
+.btn-outline-danger:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+}
+
+.btn-outline-warning {
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    background: rgba(245,158,11,0.1);
+}
+
+.btn-outline-warning:hover {
+    background: #f59e0b;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+}
+
+/* Action Buttons Group */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+}
+
+.action-buttons .btn {
+    font-size: 0.7875rem;
+    padding: 0.3rem 0.6rem;
+}
+
+/* Status Icons */
+.status-icon {
+    font-size: 0.84rem;
+    margin-right: 0.3rem;
+}
+
+.badge-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Links Styling */
+a {
+    color: #3b82f6;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.badge a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.badge a:hover {
+    color: inherit;
+    opacity: 0.9;
+}
+
+/* Price Formatting */
+.price-text {
+    font-weight: 600;
+    color: #059669;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+}
+
+/* Campaign Description Styling */
+.campaign-description {
+    font-size: 1.04rem;
+    max-width: 200px;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .content-frame {
+        max-height: calc(100vh - 110px);
+        padding: 1rem;
+    }
+    
+    .x_title h2 {
+        font-size: 1.575rem;
+    }
+    
+    .search-filter-section {
+        padding: 1rem;
+    }
+    
+    .table tbody td {
+        padding: 0.8rem 0.5rem;
+        font-size: 0.8925rem;
+    }
+    
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.7875rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .content-frame {
+        padding: 0.75rem;
+        border-radius: 12px;
+    }
+    
+    .table-container {
+        border-radius: 12px;
+    }
+    
+    .x_title h2 {
+        font-size: 1.365rem;
+    }
+}
 </style>
+{% endblock %}
 
 {% block content %}
-<div class="content-frame">
     <div class="x_panel">
         <!-- Panel Header -->
         <div class="x_title">
@@ -39,27 +379,26 @@
         </div>
         
         <!-- Search Box and Topic Filter -->
-        <div class="x_content mb-3">
-            <div class="row">
-                <div class="col-md-6">
+        <div class="search-filter-section">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
                     {% if messages %}
                         {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">
-                                {{ message }}
+                            <div class="alert alert-{{ message.tags }} border-0 rounded-3 shadow-sm">
+                                <i class="fas fa-info-circle me-2"></i>{{ message }}
                             </div>
                         {% endfor %}
                     {% endif %}
-                    <div class="input-group" style="max-width: 300px;">
-                        <input type="text" id="searchInput" class="form-control" placeholder="جستجو در کمپین‌ها..." style="border-radius: 20px; padding: 8px 15px;">
-                        <span class="input-group-text bg-transparent border-0" style="margin-right: -40px;">
-                            <i class="fas fa-search text-muted"></i>
-                        </span>
+                    <div class="position-relative">
+                        <input type="text" id="searchInput" class="form-control custom-input" 
+                               placeholder="🔍 جستجو در کمپین‌ها..." style="padding-right: 3rem;">
+                        <i class="fas fa-search search-icon"></i>
                     </div>
                 </div>
-                <div class="col-md-6 text-end">
-                    <div class="input-group" style="max-width: 300px; margin-right: auto;">
-                        <select id="topicFilter" class="form-select" style="border-radius: 20px; padding: 8px 15px;">
-                            <option value="all">همه موضوعات</option>
+                <div class="col-md-6">
+                    <div class="position-relative">
+                        <select id="topicFilter" class="form-select custom-input">
+                            <option value="all">📂 همه موضوعات</option>
                             {% for campaign in campaigns %}
                                 {% for topic in campaign.topic.all %}
                                     <option value="{{ topic }}">{{ topic }}</option>
@@ -72,23 +411,41 @@
         </div>
 
         <!-- Table Content -->
-        <div class="x_content">
+        <div class="table-container">
             <div class="table-responsive">
-                <table class="table" id="campaignsTable">
+                <table class="table table-hover" id="campaignsTable">
                     <!-- Table Header -->
                     <thead>
                         <tr>
                             {% if user.is_staff or user.user_type == 'dealer' or user.is_am %}
-                            <th class="organizer-column">برگزارکننده</th>
+                            <th class="organizer-column">
+                                <i class="fas fa-user me-2"></i>برگزارکننده
+                            </th>
                             {% endif %}
-                            <th>موضوعات کمپین‌</th>
-                            <th>شرح کمپین‌</th>
-                            <th>بودجه پیشنهادی</th>
-                            <th>مبلغ جایره</th>
-                            <th>زمان اتمام</th>
-                            <th>وضعیت</th>
-                            <th>وضعیت کمپین</th>
-                            <th>برنده</th>
+                            <th>
+                                <i class="fas fa-tags me-2"></i>موضوعات کمپین‌
+                            </th>
+                            <th>
+                                <i class="fas fa-file-alt me-2"></i>شرح کمپین‌
+                            </th>
+                            <th>
+                                <i class="fas fa-dollar-sign me-2"></i>بودجه پیشنهادی
+                            </th>
+                            <th>
+                                <i class="fas fa-gift me-2"></i>مبلغ جایره
+                            </th>
+                            <th>
+                                <i class="fas fa-clock me-2"></i>زمان اتمام
+                            </th>
+                            <th>
+                                <i class="fas fa-chart-line me-2"></i>وضعیت
+                            </th>
+                            <th>
+                                <i class="fas fa-toggle-on me-2"></i>وضعیت کمپین
+                            </th>
+                            <th>
+                                <i class="fas fa-trophy me-2"></i>برنده
+                            </th>
                         </tr>
                     </thead>
                     
@@ -108,130 +465,166 @@
                             {% endif %}
 
                             <!-- Campaign Topics -->
-                            <td>{{ campaign.topic.all|join:", " }}</td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for topic in campaign.topic.all %}
+                                        <span class="badge bg-info bg-opacity-75 text-dark border-0">
+                                            <i class="fas fa-tag me-1"></i>{{ topic }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="text-muted">-</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
 
                             <!-- Campaign Description -->
                             <td>
-                                {% if user.is_staff or user.is_am %}
-                                    <a href="{% url 'account:campaignedit' campaign.pk %}">
-                                        {{ campaign.describe | truncatewords:10 }}
-                                    </a>
-                                {% else %}
-                                    {{ campaign.describe | truncatewords:10 }}
-                                {% endif %}
+                                <div class="campaign-description">
+                                    {% if user.is_staff or user.is_am %}
+                                        <a href="{% url 'account:campaignedit' campaign.pk %}" class="text-decoration-none">
+                                            <div class="fw-medium text-dark">{{ campaign.describe | truncatewords:14 }}</div>
+                                        </a>
+                                    {% else %}
+                                        <div class="fw-medium text-dark">{{ campaign.describe | truncatewords:14 }}</div>
+                                    {% endif %}
+                                </div>
                             </td>
 
                             <!-- Campaign Prices -->
-                            <td>{{ campaign.purposed_price | format_price }}</td>
-                            <td>{{ campaign.get_gift_price | format_price }}</td>
+                            <td>
+                                <span class="price-text">{{ campaign.purposed_price | format_price }}</span>
+                            </td>
+                            <td>
+                                <span class="price-text">{{ campaign.get_gift_price | format_price }}</span>
+                            </td>
 
                             <!-- End Time -->
                             <td>
-                                {% if campaign.endtimedate %}
-                                    {{ campaign.get_jalali_endtimedate_clean }}
-                                {% else %}
-                                    برگزار نشده
-                                {% endif %}
-                                {% if campaign.get_ended_campaign %}
-                                    <br><small class="text-danger">{{ campaign.get_ended_campaign }}</small>
-                                {% endif %}
+                                <div class="time-info">
+                                    {% if campaign.endtimedate %}
+                                        <div class="fw-medium text-dark">{{ campaign.get_jalali_endtimedate_clean }}</div>
+                                    {% else %}
+                                        <span class="text-muted">برگزار نشده</span>
+                                    {% endif %}
+                                    {% if campaign.get_ended_campaign %}
+                                        <small class="text-danger d-block mt-1">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ campaign.get_ended_campaign }}
+                                        </small>
+                                    {% endif %}
+                                </div>
                             </td>
 
                             <!-- Campaign Status -->
                             <td>
-                                {% if campaign.status == 'editing' %}
-                                    {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
-                                        <a href="{% url 'account:campaignedit' campaign.pk %}">
-                                            <span class="badge bg-warning">در حال ویرایش</span>
-                                        </a>
-                                    {% else %}
-                                        <span class="badge bg-warning">در حال ویرایش</span>
-                                    {% endif %}
-                                {% elif campaign.status == 'reviewing' %}
-                                    {% if request.user.is_staff or request.user.is_am %}
-                                        <a href="{% url 'account:reviewcampaign' campaign.pk %}">
-                                            <span class="badge bg-info">در حال بررسی</span>
-                                        </a>
-                                    {% else %}
-                                        <span class="badge bg-info">در حال بررسی</span>
-                                    {% endif %}
-                                {% elif campaign.status == 'rejected' %}
-                                    <span class="badge bg-danger">رد شده</span>
-                                {% elif campaign.status == 'cancel' %}
-                                    <span class="badge bg-danger">انصراف داده شده</span>
-                                {% elif campaign.status == 'approved' %}
-                                    <span class="badge bg-success">تایید شده</span>
-                                {% elif campaign.status == 'progressing' %}
-                                    <span class="badge bg-primary">در حال برگزاری</span>
-                                        {% if request.user.is_staff or request.user.is_am %}
-                                            {% get_campaign_participants_count campaign as participants_count %}
-                                            <span class="badge {% if participants_count > 0 %}bg-success{% else %}bg-secondary{% endif %}" style="margin-top: 5px;">
-                                            {{ participants_count|format_participants_count }}
-                                            {% if participants_count > 0 %}
-                                                <a href="{% url 'account:runningcampaignparticipated' campaign.pk %}">
-                                                    <i class="fa fa-eye"></i>
-                                                </a>
-                                            {% endif %}
+                                <div class="status-column">
+                                    {% if campaign.status == 'editing' %}
+                                        {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
+                                            <a href="{% url 'account:campaignedit' campaign.pk %}" class="text-decoration-none">
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-edit me-1"></i>در حال ویرایش
+                                                </span>
+                                            </a>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-edit me-1"></i>در حال ویرایش
                                             </span>
-                                        {% endif%}
-                                    </span>
-                                    {% if request.user.user_type == 'dealer' %}
-                                        <div class="mt-2" style="margin-top: 5px;">
-                                            {% if not campaign|is_participant:request.user %}
-                                                <button onclick="window.location.href='{% url 'account:campaignparticipate' campaign.pk %}'" 
-                                                        class="btn btn-outline-primary btn-sm rounded-pill">
-                                                    <i class="fa fa-handshake-o fa-sm"></i>
-                                                    <small>شرکت در کمپین</small>
-                                                </button>
-                                            {% else %}
-                                                <button onclick="window.location.href='{% url 'account:cancelcampaignparticipate' campaign.pk %}'" 
-                                                        class="btn btn-outline-danger btn-sm rounded-pill">
-                                                    <i class="fa fa-times fa-sm"></i>
-                                                    <small>لغو شرکت</small>
-                                                </button>
-                                                <button onclick="window.location.href='{% url 'account:editproposal' campaign.pk %}'" 
-                                                        class="btn btn-outline-warning  btn-sm rounded-pill" style="background-color: #ffc107; color: #000;">
-                                                    <i class="fa fa-edit"></i>
-                                                    <small>ویرایش پیشنهاد</small>
-                                                </button>
+                                        {% endif %}
+                                    {% elif campaign.status == 'reviewing' %}
+                                        {% if request.user.is_staff or request.user.is_am %}
+                                            <a href="{% url 'account:reviewcampaign' campaign.pk %}" class="text-decoration-none">
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-search me-1"></i>در حال بررسی
+                                                </span>
+                                            </a>
+                                        {% else %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-search me-1"></i>در حال بررسی
+                                            </span>
+                                        {% endif %}
+                                    {% elif campaign.status == 'rejected' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>رد شده
+                                        </span>
+                                    {% elif campaign.status == 'cancel' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-ban me-1"></i>انصراف داده شده
+                                        </span>
+                                    {% elif campaign.status == 'approved' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>تایید شده
+                                        </span>
+                                    {% elif campaign.status == 'progressing' %}
+                                        <div class="d-flex flex-column gap-2">
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-play me-1"></i>در حال برگزاری
+                                            </span>
+                                            {% if request.user.is_staff or request.user.is_am %}
+                                                {% get_campaign_participants_count campaign as participants_count %}
+                                                <span class="badge {% if participants_count > 0 %}bg-success{% else %}bg-secondary{% endif %}" style="margin-top: 0.5rem;">
+                                                    <i class="fas fa-users me-1"></i>{{ participants_count|format_participants_count }}
+                                                    {% if participants_count > 0 %}
+                                                        <a href="{% url 'account:runningcampaignparticipated' campaign.pk %}" class="text-white ms-1">
+                                                            <i class="fa fa-eye"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </span>
+                                            {% endif %}
+                                            {% if request.user.user_type == 'dealer' %}
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    {% if not campaign|is_participant:request.user %}
+                                                        <button onclick="window.location.href='{% url 'account:campaignparticipate' campaign.pk %}'" 
+                                                                class="btn btn-outline-primary btn-sm">
+                                                            <i class="fa fa-handshake-o me-1"></i>شرکت در کمپین
+                                                        </button>
+                                                    {% else %}
+                                                        <button onclick="window.location.href='{% url 'account:cancelcampaignparticipate' campaign.pk %}'" 
+                                                                class="btn btn-outline-danger btn-sm">
+                                                            <i class="fa fa-times me-1"></i>لغو شرکت
+                                                        </button>
+                                                        <button onclick="window.location.href='{% url 'account:editproposal' campaign.pk %}'" 
+                                                                class="btn btn-outline-warning btn-sm">
+                                                            <i class="fa fa-edit me-1"></i>ویرایش پیشنهاد
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
                                             {% endif %}
                                         </div>
-                                    {% endif %}
-                                {% elif campaign.status == 'finished' %}
-                                    <div>
-                                        <span class="badge bg-secondary">پایان یافته</span>
-                                    </div>
-                                    {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
-                                        {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
-                                            <div>
-                                                <span class="badge bg-primary" style="margin-top:2px; font-size: 10px;">
-                                                    <a href="{% url 'account:finished_campaign_proposals' campaign.id %}">
-                                                        مشاهده پیشنهادات <i class="fa fa-search"></i>
+                                    {% elif campaign.status == 'finished' %}
+                                        <div class="d-flex flex-column gap-2">
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-flag-checkered me-1"></i>پایان یافته
+                                            </span>
+                                            {% if campaign.get_finished_proposals and not campaign.campaign_dealer %}
+                                                {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
+                                                    <span class="badge bg-primary">
+                                                        <a href="{% url 'account:finished_campaign_proposals' campaign.id %}" class="text-white text-decoration-none">
+                                                            <i class="fa fa-search me-1"></i>مشاهده پیشنهادات
+                                                        </a>
+                                                    </span>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if request.user.user_type == 'dealer' and campaign|is_participant:request.user %}
+                                                <span class="badge bg-primary">
+                                                    <a href="{% url 'account:finished_campaign_dealer_own_proposal' campaign.id %}" class="text-white text-decoration-none">
+                                                        <i class="fa fa-search me-1"></i>مشاهده پیشنهاد شما
                                                     </a>
                                                 </span>
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
-                                    {% if request.user.user_type == 'dealer' and campaign|is_participant:request.user %}
-                                        <div>
-                                            <span class="badge bg-primary" style="margin-top:2px; font-size: 10px;">
-                                                <a href="{% url 'account:finished_campaign_dealer_own_proposal' campaign.id %}">
-                                                    مشاهده پیشنهاد شما<i class="fa fa-search"></i>
-                                                </a>
-                                            </span>
+                                            {% endif %}
                                         </div>
-                                    {% endif %}
-                                {% elif campaign.status == 'unpaid' %}
+                                    {% elif campaign.status == 'unpaid' %}
                                         {% if request.user.user_type == 'customer' %}
-                                            <div>
-                                                <a href="{% url 'wallet:campaign_payment' campaign.id %}" class="badge bg-secondary">منتظر پرداخت</a>
-                                            </div>
+                                            <a href="{% url 'wallet:campaign_payment' campaign.id %}" class="text-decoration-none">
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-credit-card me-1"></i>منتظر پرداخت
+                                                </span>
+                                            </a>
                                         {% else %}
-                                            <div>
-                                                <span class="badge bg-secondary">منتظر پرداخت</span>
-                                            </div>
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-credit-card me-1"></i>منتظر پرداخت
+                                            </span>
                                         {% endif %}
-                                {% endif %}
+                                    {% endif %}
+                                </div>
                             </td>
 
                             <!-- Campaign Active Status -->
@@ -253,7 +646,6 @@
                                 <div class="action-buttons">
                                     <a class="btn btn-danger btn-xs" href="{% url 'account:campaignsdelete' campaign.pk %}">
                                         <i class="fas fa-trash-alt"></i>
-                                        حذف
                                     </a>
                                     {% if campaign.is_active %}
                                     <form action="{% url 'account:deactivecampaign' campaign.pk %}" method="POST" style="display:inline;">
@@ -278,27 +670,32 @@
 
                             <!-- Winner Column -->
                             <td>
-                                <div style="font-size: 11px;">
+                                <div class="winner-section">
                                     {% if campaign.campaign_dealer %}
                                         <div class="avatar-info">
                                             <div class="user-details">
-                                                <span class="winner-user-name">{{ campaign.campaign_dealer.get_full_name }}</span>
+                                                <span class="winner-user-name">
+                                                    <i class="fas fa-crown text-warning me-1"></i>{{ campaign.campaign_dealer.get_full_name }}
+                                                </span>
                                             </div>
-                                        
                                         </div>
                                         {% if user.user_type == 'customer' %}
-                                            <div>
-                                                <span class="badge bg-primary" style="margin-top:2px; font-size: 7px;">
-                                                    <a href="{% url 'account:winned_proposal_detail' campaign.pk %}">
-                                                        مشاهده طرح پیشنهادی <i class="fa fa-search"></i>
+                                            <div class="mt-2">
+                                                <span class="badge bg-primary">
+                                                    <a href="{% url 'account:winned_proposal_detail' campaign.pk %}" class="text-white text-decoration-none">
+                                                        <i class="fa fa-search me-1"></i>مشاهده طرح پیشنهادی
                                                     </a>
                                                 </span>
                                             </div>
                                         {% endif %}
                                     {% elif not campaign.campaign_dealer and not campaign.get_finished_proposals and campaign.status == 'finished' %}
-                                        <span class="text-muted">بدون برنده</span>
+                                        <span class="text-muted">
+                                            <i class="fas fa-minus-circle me-1"></i>بدون برنده
+                                        </span>
                                     {% else %}
-                                        <span class="text-muted">تعیین نشده</span>
+                                        <span class="text-muted">
+                                            <i class="fas fa-hourglass-half me-1"></i>تعیین نشده
+                                        </span>
                                     {% endif %}
                                 </div>
                             </td>
@@ -309,7 +706,6 @@
             </div>
         </div>
     </div>
-</div>
 
 <!-- Search Script -->
 <script>
