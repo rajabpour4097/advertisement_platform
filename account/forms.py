@@ -328,8 +328,8 @@ class EditCampaignForm(forms.ModelForm):
             self.initial['purposed_price'] = f"{self.instance.purposed_price:,} تومان"
   
     def clean_purposed_price(self):
-        topics = self.cleaned_data.get('topic')
-        if not topics:
+        topic = self.cleaned_data.get('topic')
+        if not topic:
             raise forms.ValidationError("لطفاً یک موضوع انتخاب کنید.")
         
         data = self.cleaned_data['purposed_price']
@@ -347,12 +347,10 @@ class EditCampaignForm(forms.ModelForm):
         except ValueError:
             raise forms.ValidationError("قیمت وارد شده معتبر نیست.")
         # بررسی تمام موضوعات انتخاب شده
-        for topic in topics:
-            min_price = topic.min_price
-            if min_price and price < min_price:
-                raise forms.ValidationError(
-                    f"حداقل قیمت برای موضوع '{topic.name}' مبلغ {min_price:,} تومان است."
-                )
+        if topic.min_price and price < topic.min_price:
+            raise forms.ValidationError(
+                f"حداقل قیمت برای موضوع '{topic.name}' مبلغ {topic.min_price:,} تومان است."
+            )
 
         return price
 
