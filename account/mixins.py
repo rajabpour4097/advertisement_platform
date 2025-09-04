@@ -227,3 +227,17 @@ class AdvertisementsManagerMixin(UserPassesTestMixin):
     
     def test_func(self):
         return self.request.user.user_type == 'AM'
+    
+
+class MessagingUserMixin(UserPassesTestMixin):
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff and not request.user.is_am and not request.user.is_supporter:
+            return render(self.request, '403.html', 
+                          {'error_message': "شما به این صفحه دسترسی ندارید. این صفحه فقط برای مدیران و پشتیبانان مجاز است.",
+                           'back_url': "account:home"},
+                          )
+        return super().dispatch(request, *args, **kwargs)
+    
+    def test_func(self):
+        return self.request.user.is_staff or self.request.user.is_am or self.request.user.is_supporter

@@ -1,16 +1,17 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, DetailView
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.db.models import Q
+
+from account.mixins import MessagingUserMixin
 from .models import Message
 from .forms import MessageForm
 from django.http import JsonResponse
 from django.views.generic.edit import DeleteView
 from django.views.generic import View
 
-class InboxView(LoginRequiredMixin, ListView):
+class InboxView(MessagingUserMixin, ListView):
     model = Message
     template_name = 'messages/inbox.html'
     context_object_name = 'messages'
@@ -27,7 +28,7 @@ class InboxView(LoginRequiredMixin, ListView):
         return context
     
 
-class SentView(LoginRequiredMixin, ListView):
+class SentView(MessagingUserMixin, ListView):
     model = Message
     template_name = 'messages/sent.html'
     context_object_name = 'messages'
@@ -36,7 +37,7 @@ class SentView(LoginRequiredMixin, ListView):
         return Message.objects.filter(sender=self.request.user)
     
 
-class ComposeView(LoginRequiredMixin, CreateView):
+class ComposeView(MessagingUserMixin, CreateView):
     model = Message
     form_class = MessageForm
     template_name = 'messages/compose.html'
@@ -53,7 +54,7 @@ class ComposeView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MessageDetailView(LoginRequiredMixin, DetailView):
+class MessageDetailView(MessagingUserMixin, DetailView):
     model = Message
     template_name = 'messages/detail.html'
     
@@ -72,7 +73,7 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
             self.object.save()
         return response
 
-class MessageDeleteView(LoginRequiredMixin, View):
+class MessageDeleteView(MessagingUserMixin, View):
     def post(self, request, pk):
         try:
             message = Message.objects.get(pk=pk)
