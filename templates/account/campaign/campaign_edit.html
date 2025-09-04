@@ -147,6 +147,162 @@
     /* Hide old styling elements */
     .hidden { display: none !important; }
 
+    /* Enhanced History Section Styling */
+    .campaign-details .x_panel {
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-radius);
+        box-shadow: var(--cp-shadow-sm);
+        overflow: hidden;
+    }
+    
+    .campaign-details .x_title h2 {
+        background: var(--cp-gradient);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        margin-bottom: 0;
+    }
+    
+    .history-latest {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(147, 197, 253, 0.12));
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .history-latest:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+        border-radius: 0 4px 4px 0;
+    }
+    
+    .history-latest h4 {
+        color: #1e40af !important;
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .history-latest h4:before {
+        content: "🆕";
+        font-size: 16px;
+    }
+    
+    .history-item {
+        background: linear-gradient(135deg, rgba(16, 163, 74, 0.06), rgba(34, 197, 94, 0.08));
+        border: 1px solid rgba(16, 163, 74, 0.15);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .history-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 163, 74, 0.15);
+    }
+    
+    .history-item:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(180deg, #10a34a, #059669);
+        border-radius: 0 3px 3px 0;
+    }
+    
+    .history-previous h4 {
+        color: #059669 !important;
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .history-previous h4:before {
+        content: "📋";
+        font-size: 16px;
+    }
+    
+    .campaign-strong {
+        color: var(--cp-text-dark) !important;
+        font-weight: 600;
+        font-size: 1.2rem;
+        display: inline-block;
+        min-width: 100px;
+    }
+    
+    .edit-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .edit-info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .edit-info-value {
+        color: var(--cp-text-muted);
+        flex: 1;
+        font-size: 1.2rem;
+    }
+    
+    .no-history {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--cp-text-muted);
+        font-style: italic;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.08));
+        border-radius: 12px;
+        border: 1px dashed rgba(102, 126, 234, 0.2);
+    }
+    
+    .no-history:before {
+        content: "📝";
+        display: block;
+        font-size: 2rem;
+        margin-bottom: 12px;
+    }
+    
+    /* Remove old hr styling */
+    .campaign-details hr {
+        display: none;
+    }
+    
+    .campaign-details ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .campaign-details li {
+        margin: 0;
+        padding: 0;
+    }
+
     @media (max-width: 768px) {
         .topic-card { width: 100%; }
         .content-frame { padding: 1rem 1rem 1.5rem; }
@@ -265,29 +421,53 @@
                 {% if editing_campaign %}
                     <!-- آخرین اصلاحیه -->
                     {% with latest_edit=editing_campaign.0 %}
-                        <h4 style="color: blue;">آخرین اصلاحیه:</h4>
-                        <p>
-                            <strong class="campaign-strong">تاریخ:</strong> {{ latest_edit.created_time|date:"Y-m-d H:i" }} <br>
-                            <strong class="campaign-strong">ویرایش کننده:</strong> {{ latest_edit.submitted_user }} <br>
-                            <strong class="campaign-strong">دلیل ویرایش:</strong> {{ latest_edit.edit_reason }}
-                        </p>
-                        <hr>
+                        <div class="history-latest">
+                            <h4>آخرین اصلاحیه:</h4>
+                            <div class="edit-info">
+                                <div class="edit-info-row">
+                                    <strong class="campaign-strong">تاریخ:</strong>
+                                    <span class="edit-info-value">{{ latest_edit.created_time|date:"Y-m-d H:i" }}</span>
+                                </div>
+                                <div class="edit-info-row">
+                                    <strong class="campaign-strong">ویرایش کننده:</strong>
+                                    <span class="edit-info-value">{{ latest_edit.submitted_user }}</span>
+                                </div>
+                                <div class="edit-info-row">
+                                    <strong class="campaign-strong">دلیل ویرایش:</strong>
+                                    <span class="edit-info-value">{{ latest_edit.edit_reason }}</span>
+                                </div>
+                            </div>
+                        </div>
                     {% endwith %}
                     
                     <!-- نمایش بقیه اصلاحیه‌ها -->
-                    <h4 style="color: #00a871;">اصلاحیه‌های قبلی:</h4>
-                    <ul>
-                        {% for edit in editing_campaign|slice:"1:" %}
-                            <li>
-                                <strong class="campaign-strong">تاریخ:</strong> {{ edit.created_time|date:"Y-m-d H:i" }} <br>
-                                <strong class="campaign-strong">ویرایش کننده:</strong> {{ edit.submitted_user }} <br>
-                                <strong class="campaign-strong">دلیل ویرایش:</strong> {{ edit.edit_reason }}
-                            </li>
-                            <hr>
-                        {% endfor %}
-                    </ul>
+                    <div class="history-previous">
+                        <h4>اصلاحیه‌های قبلی:</h4>
+                        <ul>
+                            {% for edit in editing_campaign|slice:"1:" %}
+                                <li class="history-item">
+                                    <div class="edit-info">
+                                        <div class="edit-info-row">
+                                            <strong class="campaign-strong">تاریخ:</strong>
+                                            <span class="edit-info-value">{{ edit.created_time|date:"Y-m-d H:i" }}</span>
+                                        </div>
+                                        <div class="edit-info-row">
+                                            <strong class="campaign-strong">ویرایش کننده:</strong>
+                                            <span class="edit-info-value">{{ edit.submitted_user }}</span>
+                                        </div>
+                                        <div class="edit-info-row">
+                                            <strong class="campaign-strong">دلیل ویرایش:</strong>
+                                            <span class="edit-info-value">{{ edit.edit_reason }}</span>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 {% else %}
-                    <p>هیچ اصلاحیه‌ای برای این کمپین ثبت نشده است.</p>
+                    <div class="no-history">
+                        <p>هیچ اصلاحیه‌ای برای این کمپین ثبت نشده است.</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
