@@ -38,9 +38,33 @@
 
     <!-- Custom CSS for hiding logo when menu collapses -->
     <style>
-        body.nav-sm .navbar.nav_title img {
-            display: none;
-        }
+        :root {--ap-primary:#6366f1;--ap-primary-accent:#7c3aed;--ap-primary-grad:linear-gradient(135deg,#6366f1,#7c3aed);--ap-bg:#f5f7fb;--ap-surface:#ffffff;--ap-border:#e2e8f0;--ap-text:#1e293b;--ap-text-muted:#64748b;--ap-radius:14px;--ap-shadow:0 4px 16px rgba(0,0,0,.08);}        
+        body.nav-md{background:linear-gradient(135deg,#f6f9fc,#eef2f7);}        
+        body.nav-sm .navbar.nav_title img{display:none;}        
+    /* Sidebar container */
+    .left_col{background:var(--ap-surface);border-inline-start:3px solid var(--ap-primary);box-shadow:0 4px 16px -4px rgba(0,0,0,.08);padding:0;}
+    .left_col .scroll-view{display:flex;flex-direction:column;height:100%;overflow-y:auto;overflow-x:hidden;}
+    /* Logo / brand bar */
+    .navbar.nav_title{background:var(--ap-primary-grad);text-align:center;padding:1.2rem 1rem 1.1rem;min-height:72px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,.25);}
+        .navbar.nav_title img{filter:brightness(0) invert(1);}        
+    /* Profile card */
+    .profile{margin:0.9rem 1rem 0.65rem;background:linear-gradient(145deg,rgba(99,102,241,.10),rgba(124,58,237,.06));border:1px solid rgba(99,102,241,.18);padding:1rem .85rem;border-radius:18px;position:relative;box-shadow:0 6px 18px -6px rgba(99,102,241,.35);}        
+    .profile:after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at 85% 20%,rgba(255,255,255,.5),transparent 60%);pointer-events:none;}
+        .profile_img{width:62px;height:62px;border:3px solid #fff;box-shadow:0 6px 16px -4px rgba(99,102,241,.55);object-fit:cover;border-radius:50%;}        
+        .profile_info h2{font-size:1rem;font-weight:600;margin:.4rem 0 0;color:var(--ap-text);}        
+        .profile_info span{font-size:.75rem;color:var(--ap-text-muted);}        
+    /* Sidebar menu spacing */
+    #sidebar-menu{padding:.3rem .85rem 2rem;margin-top:.2rem;}
+    #sidebar-menu .menu_section{padding:0;}
+    #sidebar-menu hr{border:none;height:1px;background:var(--ap-border);margin:.55rem 0 .45rem;}
+        .top_nav{background:var(--ap-surface);border-bottom:1px solid var(--ap-border);box-shadow:0 2px 8px rgba(0,0,0,.05);}        
+        .nav_menu{padding:.6rem 1.25rem;}        
+        .user-profile{background:linear-gradient(90deg,rgba(99,102,241,.12),rgba(124,58,237,.12));padding:.55rem .9rem;border-radius:40px;border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;gap:.5rem;font-size:.78rem;font-weight:600;color:var(--ap-text);}        
+        .user-profile img{width:34px;height:34px;object-fit:cover;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 3px rgba(99,102,241,.25);}        
+        .dropdown-menu{border:1px solid var(--ap-border);border-radius:16px;box-shadow:0 10px 26px -6px rgba(0,0,0,.18);padding:.4rem .35rem;min-width:200px;}        
+        .dropdown-menu li a{padding:.6rem .85rem;border-radius:10px;font-size:.75rem;display:flex;align-items:center;gap:.45rem;color:var(--ap-text);}        
+        .dropdown-menu li a:hover{background:var(--ap-primary-grad);color:#fff;}        
+        .right_col{background:var(--ap-bg);min-height:100vh;padding:1.4rem 1.6rem;}        
     </style>
      {% block extra_head %}{% endblock %}
 </head>
@@ -124,7 +148,7 @@
                                 <span class=" fa fa-angle-down"></span>
                             </a>
                             <ul class="dropdown-menu dropdown-usermenu pull-right">
-                                <li><a href="{% url 'account:profile' %}"> پروفایل کاربری<span class="badge bg-red pull-right">{{ null_field_count_percent|floatformat:2 }}%</span></a></li>
+                                <li><a href="{% url 'account:profile' %}"> پروفایل کاربری <span class="badge pull-right" style="background:var(--ap-primary-grad);border-radius:20px;padding:.25rem .55rem;min-width:38px;">{{ null_field_count_percent|floatformat:2 }}%</span></a></li>
                                 <li>
                                     <a href="javascript:;">
                                         <span>تنظیمات</span>
@@ -184,7 +208,7 @@
                             <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown"
                                aria-expanded="false">
                                 <i class="fa fa-bell-o"></i>
-                                <span class="badge bg-red"> {% notifications_unread %} </span>
+                                <span class="badge" style="background:linear-gradient(135deg,#ef4444,#dc2626);border-radius:14px;padding:.25rem .55rem;"> {% notifications_unread %} </span>
                             </a>
                             <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
                                 {% for notice in latest_notifications %}
