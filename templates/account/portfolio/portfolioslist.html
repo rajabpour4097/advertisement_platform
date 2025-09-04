@@ -6,229 +6,395 @@
 
 {% block content %}
 <style>
+    /* ===================== Theming (consistent with campaign design) ===================== */
+    :root {
+        --cp-bg: #ffffff;
+        --cp-border: #e5e7eb;
+        --cp-radius: 14px;
+        --cp-shadow-sm: 0 4px 10px rgba(0,0,0,.06);
+        --cp-shadow-md: 0 8px 24px -4px rgba(0,0,0,.12);
+        --cp-gradient: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#5a3d9b 100%);
+        --cp-gradient-soft: linear-gradient(140deg, rgba(102,126,234,.15), rgba(118,75,162,.15));
+        --cp-primary: #667eea;
+        --cp-primary-accent: #764ba2;
+        --cp-accent-green: #028c32;
+        --cp-text-dark: #1e293b;
+        --cp-text-muted: #64748b;
+        --cp-danger: #ef4444;
+        --cp-success: #16a34a;
+        --cp-focus-ring: 0 0 0 3px rgba(102,126,234,.35);
+    }
+
+    /* Modern panel styling */
+    .x_panel {
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-radius);
+        box-shadow: var(--cp-shadow-sm);
+        margin-bottom: 1.5rem;
+        padding: 0;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .x_title {
+        background: var(--cp-gradient);
+        padding: 1.2rem 1.5rem;
+        margin: 0;
+        border-bottom: none;
+    }
+
+    .x_title h2 {
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 1.4rem;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,.2);
+    }
+
+    /* Search and filter section */
+    .search-filter-section {
+        background: linear-gradient(135deg, rgba(102,126,234,.08), rgba(118,75,162,.12));
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--cp-border);
+        margin: 0;
+    }
+
+    .filter-card {
+        background: rgba(255,255,255,.9);
+        border: 1px solid rgba(102,126,234,.2);
+        border-radius: 12px;
+        padding: 1rem;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--cp-text-dark);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,.95);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--cp-primary);
+        box-shadow: var(--cp-focus-ring);
+        outline: none;
+    }
+
+    /* Modern button styling */
+    .btn-create-portfolio {
+        background: var(--cp-gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102,126,234,.3);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-create-portfolio:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102,126,234,.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Enhanced table styling */
+    .table-responsive {
+        background: var(--cp-bg);
+        border-radius: 0 0 var(--cp-radius) var(--cp-radius);
+        overflow: hidden;
+        max-height: calc(100vh - 350px);
+        overflow-y: auto;
+    }
+
+    .table {
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.9rem;
+    }
+
+    .table thead th {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        color: var(--cp-text-dark);
+        font-weight: 700;
+        padding: 1rem;
+        border: none;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid rgba(226,232,240,.5);
+        transition: all 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(102,126,234,.04), rgba(118,75,162,.06));
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border: none;
+        color: var(--cp-text-dark);
+    }
+
+    /* Portfolio row states */
+    .portfolio-row-active {
+        background: linear-gradient(135deg, rgba(22,163,74,.03), rgba(34,197,94,.05));
+    }
+
+    .portfolio-row-inactive {
+        background: linear-gradient(135deg, rgba(239,68,68,.03), rgba(220,38,38,.05));
+    }
+
+    /* Enhanced badges */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .badge.bg-success {
+        background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+        color: white;
+        box-shadow: 0 2px 8px rgba(22,163,74,.3);
+    }
+
+    .badge.bg-danger {
+        background: linear-gradient(135deg, #ef4444, #f87171) !important;
+        color: white;
+        box-shadow: 0 2px 8px rgba(239,68,68,.3);
+    }
+
+    .badge.bg-success:before {
+        content: "✓";
+        font-size: 0.8rem;
+    }
+
+    .badge.bg-danger:before {
+        content: "✗";
+        font-size: 0.8rem;
+    }
+
+    /* Action buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, rgba(59,130,246,.1), rgba(37,99,235,.15));
+        color: #2563eb;
+        border: 1px solid rgba(59,130,246,.2);
+    }
+
+    .btn-edit:hover {
+        background: linear-gradient(135deg, rgba(59,130,246,.2), rgba(37,99,235,.25));
+        color: #1d4ed8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59,130,246,.3);
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, rgba(239,68,68,.1), rgba(220,38,38,.15));
+        color: #dc2626;
+        border: 1px solid rgba(239,68,68,.2);
+    }
+
+    .btn-delete:hover {
+        background: linear-gradient(135deg, rgba(239,68,68,.2), rgba(220,38,38,.25));
+        color: #b91c1c;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239,68,68,.3);
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, rgba(34,197,94,.1), rgba(22,163,74,.15));
+        color: #16a34a;
+        border: 1px solid rgba(34,197,94,.2);
+    }
+
+    .btn-view:hover {
+        background: linear-gradient(135deg, rgba(34,197,94,.2), rgba(22,163,74,.25));
+        color: #15803d;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(34,197,94,.3);
+    }
+
+    .action-buttons a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-size: 1rem;
+    }
+
+    .action-buttons .text-danger {
+        background: linear-gradient(135deg, rgba(239,68,68,.1), rgba(220,38,38,.15));
+        color: #dc2626;
+        border: 1px solid rgba(239,68,68,.2);
+    }
+
+    .action-buttons .text-danger:hover {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239,68,68,.3);
+    }
+
+    .action-buttons .text-primary {
+        background: linear-gradient(135deg, rgba(102,126,234,.1), rgba(118,75,162,.15));
+        color: var(--cp-primary);
+        border: 1px solid rgba(102,126,234,.2);
+    }
+
+    .action-buttons .text-primary:hover {
+        background: var(--cp-gradient);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102,126,234,.3);
+    }
+
+    /* Enhanced avatar info */
     .avatar-info {
         display: flex;
         align-items: center;
         gap: 12px;
     }
-    
+
     .avatar-info img {
-        width: 46px;
-        height: 46px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         object-fit: cover;
+        border: 2px solid rgba(102,126,234,.2);
+        box-shadow: 0 2px 8px rgba(0,0,0,.1);
     }
-    
-    .user-details {
-        display: flex;
-        flex-direction: column;
-    }
-    
+
     .user-name {
-        font-weight: 300;
-        color: #333;
+        font-weight: 600;
+        color: var(--cp-text-dark);
+        font-size: 0.9rem;
     }
-    
+
     .user-title {
-        color: #666;
-        font-size: 0.875rem;
+        color: var(--cp-text-muted);
+        font-size: 0.8rem;
     }
 
-    .badge {
-        padding: 0.5em 1em;
-        border-radius: 20px;
-        font-weight: normal;
-    }
-    
-    .badge.bg-success {
-        background-color: #e8f5e9 !important;
-        color: #2e7d32;
-    }
-    
-    .badge.bg-danger {
-        background-color: #ffebee !important;
-        color: #c62828;
+    /* No portfolios state */
+    .no-portfolios-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, rgba(102,126,234,.05), rgba(118,75,162,.08));
+        border-radius: 16px;
+        margin: 1.5rem;
+        border: 2px dashed rgba(102,126,234,.2);
     }
 
-    .table td {
-        vertical-align: middle;
-        padding: 1rem;
-    }
-
-    .table th {
-        background-color: #00b2ff7a;
-        color: #0000007d;
-        font-weight: 500;
-        padding: 1rem;
-        white-space: nowrap;
-        min-width: 120px;
-    }
-
-    .table th.dealer-column {
-        min-width: 150px;
-    }
-
-    .table td.dealer-column {
-        min-width: 150px;
-    }
-
-    .portfolio-row-active {
-        background-color: #ffffff;
-    }
-
-    .portfolio-row-inactive {
-        background-color: #f8f9fa;
-    }
-
-    .badge-with-icon {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        font-size: 0.7em;
-        padding: 0.35em 0.7em;
-    }
-
-    .action-buttons {
-        margin-top: 10px;
-    }
-
-    .action-buttons .btn-xs {
-        font-size: 0.7em;
-        padding: 0.3em 0.6em;
-    }
-
-    /* Fix table container */
-    .x_panel {
-        position: relative;
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 10px;
-        background: #fff;
-        border: 1px solid #E6E9ED;
-        -webkit-column-break-inside: avoid;
-        -moz-column-break-inside: avoid;
-        column-break-inside: avoid;
-        opacity: 1;
-        transition: all .2s ease;
-    }
-
-    .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        max-height: calc(100vh - 250px); /* Adjust based on your header/footer size */
-        overflow-y: auto;
-    }
-
-    /* Fix table header */
-    .table thead th {
-        position: sticky;
-        top: 0;
-        background-color: #00b2ff7a;
-        z-index: 1;
-    }
-
-    /* Table container */
-    .x_content {
-        padding: 0 5px 6px;
-        position: relative;
-        width: 100%;
-        float: left;
-        clear: both;
-        margin-top: 5px;
-    }
-
-    /* Adjust table width */
-    .table {
-        width: 100%;
-        margin-bottom: 0;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    /* Make sure content doesn't overflow */
-    .table td {
-        max-width: 300px; /* Adjust based on your needs */
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    /* Add hover effect to see full content */
-    .table td:hover {
-        white-space: normal;
-        overflow: visible;
-    }
-
-    /* Ensure proper spacing */
-    .col-md-12 {
-        padding: 15px;
-    }
-
-    .d-flex {
-        display: flex;
-    }
-
-    .gap-1 {
-        gap: 0.25rem;
-    }
-
-    .text-primary {
-        color: #0d6efd;
-    }
-
-    .bg-secondary {
-        background-color: #6c757d !important;
-        color: white;
-    }
-
-    .btn-group {
-        gap: 0.5rem;
-    }
-
-    .btn-light {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-    }
-
-    .btn-primary {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: white;
-    }
-
-    .form-select {
-        padding: 0.375rem 0.75rem;
-        border: 1px solid #dee2e6;
-        border-radius: 0.25rem;
-    }
-
-    .input-group {
-        position: relative;
-    }
-
-    .input-group-text {
-        position: absolute;
-        right: 0;
-        top: 0;
-        height: 100%;
-        border: none;
-        z-index: 4;
-    }
-
-    label {
+    .no-portfolios-state:before {
+        content: "📋";
         display: block;
-        margin-bottom: 0.5rem;
-        color: #666;
+        font-size: 3rem;
+        margin-bottom: 1rem;
     }
 
-    /* Counter column width adjustment */
-    .table th:first-child,
-    .table td:first-child {
-        width: 5px;
-        min-width: 5px;
-        padding-right: 10px;
-        padding-left: 10px;
-        white-space: nowrap;
+    .no-portfolios-state .alert {
+        background: transparent;
+        border: none;
+        color: var(--cp-text-muted);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    /* Counter column */
+    .counter-cell {
+        font-weight: 700;
+        color: var(--cp-primary);
+        background: linear-gradient(135deg, rgba(102,126,234,.08), rgba(118,75,162,.12));
+        text-align: center;
+        border-radius: 8px;
+        margin: 0 4px;
+        padding: 0.5rem !important;
+        min-width: 10px;
+    }
+
+    /* Text colors */
+    .text-primary {
+        color: var(--cp-primary) !important;
+        font-weight: 600;
+    }
+
+    .text-success {
+        color: var(--cp-success) !important;
+        font-weight: 600;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .search-filter-section {
+            padding: 1rem;
+        }
+        
+        .table td, .table th {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .action-buttons a {
+            width: 32px;
+            height: 32px;
+            font-size: 0.9rem;
+        }
     }
 </style>
 
@@ -242,45 +408,43 @@
         </div>
 {% if portfolios %}
         <!-- Search Box -->
-        <div class="x_content mb-3">
-            <div class="row align-items-center">
-                <!-- Search Box -->
-                <div class="col-md-3">
-                    <label>جستجو:</label>
-                    <div class="input-group">
+        <div class="search-filter-section">
+            <div class="filter-card">
+                <div class="row align-items-end">
+                    <!-- Search Box -->
+                    <div class="col-md-4">
+                        <label class="filter-label">جستجو:</label>
                         <input type="text" id="searchInput" class="form-control" placeholder="جستجو در نمونه کارها...">
                     </div>
-                </div>
 
-                <!-- Status Filter -->
-                <div class="col-md-2">
-                    <label>وضعیت:</label>
-                    <select class="form-select" id="statusFilter">
-                        <option value="">--</option>
-                        <option value="active">فعال</option>
-                        <option value="inactive">غیرفعال</option>
-                    </select>
-                </div>
+                    <!-- Status Filter -->
+                    <div class="col-md-3">
+                        <label class="filter-label">وضعیت:</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">همه موارد</option>
+                            <option value="active">فعال</option>
+                            <option value="inactive">غیرفعال</option>
+                        </select>
+                    </div>
 
-                <!-- Operations -->
-                <div class="col-md-5 text-end">
-                    <label style="color: #fff;"> .</label>
-                    <div class="btn-group">
-                        <a class="btn btn-primary" href="{% url 'account:portfoliocreate' %}">
+                    <!-- Operations -->
+                    <div class="col-md-5 text-end">
+                        <a class="btn-create-portfolio" href="{% url 'account:portfoliocreate' %}">
                             <i class="fas fa-plus"></i>
-                            ایجاد نمونه کار
+                            ایجاد نمونه کار جدید
                         </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="x_content">
+        <!-- Portfolio Table -->
+        <div class="content-card">
             <div class="table-responsive">
-                <table class="table" id="portfoliosTable">
+                <table class="table portfolio-table" id="portfoliosTable">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th class="counter-cell">#</th>
                             {% if user.is_staff or user.is_am %}
                             <th class="dealer-column">نام منتشر کننده</th>
                             {% endif %}
@@ -294,7 +458,7 @@
                     <tbody>
                         {% for portfolio in portfolios %}
                         <tr class="{% if portfolio.is_active %}portfolio-row-active{% else %}portfolio-row-inactive{% endif %}">
-                            <td>{{ forloop.counter }}</td>
+                            <td class="counter-cell">{{ forloop.counter }}</td>
                             {% if user.is_staff or user.is_am %}
                             <td class="dealer-column text-success">
                                     {% if portfolio.dealer.get_full_name %}
@@ -317,9 +481,15 @@
                             </td>
                            
                             <td>
-                                <div class="d-flex gap-1">
-                                    <a href="{% url 'account:portfoliodelete' portfolio.pk %}" class="text-danger"><i class="fas fa-trash"  title="حذف"></i></a>
-                                    <a style="margin-right: 10px;" href="{% url 'account:portfolioedit' portfolio.pk %}" class="text-primary"><i class="fa fa-fw fa-pencil"  title="ویرایش"></i></a>
+                                <div class="action-buttons">
+                                    <a href="{% url 'account:portfolioedit' portfolio.pk %}" 
+                                       class="btn-action btn-edit" title="ویرایش">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'account:portfoliodelete' portfolio.pk %}" 
+                                       class="btn-action btn-delete" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -329,9 +499,14 @@
             </div>
         </div>
     {% else %}
-        <div class="x_content">
+        <!-- No portfolios state -->
+        <div class="no-portfolios-state">
             <div class="alert alert-info" role="alert">
                 هیچ نمونه کاری ثبت نشده است.
+                <a href="{% url 'account:portfoliocreate' %}" class="btn-create-portfolio" style="margin-top: 1rem;">
+                    <i class="fas fa-plus"></i>
+                    ایجاد نمونه کار جدید
+                </a>
             </div>
         </div>
     {% endif %}
