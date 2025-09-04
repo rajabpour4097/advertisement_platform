@@ -285,6 +285,17 @@
     .custom-popup-btn-secondary { background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; }
     
     .custom-popup-btn-secondary:hover { background:#f1f5f9; transform: translateY(-2px); }
+
+    /* Centered variant specifically for topic info popup */
+    .custom-popup-overlay.center-modal { display: block; }
+    .custom-popup-overlay.center-modal .custom-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(.72) translateY(0);
+        margin: 0;
+    }
+    .custom-popup-overlay.center-modal.show .custom-popup { transform: translate(-50%, -50%) scale(1); }
     
     /* Topic-specific popup colors */
     .popup-theme-primary {
@@ -644,7 +655,7 @@
     function showTopicInfo(title, description, color) {
         // استفاده از رنگ موضوع برای شخصی‌سازی popup
         const popupHtml = `
-            <div class="custom-popup-overlay" id="topicInfoPopup">
+            <div class="custom-popup-overlay center-modal" id="topicInfoPopup">
                 <div class="custom-popup">
                     <div class="custom-popup-header" style="background: linear-gradient(135deg, ${color || '#667eea'} 0%, ${adjustColor(color, -20) || '#764ba2'} 100%);">
                         <button type="button" class="custom-popup-close" id="topicCloseBtn">×</button>
