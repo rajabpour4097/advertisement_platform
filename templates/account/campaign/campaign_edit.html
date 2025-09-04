@@ -9,45 +9,211 @@
 {% endblock %}
 
 {% block content %}
+<style>
+    /* ===================== Theming (consistent with create campaign) ===================== */
+    :root {
+        --cp-bg: #ffffff;
+        --cp-border: #e5e7eb;
+        --cp-radius: 14px;
+        --cp-shadow-sm: 0 4px 10px rgba(0,0,0,.06);
+        --cp-shadow-md: 0 8px 24px -4px rgba(0,0,0,.12);
+        --cp-gradient: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#5a3d9b 100%);
+        --cp-gradient-soft: linear-gradient(140deg, rgba(102,126,234,.15), rgba(118,75,162,.15));
+        --cp-primary: #667eea;
+        --cp-primary-accent: #764ba2;
+        --cp-accent-green: #028c32;
+        --cp-text-dark: #1e293b;
+        --cp-text-muted: #64748b;
+        --cp-danger: #ef4444;
+        --cp-success: #16a34a;
+        --cp-focus-ring: 0 0 0 3px rgba(102,126,234,.35);
+    }
 
-<div class="row">
+    /* Enhanced content frame */
+    .content-frame {
+        background: var(--cp-bg);
+        padding: 1.25rem 1.5rem 2rem;
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-radius);
+        box-shadow: var(--cp-shadow-sm);
+        position: relative;
+        backdrop-filter: blur(2px);
+    }
+    .content-frame:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        background: radial-gradient(circle at 60% 0%, rgba(102,126,234,.08), transparent 70%);
+    }
+
+    /* Topic card styling for edit page */
+    .topic-card-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px 16px;
+        justify-content: flex-start;
+        padding: .25rem 0 .5rem;
+    }
     
-    <!-- بخش ویرایش کمپین -->
-    <div class="col-md-6 col-xs-12 campaign-form">
-        <div class="x_panel">
-            <div class="x_title">
-                <h2 style="color: #028c32;">ویرایش کمپین</h2>
-                
-                <div class="clearfix"></div>
-            </div>
-            {% if request.user.is_staff or request.user.is_am %}
-                    <h4>مشتری: {{ campaign.customer.get_full_name|default:campaign.customer.email }}</h4>
-                {% endif %}
-            <form method="post" enctype="multipart/form-data" novalidate>
-                {% csrf_token %}
+    .topic-card {
+        position: relative;
+        width: calc(50% - 8px);
+        min-width: 180px;
+        flex: 1 1 calc(50% - 8px);
+        border: 1px solid #dfe3ea;
+        border-radius: 16px;
+        padding: 14px 12px 16px;
+        cursor: pointer;
+        text-align: center;
+        transition: background .35s ease, border-color .35s ease, box-shadow .35s ease, transform .25s ease;
+        background: linear-gradient(#ffffff,#fafbff);
+        box-shadow: 0 2px 4px rgba(0,0,0,.04), 0 1px 0 rgba(255,255,255,.6) inset;
+        overflow: hidden;
+        isolation: isolate;
+    }
+    .topic-card:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--cp-gradient-soft);
+        opacity: 0;
+        transition: opacity .4s ease;
+        z-index: 0;
+    }
+    .topic-card:hover { transform: translateY(-4px); box-shadow: 0 8px 18px -4px rgba(0,0,0,.12); }
+    .topic-card:hover:before { opacity: 1; }
+    
+    .topic-card.selected {
+        border-color: var(--cp-primary);
+        box-shadow: 0 6px 20px -4px rgba(102,126,234,.35), 0 0 0 1.5px rgba(102,126,234,.55);
+        background: linear-gradient(145deg,#ffffff,#f0f3ff);
+    }
+    .topic-card.selected:before { opacity: 1; }
+    
+    .topic-card .icon-wrapper {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        margin: 0 auto 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg,#f5f7ff,#eef2ff);
+        box-shadow: 0 4px 12px rgba(0,0,0,.08), 0 0 0 1px rgba(255,255,255,.9) inset;
+        position: relative;
+    }
+    .topic-card.selected .icon-wrapper { box-shadow: 0 4px 14px rgba(102,126,234,.5); }
+    
+    .topic-card img { width: 38px; height: 38px; object-fit: contain; }
+    .topic-card h4 { font-weight: 700; margin-bottom: 4px; font-size: 1.05rem; color: var(--cp-text-dark); }
+    .topic-card .checkmark {
+        position: absolute;
+        top: 8px; left: 8px;
+        font-size: 16px;
+        color: var(--cp-success);
+        display: none;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
+        transition: transform .35s ease;
+    }
+    .topic-card.selected .checkmark { display: block; animation: popIn .55s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes popIn { 0%{transform: scale(0) rotate(-30deg); opacity:0;} 60%{transform: scale(1.15); opacity:1;} 100%{transform: scale(1);} }
 
-                {# Custom topic checkbox rendering #}
-                <div class="form-group">
-                    <label for="id_topic">موضوعات کمپین:</label>
-                    <div class="topic-checkbox-list">
-                        {% for topic in form.fields.topic.queryset %}
-                            {% if not topic.parent %}
-                                <div class="topic-checkbox-item">
-                                    <input type="radio" 
-                                           name="topic" 
-                                           value="{{ topic.id }}" 
-                                           id="topic_{{ topic.id }}"
-                                           {% if topic.id == form.initial.topic %}checked{% endif %}>
-                                    <label for="topic_{{ topic.id }}">
-                                        {{ topic.name }}
-                                    </label>
-                                    {% if topic.icon %}
-                                        <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
+    /* Image preview styling */
+    .preview-grid { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; }
+    .preview-card {
+        position: relative;
+        width: 155px; height: 122px;
+        border: 1px solid #dfe3ea;
+        border-radius: 14px;
+        background: linear-gradient(#ffffff,#f9fafc);
+        overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,.06);
+        transition: box-shadow .3s, transform .25s;
+    }
+    .preview-card:hover { box-shadow: 0 6px 18px -2px rgba(0,0,0,.18); transform: translateY(-3px); }
+    .preview-card .remove-btn {
+        position: absolute; top: 6px; right: 6px;
+        background: var(--cp-danger);
+        color: #fff; border: none; border-radius: 8px;
+        font-size: 11px; padding: 4px 8px; cursor: pointer; z-index: 2;
+        box-shadow: 0 4px 10px -2px rgba(239,68,68,.5);
+        transition: background .25s, transform .2s;
+    }
+    .preview-card .remove-btn:hover { background:#dc2626; transform: translateY(-2px); }
+
+    /* Hide old styling elements */
+    .topic-checkbox-list { display: none; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 768px) {
+        .topic-card { width: 100%; }
+        .content-frame { padding: 1rem 1rem 1.5rem; }
+    }
+</style>
+
+<div class="content-frame">
+<div class="container-fluid" style="scale:90%;">
+    <div class="row">
+        
+        <!-- بخش ویرایش کمپین -->
+        <div class="col-md-7 col-xs-12 campaign-form">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2 style="color: #028c32;">ویرایش کمپین</h2>
+                    <div class="clearfix"></div>
+                </div>
+                {% if request.user.is_staff or request.user.is_am %}
+                        <h4>مشتری: {{ campaign.customer.get_full_name|default:campaign.customer.email }}</h4>
+                    {% endif %}
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    {# Modern topic card rendering #}
+                    <div class="form-group">
+                        <label for="id_topic">دسته‌بندی کمپین:</label>
+                        <div class="topic-card-list">
+                            {% for topic in form.fields.topic.queryset %}
+                                {% if not topic.parent %}
+                                    <div class="topic-card {% if topic.id == form.initial.topic %}selected{% endif %}" 
+                                         data-id="{{ topic.id }}" 
+                                         data-description="{{ topic.description|default:'' }}"
+                                         data-color="{{ topic.color }}">
+                                        <div class="icon-wrapper">
+                                            {% if topic.icon %}
+                                                <img src="{{ topic.icon.url }}" alt="{{ topic.name }}" />
+                                            {% endif %}
+                                        </div>
+                                        <h4>{{ topic.name }}</h4>
+                                        <div class="checkmark">✔</div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="topic" id="selected-topic-id" value="{{ form.initial.topic }}">
+                        
+                        {# Fallback old styling for compatibility #}
+                        <div class="topic-checkbox-list">
+                            {% for topic in form.fields.topic.queryset %}
+                                {% if not topic.parent %}
+                                    <div class="topic-checkbox-item">
+                                        <input type="radio" 
+                                               name="topic" 
+                                               value="{{ topic.id }}" 
+                                               id="topic_{{ topic.id }}"
+                                               {% if topic.id == form.initial.topic %}checked{% endif %}>
+                                        <label for="topic_{{ topic.id }}">
+                                            {{ topic.name }}
+                                        </label>
+                                        {% if topic.icon %}
+                                            <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
                     {% if form.topic.errors %}
                         <div class="invalid-feedback d-block">
                             {{ form.topic.errors }}
@@ -75,20 +241,33 @@
                     {% endif %}
                 </div>
 
-                {# Campaign images #}
-                {{ image_formset.management_form }}
-                <div id="image-form-container">
-                    {% for image_form in image_formset %}
-                        <div class="image-form">
-                            {{ image_form|crispy }}
-                            {% if image_form.instance.image %}
-                                <img src="{{ image_form.instance.image.url }}" style="max-width: 200px; margin: 10px 0;">
-                            {% endif %}
-                        </div>
-                    {% endfor %}
+                {# Campaign images - Enhanced UI #}
+                <div class="form-group">
+                    <label>تصاویر کمپین:</label>
+                    {{ image_formset.management_form }}
+                    
+                    <div id="image-previews" class="preview-grid">
+                        {% for f in image_formset.forms %}
+                            <div class="image-form preview-card {% if not f.instance.pk or not f.instance.image %}hidden{% endif %}"
+                                 data-index="{{ forloop.counter0 }}">
+                                {{ f.id }}
+                                <span class="delete-checkbox">{% if f.DELETE %}{{ f.DELETE }}{% endif %}</span>
+                                {{ f.image }}
+                                <button type="button"
+                                        class="remove-btn {% if not f.instance.pk or not f.instance.image %}hidden{% endif %}">
+                                    حذف
+                                </button>
+                                {% if f.instance.pk and f.instance.image %}
+                                    <img src="{{ f.instance.image.url }}" alt="preview" style="max-width: 100%; max-height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <img class="hidden" alt="preview">
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <button type="button" id="add-image-form" class="btn btn-sm btn-outline-primary" style="margin-top: 10px;">افزودن تصویر</button>
                 </div>
-
-                <button type="button" id="add-image-form" class="btn btn-info">افزودن تصویر</button>
                 
                 <br><br>
                 <a href="{% url 'account:campaigns' %}" class="btn btn-primary">بازگشت</a>
@@ -98,7 +277,7 @@
     </div>
     
     <!-- نمایش دلیل اصلاح کمپین -->
-    <div class="col-md-6 col-xs-12 campaign-details">
+    <div class="col-md-5 col-xs-12 campaign-details">
         <div class="x_panel">
             <div class="x_title">
                 <h2 style="color: #028c32;">تاریخچه اصلاحیه‌ها</h2>
@@ -136,14 +315,33 @@
         </div>
     </div>   
 </div>
-
-<style>
-    // ... existing styles ...
-</style>
+</div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(".topic-card");
+        const hiddenInput = document.getElementById("selected-topic-id");
+        
+        // Topic card selection logic
+        function resetCardStyles() {
+            cards.forEach(card => {
+                card.classList.remove("selected");
+                card.style.borderColor = "#dfe3ea";
+            });
+        }
+        
+        cards.forEach(card => {
+            card.addEventListener("click", () => {
+                resetCardStyles();
+                card.classList.add("selected");
+                const color = card.dataset.color || "#667eea";
+                card.style.borderColor = color;
+                hiddenInput.value = card.dataset.id;
+            });
+        });
+
         // AutoNumeric برای فیلد قیمت پیشنهادی
         const priceInput = document.querySelector('input[name="purposed_price"]');
         if (priceInput) {
@@ -154,7 +352,8 @@
                 decimalCharacter: '.',
                 decimalPlaces: 0,
                 minimumValue: '0',
-                modifyValueOnWheel: false
+                modifyValueOnWheel: false,
+                unformatOnSubmit: true
             });
 
             // تنظیم مقدار اولیه
@@ -164,23 +363,85 @@
             }
         }
 
-        // افزودن داینامیک تصاویر کمپین
-        let totalForms = document.querySelector("#id_campaignsimages-TOTAL_FORMS");
-        let formContainer = document.querySelector("#image-form-container");
-        let firstForm = formContainer.querySelector(".image-form");
-        let addButton = document.querySelector("#add-image-form");
+        // Enhanced image management
+        const previews = document.getElementById('image-previews');
+        const addBtn = document.getElementById('add-image-form');
+        const totalForms = document.getElementById('id_campaignsimages-TOTAL_FORMS');
 
-        addButton.addEventListener("click", function () {
-            let formCount = parseInt(totalForms.value);
-            let newForm = firstForm.cloneNode(true);
+        // Initialize existing cards
+        Array.from(previews.querySelectorAll('.image-form')).forEach(initCard => {
+            const fileInput = initCard.querySelector('input[type="file"]');
+            const img = initCard.querySelector('img');
+            const removeBtn = initCard.querySelector('.remove-btn');
+            const deleteField = initCard.querySelector('input[name$="-DELETE"]');
+            const idField = initCard.querySelector('input[name$="-id"]');
 
-            newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
-            newForm.querySelectorAll("input").forEach(input => input.value = "");
-            newForm.querySelector("img")?.remove(); // حذف تصویر از فرم جدید
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files && e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            img.src = reader.result;
+                            img.classList.remove('hidden');
+                            removeBtn.classList.remove('hidden');
+                            initCard.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
 
-            formContainer.appendChild(newForm);
-            totalForms.value = formCount + 1;
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    if (idField && idField.value && deleteField) {
+                        deleteField.checked = true;
+                        initCard.classList.add('hidden');
+                    } else {
+                        if (fileInput) fileInput.value = '';
+                        img.src = '';
+                        img.classList.add('hidden');
+                        removeBtn.classList.add('hidden');
+                        initCard.classList.add('hidden');
+                    }
+                });
+            }
         });
+
+        // Add new image functionality
+        if (addBtn) {
+            addBtn.addEventListener("click", function () {
+                let formCount = parseInt(totalForms.value);
+                let emptyCards = previews.querySelectorAll('.image-form.hidden');
+                
+                if (emptyCards.length > 0) {
+                    let newCard = emptyCards[0];
+                    newCard.classList.remove('hidden');
+                    let fileInput = newCard.querySelector('input[type="file"]');
+                    if (fileInput) fileInput.click();
+                } else {
+                    // Create new form if no hidden ones available
+                    let firstForm = previews.querySelector('.image-form');
+                    if (firstForm) {
+                        let newForm = firstForm.cloneNode(true);
+                        newForm.classList.add('hidden');
+                        newForm.innerHTML = newForm.innerHTML.replace(/-\d+-/g, `-${formCount}-`);
+                        newForm.querySelectorAll("input").forEach(input => input.value = "");
+                        let img = newForm.querySelector("img");
+                        if (img) {
+                            img.src = '';
+                            img.classList.add('hidden');
+                        }
+                        previews.appendChild(newForm);
+                        totalForms.value = formCount + 1;
+                        
+                        // Initialize the new form
+                        let fileInput = newForm.querySelector('input[type="file"]');
+                        if (fileInput) fileInput.click();
+                    }
+                }
+            });
+        }
     });
 </script>
 

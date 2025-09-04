@@ -191,7 +191,7 @@ class Campaign(models.Model):
         related_name='customers',
         verbose_name='کارفرما'
         )
-    topic = models.ManyToManyField(Topic, verbose_name='موضوعات کمپین', related_name='topics')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, verbose_name='موضوعات کمپین', related_name='topics', blank=True, null=True)
     describe = models.TextField(verbose_name='شرح کمپین')
     purposed_price = models.BigIntegerField(verbose_name='قیمت پیشنهادی')
     starttimedate = models.DateTimeField(null=True, blank=True, verbose_name='زمان شروع')

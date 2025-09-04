@@ -320,10 +320,8 @@ class EditCampaignForm(forms.ModelForm):
             self.fields.pop('endtimedate', None)
 
         # تنظیم مقدار اولیه topic
-        if self.instance and self.instance.topic.all():
-            first_topic = self.instance.topic.first()
-            if first_topic:
-                self.initial['topic'] = first_topic.id
+        if self.instance and self.instance.topic:
+            self.initial['topic'] = self.instance.topic.id
 
         # تبدیل قیمت به فرمت مناسب برای نمایش
         if self.instance and self.instance.purposed_price:
