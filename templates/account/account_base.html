@@ -134,6 +134,7 @@
                             </ul>
                         </li>
                         <!-- Message header -->
+                        {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
                         <li role="presentation" class="dropdown">
                             <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown"
                                aria-expanded="false">
@@ -177,6 +178,7 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endif %}
                         <!-- Notification header -->
                         <li role="presentation" class="dropdown">
                             <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown"
