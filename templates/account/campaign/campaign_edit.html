@@ -145,7 +145,6 @@
     .preview-card .remove-btn:hover { background:#dc2626; transform: translateY(-2px); }
 
     /* Hide old styling elements */
-    .topic-checkbox-list { display: none; }
     .hidden { display: none !important; }
 
     @media (max-width: 768px) {
@@ -177,7 +176,7 @@
                         <div class="topic-card-list">
                             {% for topic in form.fields.topic.queryset %}
                                 {% if not topic.parent %}
-                                    <div class="topic-card {% if topic.id == form.initial.topic %}selected{% endif %}" 
+                                    <div class="topic-card {% if topic.id == form.topic.value or topic.id == campaign.topic.id %}selected{% endif %}" 
                                          data-id="{{ topic.id }}" 
                                          data-description="{{ topic.description|default:'' }}"
                                          data-color="{{ topic.color }}">
@@ -192,28 +191,7 @@
                                 {% endif %}
                             {% endfor %}
                         </div>
-                        <input type="hidden" name="topic" id="selected-topic-id" value="{{ form.initial.topic }}">
-                        
-                        {# Fallback old styling for compatibility #}
-                        <div class="topic-checkbox-list">
-                            {% for topic in form.fields.topic.queryset %}
-                                {% if not topic.parent %}
-                                    <div class="topic-checkbox-item">
-                                        <input type="radio" 
-                                               name="topic" 
-                                               value="{{ topic.id }}" 
-                                               id="topic_{{ topic.id }}"
-                                               {% if topic.id == form.initial.topic %}checked{% endif %}>
-                                        <label for="topic_{{ topic.id }}">
-                                            {{ topic.name }}
-                                        </label>
-                                        {% if topic.icon %}
-                                            <img src="{{ topic.icon.url }}" style="width: 20px; height: 20px;">
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
+                        <input type="hidden" name="topic" id="selected-topic-id" value="{{ form.topic.value|default:campaign.topic.id }}">
                     {% if form.topic.errors %}
                         <div class="invalid-feedback d-block">
                             {{ form.topic.errors }}
@@ -332,7 +310,7 @@
             });
         }
         
-        cards.forEach(card => {
+                cards.forEach(card => {
             card.addEventListener("click", () => {
                 resetCardStyles();
                 card.classList.add("selected");
