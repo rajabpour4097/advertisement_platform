@@ -1,0 +1,439 @@
+{% extends "account/account_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load account_tags %}
+
+{% block title %}بررسی رزومه - {% if participant_number %}شرکت کننده شماره {{ participant_number }}{% else %}{{ resume.user.get_full_name }}{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+    .resume-detail {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+    /* اضافه شده: قاب اسکرول برای محتوای طولانی */
+    .resume-scroll-wrapper {
+        max-height: calc(100vh - 220px); /* بر اساس ارتفاع هدر/فوتر قالب قابل تنظیم است */
+        overflow-y: auto;
+        padding-inline-end: 8px; /* جا برای اسکرول */
+    }
+    /* زیباسازی اسکرول (اختیاری) */
+    .resume-scroll-wrapper::-webkit-scrollbar {
+        width: 8px;
+    }
+    .resume-scroll-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    .resume-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    .resume-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #a0a0a0;
+    }
+
+    .status-badge {display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:30px;font-weight:600;font-size:13px;line-height:1;background:linear-gradient(135deg,#eef4ff,#e3f2ff);border:1px solid #c6daf7;color:#0a4d85;box-shadow:0 2px 4px rgba(0,0,0,.05);}
+    .status-badge i {font-size:15px;color:#2474d6;}
+
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-under_review { background-color: #cce5ff; color: #004085; }
+    .status-needs_editing { background-color: #ffe4b3; color: #856404; }
+    .status-approved { background-color: #d4edda; color: #155724; }
+    .status-rejected { background-color: #f8d7da; color: #721c24; }
+
+    .info-section {background:#ffffff;padding:22px 22px 20px;margin:18px 0;border-radius:14px;border:1px solid #e2e8f0;position:relative;box-shadow:0 4px 8px -2px rgba(0,0,0,.04),0 0 0 1px rgba(0,0,0,.02);}    
+    .info-section h4 {color:#0f395c;font-size:15px;font-weight:700;margin:0 0 16px;display:flex;align-items:center;gap:8px;}
+    .info-section h4:before {content:"";width:10px;height:10px;border-radius:4px;background:linear-gradient(135deg,#1d72e8,#53a0fd);box-shadow:0 0 0 4px rgba(29,114,232,.15);}    
+
+    .review-form {background:#ffffff;padding:22px 24px 26px;border-radius:16px;border:1px solid #d4e2f4;margin-top:18px;box-shadow:0 4px 10px -2px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.04);}    
+    .review-form h3 {color:#125ea7;font-size:16px;font-weight:700;margin:0 0 18px;display:flex;align-items:center;gap:6px;}
+    .review-form h3:before {content:"\f14a";font-family:"Font Awesome 5 Free";font-weight:900;color:#2474d6;font-size:15px;}
+
+    .field-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+
+    .field-row > div {
+        flex: 1;
+    }
+
+    .btn-group {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        padding: 10px 30px;
+    }
+
+    .permissions-list, .worklinks-list, .portfolio-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .permissions-list li, .worklinks-list li, .portfolio-list li {background:#f6f9fc;margin:10px 0;padding:14px 16px;border-radius:10px;border:1px solid #e1e9f2;position:relative;}
+    .permissions-list li:before, .worklinks-list li:before, .portfolio-list li:before {content:"";position:absolute;inset-inline-start:0;top:0;height:100%;width:4px;border-radius:4px 0 0 4px;background:linear-gradient(180deg,#1d72e8,#559df9);} 
+
+    .file-link {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .file-link:hover {
+        text-decoration: underline;
+    }
+
+    .comment-display {background:#fff9e6;padding:14px 16px 14px 18px;border-radius:12px;border:1px solid #ffe5a3;margin:14px 0;position:relative;box-shadow:0 2px 4px rgba(0,0,0,.04);} 
+    .comment-display:before {content:"\f075";font-family:"Font Awesome 5 Free";font-weight:900;color:#c88807;font-size:15px;margin-inline-end:6px;position:absolute;top:12px;inset-inline-start:12px;}
+    .comment-display strong {padding-inline-start:26px;display:inline-block;}
+    .image-logo {
+        max-width: 60px;
+        border-radius: 5px;
+    }
+    .portfolio-image{
+        width: 100px;
+        border-radius: 5px;
+    }
+    .image-logo.enlargeable{cursor:zoom-in;transition:transform .25s;}
+    .image-logo.enlargeable:hover{transform:scale(1.05);}    
+    .image-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:3000;padding:30px;backdrop-filter:saturate(160%) blur(2px);} 
+    .image-modal-overlay.active{display:flex;} 
+    .image-modal-box{position:relative;max-width:90%;max-height:90%;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px -5px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.15);} 
+    .image-modal-box img{display:block;max-width:100%;max-height:calc(100vh - 120px);object-fit:contain;background:#fff;} 
+    .image-modal-close{position:absolute;top:8px;inset-inline-end:8px;background:rgba(0,0,0,.55);color:#fff;border:none;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;backdrop-filter:blur(3px);} 
+    .image-modal-close:hover{background:rgba(0,0,0,.7);} 
+
+    /* Service area (cities) styling */
+    .province-city-wrapper {margin-top:10px;}
+    .province-city-list {list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:18px;}
+    .province-block {background:#ffffff;border:1px solid #e3e8ef;border-radius:10px;padding:14px 16px;box-shadow:0 2px 4px rgba(0,0,0,.04);}    
+    .province-name {font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;color:#0d6efd;margin-bottom:10px;}
+    .province-name:before {content:"";width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#5aa2ff,#1d72e8);display:inline-block;box-shadow:0 0 0 3px rgba(13,110,253,.15);} 
+    .city-badges {list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;}
+    .city-badge {background:linear-gradient(145deg,#f0f6ff,#e3efff);border:1px solid #c6ddfa;padding:6px 14px;font-size:12.5px;border-radius:22px;position:relative;color:#0f406e;font-weight:500;letter-spacing:.2px;display:inline-flex;align-items:center;gap:4px;}
+    .city-badge:before {content:"\f279"; /* fa-map-marker-alt */ font-family:"Font Awesome 5 Free";font-weight:900;font-size:11px;color:#1d72e8;}
+    .city-badge:hover {background:#e6f1ff;border-color:#b0d1f6;}
+    .province-block.empty {opacity:.6;}
+    .no-cities-note {font-size:13px;color:#6b7280;margin-top:6px;}
+    /* Layout adjustments */
+    .resume-layout {display:flex;gap:26px;align-items:flex-start;}
+    .resume-main {flex:1 1 0;min-width:0;}
+    .resume-side {width:320px;flex:0 0 320px;}
+    .resume-side .status-badge {margin-bottom:14px;}
+    .sticky-box {position:sticky;top:82px;}
+    /* responsive */
+    @media (max-width:1100px){.resume-side{width:280px;flex:0 0 280px;}}
+    @media (max-width:900px){.resume-layout{flex-direction:column;} .resume-side{width:100%;flex:1 1 auto;} .sticky-box{position:static;}}
+    @media (max-width:600px){
+        .city-badge {font-size:11.5px;padding:5px 11px;}
+        .province-block {padding:12px 13px;}
+        .field-row {flex-direction:column;}
+    }
+
+</style>
+
+<div class="container-fluid resume-detail">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>بررسی رزومه - {% if participant_number %}شرکت کننده شماره {{ participant_number }}{% else %}{{ resume.user.get_full_name }}{% endif %}</h2>
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content">
+           <div class="resume-scroll-wrapper">
+            <div class="resume-layout">
+            <div class="resume-main">
+            <!-- اطلاعات اصلی رزومه -->
+            <div class="info-section">
+                <h4>اطلاعات اصلی</h4>
+                <div class="field-row">
+                    <div><strong>نام مجری:</strong> {% if participant_number %}
+                                                        شرکت کننده شماره {{ participant_number }}
+                                                    {% else %}
+                                                        {% if resume.user.get_full_name %}
+                                                            <a href="{% url 'account:user_detail' resume.user.id %}?from=resume_detail" title="{{resume.user.email}}">
+                                                                {{ resume.user.get_full_name }}
+                                                            </a>
+                                                        {% else %}
+                                                            <a href="{% url 'account:user_detail' resume.user.id %}">
+                                                                {{ resume.user.email }}
+                                                            </a>
+                                                        {% endif %}
+                                                    {% endif %}
+                    </div>
+                    <div><strong>نوع مجری:</strong> {{ resume.dealer_type|default:"تعریف نشده" }}</div>
+                </div>
+                <div class="field-row">
+                    <div><strong>دسته تخصصی:</strong> {{ resume.specialty_categories|default:"تعریف نشده" }}</div>
+                    <div><strong>{% if resume.user.customer_type == 'juridical' %}لوگوی شرکتی:{% else %}تصویر کاربر:{% endif %}</strong>
+                        {% if resume.user.customuserimages.first.image.url %}
+                            <a href="{{ resume.user.customuserimages.first.image.url }}" class="user-image-link" data-full="{{ resume.user.customuserimages.first.image.url }}" aria-label="نمایش تصویر کاربر">
+                                <img class="image-logo enlargeable" src="{{ resume.user.customuserimages.first.image.url }}" alt="تصویر کاربر">
+                            </a>
+                        {% else %}
+                            <img class="image-logo" src="{% static 'account/build/images/user.png' %}" alt="بدون تصویر">
+                        {% endif %}
+                    </div>
+                </div>
+                    <div>
+                        <strong>معرفی مختصر از خود:</strong>
+                        {% if resume.describe %}
+                            {{ resume.describe|linebreaksbr }}
+                        {% else %}
+                            چیزی ثبت نشده
+                        {% endif %}
+                    </div>
+            </div>
+
+            <!-- خدمات و تخصص -->
+            <div class="info-section">
+                <h4>خدمات و تخصص</h4>
+                {% if resume.services %}
+                    <div><strong>خدمات قابل ارائه: </strong>{{ resume.services|linebreaksbr }}</div>
+                    
+                {% endif %}
+                
+                {% if resume.specialty_categories.exists %}
+                    <div><strong>دسته‌های تخصصی: </strong>{{ resume.specialty_categories }}</div>
+                {% endif %}
+            </div>
+
+            <!-- خدمات و تخصص -->
+            <div class="info-section">
+                <h4>حوزه خدمات</h4>
+                {% if resume.service_area.exists %}
+                    {% regroup resume.service_area.all by province as province_list %}
+                    <div class="province-city-wrapper">
+                        <div style="font-weight:600;font-size:13px;color:#374151;display:flex;align-items:center;gap:6px;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#0d6efd;box-shadow:0 0 0 3px rgba(13,110,253,.15);"></span>
+                            لیست شهرهای تحت پوشش ({{ resume.service_area.count }})
+                        </div>
+                        <ul class="province-city-list">
+                            {% for province in province_list %}
+                                <li class="province-block {% if not province.list %}empty{% endif %}">
+                                    <div class="province-name">{{ province.grouper.name }}</div>
+                                    {% if province.list %}
+                                        <ul class="city-badges">
+                                            {% for city in province.list %}
+                                                <li class="city-badge" title="{{ city.name }} / {{ province.grouper.name }}">{{ city.name }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <div class="no-cities-note">شهری ثبت نشده</div>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% else %}
+                    <p class="no-cities-note">هیچ شهری ثبت نشده است.</p>
+                {% endif %}
+            </div>
+
+            <!-- اطلاعات تکمیلی -->
+            <div class="info-section">
+                <h4>اطلاعات تکمیلی</h4>
+                
+                    <div><strong>شبکه‌های اجتماعی و وب‌سایت‌ها: </strong>
+                        {% if resume.socialmedia_and_sites %}
+                        {{ resume.socialmedia_and_sites|linebreaksbr }}
+                        {% else %}
+                            چیزی ثبت نشده
+                        {% endif %}
+                    </div>
+                    <br>
+                    <div><strong>ابزارها و پلتفرم‌های مورد استفاده:</strong>
+                        {% if resume.tools_and_platforms %}
+                            {{ resume.tools_and_platforms|linebreaksbr }}
+                        {% else %}
+                            چیزی ثبت نشده
+                        {% endif %}
+                    </div>
+                    <br>
+                    <div><strong>برندهای همکار:</strong>
+                        {% if resume.partner_brand %}
+                            {{ resume.partner_brand|linebreaksbr }}
+                        {% else %}
+                            چیزی ثبت نشده
+                        {% endif %}
+                    </div>
+                    <br>
+                    <div><strong>فایل رزومه:</strong> 
+                        {% if resume.file %}
+                            <a href="{{ resume.file.url }}" target="_blank" class="file-link">مشاهده فایل</a>
+                        {% else %}
+                            فایلی آپلود نشده
+                        {% endif %}
+                    </div>
+            </div>
+
+            <!-- مجوزها -->
+            
+            <div class="info-section">
+                {% if permissions %}
+                    <h4>مجوزها و گواهی‌نامه‌ها ({{ permissions.count }})</h4>
+                    <ul class="permissions-list">
+                        {% for permission in permissions %}
+                            <li>
+                                <strong>{{ permission.title }}</strong>
+                                {% if permission.description %}
+                                    <p>{{ permission.description }}</p>
+                                {% endif %}
+                                {% if permission.issue_date %}
+                                    <small>تاریخ صدور: {{ permission.issue_date }}</small>
+                                {% endif %}
+                                {% if permission.expiry_date %}
+                                    <small> | تاریخ انقضا: {{ permission.expiry_date }}</small>
+                                    {% if permission.is_expired %}
+                                        <span style="color: red; font-weight: bold;"> (منقضی شده)</span>
+                                    {% endif %}
+                                {% endif %}
+                                <br>
+                                <a href="{{ permission.file.url }}" target="_blank" class="file-link">مشاهده فایل</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>هیچ مجوز یا گواهی‌نامه‌ای ثبت نشده.</p>
+                {% endif %}
+            </div>
+
+            <!-- لینک‌های نمونه کار -->
+            <div class="info-section">
+                <h4>لینک‌های نمونه کارها ({{ work_links.count }})</h4>
+                {% if work_links %}
+                    <ul class="worklinks-list">
+                        {% for link in work_links %}
+                            <li>
+                                <strong>{{ link.title }}</strong>
+                                {% if link.is_featured %}
+                                    <span style="color: gold;">⭐ برجسته</span>
+                                {% endif %}
+                                {% if link.description %}
+                                    <p>{{ link.description }}</p>
+                                {% endif %}
+                                {% if link.category %}
+                                    <small>دسته‌بندی: {{ link.category }}</small>
+                                {% endif %}
+                                {% if link.completion_date %}
+                                    <small> | تاریخ تکمیل: {{ link.completion_date }}</small>
+                                {% endif %}
+                                <br>
+                                <a href="{{ link.url }}" target="_blank" class="file-link">{{ link.url }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>هیچ لینک نمونه کاری ثبت نشد.</p>
+                {% endif %}
+            </div>
+
+            <!-- نمونه کارها -->
+            <div class="info-section">
+                {% if resume.portfolios.all %}
+                    <h4>نمونه کارها ({{ resume.portfolios.count }})</h4>    
+                    <ul class="portfolio-list">
+                        {% for portfolio in resume.portfolios.all %}
+                            <li>
+                                <strongx>{{ portfolio.title }}</strongx>
+                                <p>{{ portfolio.description }}</p>
+                                <p>دسته‌بندی: {{ portfolio.topic.name }}</p>
+                                <p>تاریخ تکمیل: {{ portfolio.done_time | jalali_timedate }}</p>
+                                <br>
+                                {% for image in portfolio.portfolioimages.all %}
+                                    <a href="{{ image.image.url }}" target="_blank">
+                                        <img src="{{ image.image.url }}" class="portfolio-image">
+                                    </a>
+                                {% endfor %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>هیچ نمونه کاری ثبت نشد.</p>
+                {% endif %}
+            </div>
+            </div> <!-- /resume-main -->
+
+            
+            </div> <!-- /resume-layout -->
+            </div>  {# پایان resume-scroll-wrapper #}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('id_status');
+    const commentField = document.getElementById('id_manager_comment');
+    
+    // اجباری کردن کامنت برای وضعیت‌های خاص
+    statusSelect.addEventListener('change', function() {
+        const requiresComment = ['needs_editing', 'rejected'];
+        
+        if (requiresComment.includes(this.value)) {
+            commentField.required = true;
+            commentField.placeholder = 'توضیحات الزامی است - لطفاً دلیل تصمیم خود را بنویسید';
+            commentField.style.borderColor = '#dc3545';
+        } else {
+            commentField.required = false;
+            commentField.placeholder = 'نظر یا توضیحات مدیر در مورد رزومه...';
+            commentField.style.borderColor = '#ced4da';
+        }
+    });
+    
+    // تریگر کردن event برای مقدار اولیه
+    statusSelect.dispatchEvent(new Event('change'));
+});
+</script>
+
+<!-- Image Modal -->
+<div class="image-modal-overlay" id="imageModal" role="dialog" aria-modal="true" aria-label="بزرگنمایی تصویر کاربر">
+    <div class="image-modal-box">
+        <button class="image-modal-close" id="imageModalClose" aria-label="بستن">&times;</button>
+        <img src="" alt="تصویر کاربر" id="imageModalImg">
+    </div>
+</div>
+
+<script>
+(function(){
+    const overlay = document.getElementById('imageModal');
+    const modalImg = document.getElementById('imageModalImg');
+    const closeBtn = document.getElementById('imageModalClose');
+    if(!overlay || !modalImg) return;
+
+    function openModal(src){
+        modalImg.src = src;
+        overlay.classList.add('active');
+        document.body.style.overflow='hidden';
+    }
+    function closeModal(){
+        overlay.classList.remove('active');
+        modalImg.src = '';
+        document.body.style.overflow='';
+    }
+
+    document.addEventListener('click',function(e){
+        const link = e.target.closest('.user-image-link');
+        if(link){
+            e.preventDefault();
+            openModal(link.getAttribute('data-full'));
+        }
+    });
+    closeBtn && closeBtn.addEventListener('click',closeModal);
+    overlay && overlay.addEventListener('click',function(e){
+        if(e.target === overlay) closeModal();
+    });
+    document.addEventListener('keyup',function(e){
+        if(e.key==='Escape' && overlay.classList.contains('active')) closeModal();
+    });
+})();
+</script>
+
+{% endblock %}
+

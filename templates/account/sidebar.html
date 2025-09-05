@@ -4,7 +4,7 @@
     <div class="menu_section">
         <div class="section-label">ناوبری اصلی</div>
         <ul class="nav side-menu">
-             <li><a href="{% url 'adv:home' %}"><i class="fa fa-external-link" style="color: #7d919c;"></i> صفحه اصلی سایت</a></li>
+             <li><a href="{% url 'adv:home' %}" target="_blank"><i class="fa fa-external-link" style="color: #7d919c;"></i> صفحه اصلی سایت</a></li>
              <li><a href="{% url 'account:home' %}"><i class="fa fa-home" style="color: #7d919c;"></i> داشبورد</a></li>
              <hr style="opacity:.15;margin:.35rem 0;">
              {% if request.user.is_staff %}

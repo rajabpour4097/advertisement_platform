@@ -52,6 +52,24 @@
     .actions {display:flex;gap:.75rem;}
     .actions .btn {border-radius:10px;font-size:.96rem;font-weight:600;}
     @media (max-width:640px){.winner-meta{grid-template-columns:1fr}.winner-card{padding:1rem}.winner-header h2{font-size:1.56rem}}
+    .resume-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    font-weight: 600;
+    color: #0e6626;
+    border: 2px solid #0e6626;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    }
+    .resume-btn{
+        width:150px
+    }
+    .resume-btn:hover {
+        background-color: #0e6626;
+        color: #fff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
 </style>
 <div class="content-frame">
     <div class="winner-wrapper">
@@ -159,7 +177,7 @@
                         <div><strong>شماره تماس:</strong> {{ campaign.campaign_dealer.phone_number }}</div>
                         <div><strong>ایمیل:</strong> {{ campaign.campaign_dealer.email }}</div>
                         <br>
-                        <a href="#" target="_blank">مشاهده رزومه کاربر برنده</a>
+                        <a href="{% url 'account:winnerresume' campaign.id %}" target="_blank" class="resume-btn">مشاهده رزومه کاربر برنده</a>
                     </div>
 
                 </div>

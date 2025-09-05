@@ -42,6 +42,7 @@ urlpatterns = [
     path('resume/my-resume/', MyResumeView.as_view(), name='my_resume'),  # URL جدید
     path('resume/review/', ResumeReviewListView.as_view(), name='review_resumes'),  # برای مدیران
     path('resume/review/<int:resume_id>/', ResumeDetailView.as_view(), name='resume_detail'),  # برای مدیران
+    path('resume/winnerresume/<int:campaign_id>/', WinnedDealerResume.as_view(), name='winnerresume'),
     path('get-specialty-categories/', get_specialty_categories, name='get_specialty_categories'),
     path('portfolio/ajax-add/', ajax_add_portfolio, name='portfolio_ajax_add'),
     path('resume/permission/ajax-add/', ajax_add_permission, name='permission_ajax_add'),
