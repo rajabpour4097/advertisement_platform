@@ -1,50 +1,598 @@
 {% extends "account/account_base.html" %}
+{% load static %}
+
+{% block title %}لیست تیکت‌ها{% endblock %}
+
 {% block content %}
-<h3>تیکت ها</h3>
-<a class="btn btn-primary" href="{% url 'support:ticket_create' %}">ارسال تیکت جدید</a>
-<table class="table table-striped mt-3">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>عنوان</th>
-            <th>دپارتمان</th>
-            <th>موضوع</th>
-            <th>وضعیت</th>
-            {% if request.user.is_am or request.user.is_staff %}
-                <th>پشتیبان</th>
-            {% endif %}
-            {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
-                <th>امتیاز</th>
-            {% endif %}
-            <th>آخرین پاسخ</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for t in tickets %}
-        <tr>
-            <td>{{ t.id }}</td>
-            <td><a href="{% url 'support:ticket_detail' t.id %}">{{ t.title }}</a></td>
-            <td>{{ t.department.name }}</td>
-            <td>{{ t.subject.title }}</td>
-            <td>{{ t.get_status_display }}</td>
-            {% if request.user.is_am or request.user.is_staff %}
-                <td>{{ t.supporter.get_full_name|default:'-' }}</td>
-            {% endif %}
-            {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
-            <td>{% if t.rating_score %}{{ t.rating_score }}{% else %}-{% endif %}</td>
-            {% endif %}
-            <td>
-                {% if t.last_resp %}
-                    {{ t.last_resp|date:'Y-m-d H:i' }}<br>
-                    <span class="text-muted" style="font-size:11px;direction:rtl;display:inline-block;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                        {{ t.last_msg|default:''|striptags|truncatechars:70 }}
-                    </span>
-                {% else %}-{% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="7">موردی یافت نشد</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+<style>
+    /* ===================== Theming (consistent with campaign and portfolio design) ===================== */
+    :root {
+        --cp-bg: #ffffff;
+        --cp-border: #e5e7eb;
+        --cp-radius: 14px;
+        --cp-shadow-sm: 0 4px 10px rgba(0,0,0,.06);
+        --cp-shadow-md: 0 8px 24px -4px rgba(0,0,0,.12);
+        --cp-gradient: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#5a3d9b 100%);
+        --cp-gradient-soft: linear-gradient(140deg, rgba(102,126,234,.15), rgba(118,75,162,.15));
+        --cp-primary: #667eea;
+        --cp-primary-accent: #764ba2;
+        --cp-accent-green: #028c32;
+        --cp-text-dark: #1e293b;
+        --cp-text-muted: #64748b;
+        --cp-danger: #ef4444;
+        --cp-success: #16a34a;
+        --cp-warning: #f59e0b;
+        --cp-info: #06b6d4;
+        --cp-focus-ring: 0 0 0 3px rgba(102,126,234,.35);
+    }
+
+    /* Modern panel styling */
+    .x_panel {
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-radius);
+        box-shadow: var(--cp-shadow-sm);
+        margin-bottom: 1.5rem;
+        padding: 0;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .x_title {
+        background: var(--cp-gradient);
+        padding: 1.2rem 1.5rem;
+        margin: 0;
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .x_title h2 {
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 1.4rem;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,.2);
+    }
+
+    /* Search and filter section */
+    .search-filter-section {
+        background: linear-gradient(135deg, rgba(102,126,234,.08), rgba(118,75,162,.12));
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--cp-border);
+        margin: 0;
+    }
+
+    .filter-card {
+        background: rgba(255,255,255,.9);
+        border: 1px solid rgba(102,126,234,.2);
+        border-radius: 12px;
+        padding: 1rem;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--cp-text-dark);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,.95);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--cp-primary);
+        box-shadow: var(--cp-focus-ring);
+        outline: none;
+    }
+
+    /* Modern button styling */
+    .btn-create-ticket {
+        background: var(--cp-gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102,126,234,.3);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-create-ticket:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102,126,234,.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Enhanced table styling */
+    .table-responsive {
+        background: var(--cp-bg);
+        border-radius: 0 0 var(--cp-radius) var(--cp-radius);
+        overflow: hidden;
+        max-height: calc(100vh - 350px);
+        overflow-y: auto;
+    }
+
+    .table {
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.9rem;
+    }
+
+    .table thead th {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        color: var(--cp-text-dark);
+        font-weight: 700;
+        padding: 1rem;
+        border: none;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid rgba(226,232,240,.5);
+        transition: all 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(102,126,234,.04), rgba(118,75,162,.06));
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border: none;
+        color: var(--cp-text-dark);
+    }
+
+    /* Enhanced badges for status */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .badge.bg-success {
+        background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+        color: white;
+        box-shadow: 0 2px 8px rgba(22,163,74,.3);
+    }
+
+    .badge.bg-warning {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        color: white;
+        box-shadow: 0 2px 8px rgba(245,158,11,.3);
+    }
+
+    .badge.bg-danger {
+        background: linear-gradient(135deg, #ef4444, #f87171) !important;
+        color: white;
+        box-shadow: 0 2px 8px rgba(239,68,68,.3);
+    }
+
+    .badge.bg-info {
+        background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+        color: white;
+        box-shadow: 0 2px 8px rgba(6,182,212,.3);
+    }
+
+    .badge.bg-primary {
+        background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+        color: white;
+        box-shadow: 0 2px 8px rgba(59,130,246,.3);
+    }
+
+    .badge.bg-secondary {
+        background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+        color: white;
+        box-shadow: 0 2px 8px rgba(107,114,128,.3);
+    }
+
+    /* Counter column */
+    .counter-cell {
+        font-weight: 700;
+        color: var(--cp-primary);
+        background: linear-gradient(135deg, rgba(102,126,234,.08), rgba(118,75,162,.12));
+        text-align: center;
+        vertical-align: middle;
+        border-radius: 8px;
+        margin: 0 4px;
+        padding: 0.75rem !important;
+        min-width: 50px;
+        max-width: 60px;
+        width: 55px;
+        display: table-cell;
+        position: relative;
+    }
+    
+    .counter-cell::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Text colors and styling */
+    .text-primary {
+        color: var(--cp-primary) !important;
+        font-weight: 600;
+    }
+
+    .text-success {
+        color: var(--cp-success) !important;
+        font-weight: 600;
+    }
+
+    .text-muted {
+        color: var(--cp-text-muted) !important;
+    }
+
+    /* Rating display */
+    .rating-display {
+        font-weight: 600;
+        color: var(--cp-warning);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .rating-display:before {
+        content: "⭐";
+        font-size: 0.8rem;
+    }
+
+    /* Last response styling */
+    .last-response {
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .last-response-date {
+        font-weight: 600;
+        color: var(--cp-text-dark);
+        margin-bottom: 0.3rem;
+    }
+
+    .last-response-message {
+        color: var(--cp-text-muted);
+        font-size: 0.8rem;
+        direction: rtl;
+        display: inline-block;
+        max-width: 220px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background: rgba(102,126,234,.05);
+        padding: 0.3rem 0.6rem;
+        border-radius: 8px;
+        border: 1px solid rgba(102,126,234,.1);
+    }
+
+    /* No tickets state */
+    .no-tickets-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, rgba(102,126,234,.05), rgba(118,75,162,.08));
+        border-radius: 16px;``
+        margin: 1.5rem;
+        border: 2px dashed rgba(102,126,234,.2);
+    }
+
+    .no-tickets-state:before {
+        content: "🎫";
+        display: block;
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .no-tickets-state .alert {
+        background: transparent;
+        border: none;
+        color: var(--cp-text-muted);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    /* Ticket link styling */
+    .ticket-link {
+        color: var(--cp-primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .ticket-link:hover {
+        color: var(--cp-primary-accent);
+        text-decoration: none;
+        transform: translateX(-2px);
+    }
+
+    /* Supporter info */
+    .supporter-info {
+        font-weight: 600;
+        color: var(--cp-success);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .search-filter-section {
+            padding: 1rem;
+        }
+        
+        .table td, .table th {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .last-response-message {
+            max-width: 150px;
+        }
+        
+        .x_title {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>
+                <i class="fas fa-ticket-alt me-2"></i>
+                لیست تیکت‌های پشتیبانی
+            </h2>
+            <a class="btn-create-ticket" href="{% url 'support:ticket_create' %}">
+                <i class="fas fa-plus"></i>
+                ارسال تیکت جدید
+            </a>
+            <div class="clearfix"></div>
+        </div>
+
+        {% if tickets %}
+        <!-- Search Box -->
+        <div class="search-filter-section">
+            <div class="filter-card">
+                <div class="row align-items-end">
+                    <!-- Search Box -->
+                    <div class="col-md-4">
+                        <label class="filter-label">جستجو:</label>
+                        <input type="text" id="searchInput" class="form-control" placeholder="جستجو در تیکت‌ها...">
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="col-md-3">
+                        <label class="filter-label">وضعیت:</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">همه موارد</option>
+                            <option value="باز">باز</option>
+                            <option value="بسته">بسته</option>
+                            <option value="در انتظار پاسخ">در انتظار پاسخ</option>
+                            <option value="پاسخ داده شده">پاسخ داده شده</option>
+                        </select>
+                    </div>
+
+                    <!-- Department Filter -->
+                    <div class="col-md-3">
+                        <label class="filter-label">دپارتمان:</label>
+                        <select class="form-select" id="departmentFilter">
+                            <option value="">همه دپارتمان‌ها</option>
+                            {% for t in tickets %}
+                                <option value="{{ t.department.name }}">{{ t.department.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets Table -->
+        <div class="content-card">
+            <div class="table-responsive">
+                <table class="table ticket-table" id="ticketsTable">
+                    <thead>
+                        <tr>
+                            <th class="counter-cell">#</th>
+                            <th><i></i>عنوان</th>
+                            <th><i class="fas fa-building me-2"></i>دپارتمان</th>
+                            <th><i class="fas fa-tag me-2"></i>موضوع</th>
+                            <th><i class="fas fa-info-circle me-2"></i>وضعیت</th>
+                            {% if request.user.is_am or request.user.is_staff %}
+                                <th><i class="fas fa-user-headset me-2"></i>پشتیبان</th>
+                            {% endif %}
+                            {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
+                                <th><i class="fas fa-star me-2"></i>امتیاز</th>
+                            {% endif %}
+                            <th><i class="fas fa-clock me-2"></i>آخرین پاسخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tickets %}
+                        <tr>
+                            <td class="counter-cell">{{ forloop.counter }}</td>
+                            <td>
+                                <a href="{% url 'support:ticket_detail' t.id %}" class="ticket-link">
+                                    {{ t.title }}
+                                </a>
+                            </td>
+                            <td class="text-primary">{{ t.department.name }}</td>
+                            <td>{{ t.subject.title }}</td>
+                            <td>
+                                {% if t.get_status_display == 'باز' %}
+                                    <span class="badge bg-success">{{ t.get_status_display }}</span>
+                                {% elif t.get_status_display == 'بسته' %}
+                                    <span class="badge bg-danger">{{ t.get_status_display }}</span>
+                                {% elif t.get_status_display == 'در انتظار پاسخ' %}
+                                    <span class="badge bg-warning">{{ t.get_status_display }}</span>
+                                {% elif t.get_status_display == 'پاسخ داده شده' %}
+                                    <span class="badge bg-info">{{ t.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ t.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            {% if request.user.is_am or request.user.is_staff %}
+                                <td class="supporter-info">
+                                    {{ t.supporter.get_full_name|default:'-' }}
+                                </td>
+                            {% endif %}
+                            {% if request.user.is_am or request.user.is_staff or request.user.is_supporter %}
+                            <td>
+                                {% if t.rating_score %}
+                                    <span class="rating-display">{{ t.rating_score }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                            <td>
+                                {% if t.last_resp %}
+                                    <div class="last-response">
+                                        <div class="last-response-date">{{ t.last_resp|date:'Y-m-d H:i' }}</div>
+                                        <div class="last-response-message">
+                                            {{ t.last_msg|default:''|striptags|truncatechars:70 }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <!-- No tickets state -->
+        <div class="no-tickets-state">
+            <div class="alert alert-info" role="alert">
+                هیچ تیکتی ثبت نشده است.
+                <a href="{% url 'support:ticket_create' %}" class="btn-create-ticket" style="margin-top: 1rem;">
+                    <i class="fas fa-plus"></i>
+                    ارسال تیکت جدید
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- JavaScript for filters -->
+<script>
+// Search functionality
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    filterTable();
+});
+
+// Status filter
+document.getElementById('statusFilter').addEventListener('change', function() {
+    filterTable();
+});
+
+// Department filter
+document.getElementById('departmentFilter').addEventListener('change', function() {
+    filterTable();
+});
+
+function filterTable() {
+    const searchText = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const departmentFilter = document.getElementById('departmentFilter').value;
+    const table = document.getElementById('ticketsTable');
+    const rows = table.getElementsByTagName('tr');
+
+    // Skip header row
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let matchesSearch = false;
+        let matchesStatus = true;
+        let matchesDepartment = true;
+
+        // Check search text
+        for (let cell of cells) {
+            if (cell.textContent.toLowerCase().includes(searchText)) {
+                matchesSearch = true;
+                break;
+            }
+        }
+
+        // Check status if filter is active
+        if (statusFilter) {
+            const statusCell = row.querySelector('.badge');
+            if (statusCell && !statusCell.textContent.includes(statusFilter)) {
+                matchesStatus = false;
+            }
+        }
+
+        // Check department if filter is active
+        if (departmentFilter) {
+            const departmentCell = cells[2]; // Department column index
+            if (departmentCell && !departmentCell.textContent.includes(departmentFilter)) {
+                matchesDepartment = false;
+            }
+        }
+
+        row.style.display = (matchesSearch && matchesStatus && matchesDepartment) ? '' : 'none';
+    }
+}
+
+// Remove duplicate departments from dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const departmentSelect = document.getElementById('departmentFilter');
+    const options = departmentSelect.options;
+    const optionsArray = Array.from(options).slice(1); // Skip "All" option
+    
+    // Get unique departments
+    const uniqueDepartments = [...new Set(optionsArray.map(option => option.value))];
+    
+    // Clear current options (except "All")
+    while (departmentSelect.options.length > 1) {
+        departmentSelect.remove(1);
+    }
+    
+    // Add unique departments back
+    uniqueDepartments.forEach(department => {
+        if (department) {
+            const option = document.createElement('option');
+            option.value = department;
+            option.text = department;
+            departmentSelect.add(option);
+        }
+    });
+});
+</script>
 {% endblock %}
