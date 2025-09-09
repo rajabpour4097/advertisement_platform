@@ -43,7 +43,7 @@ def send_activation_sms(user):
     return (ok, otp, error) if ok else (None, None, error)
 
 def send_campaign_confirmation_sms(campaign, needs_mentor):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     customer_name = campaign.customer.get_full_name()
     customer_phone = campaign.customer.phone_number
 
@@ -62,12 +62,12 @@ def send_campaign_confirmation_sms(campaign, needs_mentor):
     return True, None
 
 def send_campaign_review_sms(campaign, editing_campaign):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     phone = campaign.customer.phone_number.strip() if campaign.customer else None
     return send_sms(phone, "337980", topic) if phone else (True, None)
 
 def send_campaign_start_sms(campaign):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
 
     customer = campaign.customer
     if customer and customer.phone_number:
@@ -86,39 +86,39 @@ def send_campaign_start_sms(campaign):
 
 def send_campaign_mentor_assignment_sms(campaign):
     mentor_name = campaign.assigned_mentor.get_full_name() if campaign.assigned_mentor else 'نامشخص'
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     phone = campaign.customer.phone_number.strip() if campaign.customer else None
     text = f"{mentor_name};{topic}"
     return send_sms(phone, "337984", text) if phone else (True, None)
 
 def send_campaign_finished_sms(campaign):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     phone = campaign.customer.phone_number.strip() if campaign.customer else None
     return send_sms(phone, "339423", topic) if phone else (True, None)
 
 def send_campaign_winner_sms(campaign, winner):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     return send_sms(winner.phone_number, "341519", topic)
 
 def send_campaign_without_participate_sms(campaign, refund_amount):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     phone = campaign.customer.phone_number.strip() if campaign.customer else None
     text = f"{topic};{refund_amount}"
     return send_sms(phone, "341522", text) if phone else (True, None)
 
 def send_campaign_not_choose_winner_sms(campaign, gift_amount):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     phone = campaign.customer.phone_number.strip() if campaign.customer else None
     text = f"{topic};{gift_amount}"
     return send_sms(phone, "341523", text) if phone else (True, None)
 
 def send_campaign_one_percent_dealer_sms(campaign, dealer, gift_amount):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     text = f"{topic};{gift_amount}"
     return send_sms(dealer.phone_number, "341524", text)
 
 def send_campaign_cancel_sms(campaign):
-    topic = campaign.topic.first().name if campaign.topic.exists() else 'نامشخص'
+    topic = campaign.topic.name
     phone = campaign.customer.phone_number.strip() if campaign.customer else None
     return send_sms(phone, "349749", topic) if phone else (True, None)
 

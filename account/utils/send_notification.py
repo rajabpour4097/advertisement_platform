@@ -477,7 +477,7 @@ def notify_password_change(user):
 def notify_campaign_winner(campaign, winner, selector, staff_users, am_users):
     """Send notifications when a campaign winner is selected"""
     
-    campaign_desc = campaign.topic.first().name
+    campaign_desc = campaign.topic.name
     
     # Notify winner
     send_notification(
