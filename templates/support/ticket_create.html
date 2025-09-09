@@ -1,44 +1,289 @@
 {% extends "account/account_base.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
+
+{% block title %}ارسال تیکت جدید{% endblock %}
+
 {% block content %}
-<h3>ارسال تیکت جدید</h3>
-<form method="post" enctype="multipart/form-data">{% csrf_token %}
-        {{ form.department|as_crispy_field }}
-        {{ form.subject|as_crispy_field }}
-        {{ form.title|as_crispy_field }}
-        {{ form.priority|as_crispy_field }}
-        {{ form.attachment|as_crispy_field }}
-    <div class="mb-3">
-        <label>متن پیام اولیه</label>
-        <textarea name="first_message" class="form-control" rows="4" required></textarea>
+<style>
+    :root {
+        --cp-bg: #ffffff;
+        --cp-border: #e5e7eb;
+        --cp-radius: 14px;
+        --cp-shadow-sm: 0 4px 10px rgba(0,0,0,.06);
+        --cp-shadow-md: 0 8px 24px -4px rgba(0,0,0,.12);
+        --cp-gradient: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#5a3d9b 100%);
+        --cp-gradient-soft: linear-gradient(140deg, rgba(102,126,234,.08), rgba(118,75,162,.12));
+        --cp-primary: #667eea;
+        --cp-primary-accent: #764ba2;
+        --cp-text-dark: #1e293b;
+        --cp-text-muted: #64748b;
+        --cp-danger: #ef4444;
+        --cp-success: #16a34a;
+        --cp-focus-ring: 0 0 0 3px rgba(102,126,234,.2);
+    }
+
+    .ticket-content-frame {
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: var(--cp-bg);
+        padding: 1.5rem;
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-radius);
+        box-shadow: var(--cp-shadow-sm);
+        position: relative;
+        margin-top: .75rem;
+    }
+
+    .x_panel {
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+        border: 1px solid var(--cp-border);
+        border-radius: var(--cp-radius);
+        box-shadow: var(--cp-shadow-sm);
+        overflow: visible; /* allow header to extend */
+    }
+
+    .x_title {
+        background: var(--cp-gradient);
+    padding: calc(1.9rem * 1.5) 1.5rem; /* ~10% taller */
+        margin: 0;
+        border-bottom: none;
+        width: 100%;
+        border-top-right-radius: calc(var(--cp-radius) + 4px);
+        border-top-left-radius: calc(var(--cp-radius) + 4px);
+        border-bottom-left-radius: calc(var(--cp-radius) + 4px);
+        border-bottom-right-radius: calc(var(--cp-radius) + 4px);
+    }
+    .x_title h2 { color: #fff; font-weight: 800; font-size: 1.35rem; margin: 0px; }
+
+    .x_body { padding: 1.25rem 1.5rem 1.75rem; }
+
+    /* Side info panel */
+    .ticket-side-panel {
+        background: var(--cp-gradient-soft);
+        border: 1px dashed rgba(102,126,234,.35);
+        border-radius: 18px;
+        padding: 1.25rem 1rem;
+        height: 100%;
+    }
+    .ticket-side-panel h4 { color: var(--cp-primary-accent); font-weight: 800; font-size: 1.1rem; }
+    .ticket-side-panel p { color: var(--cp-text-muted); line-height: 1.8; font-size: .92rem; }
+
+    /* Form fields look & feel (match lists/campaigns) */
+    .form-group label, .control-label { font-weight: 700; color: var(--cp-text-dark); margin-bottom: .35rem; }
+    .form-control, .form-select {
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        font-size: .98rem;
+        transition: all .25s ease;
+        background: rgba(255,255,255,.98);
+    }
+    .form-control:focus, .form-select:focus { border-color: var(--cp-primary); box-shadow: var(--cp-focus-ring); outline: none; background: #fff; }
+    textarea.form-control { min-height: 150px; resize: vertical; }
+
+    /* File dropzone styling (non-breaking wrapper for attachment) */
+    .file-dropzone {
+        border: 2px dashed var(--cp-primary);
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(102,126,234,.06), rgba(118,75,162,.08));
+        padding: 1.25rem;
+        text-align: center;
+        transition: all .25s ease;
+        cursor: pointer;
+    }
+    .file-dropzone:hover { border-color: var(--cp-primary-accent); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+    .file-hint { color: var(--cp-text-muted); font-size: .9rem; }
+    .file-hint .limit { font-weight: 700; color: var(--cp-text-dark); }
+    .hidden-input { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
+
+    /* Actions */
+    .btn-submit {
+        background: var(--cp-gradient);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 0.85rem 1.5rem;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(102,126,234,.3);
+        transition: all .25s ease;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(102,126,234,.4); color: #fff; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .ticket-content-frame { padding: 1rem; }
+        .x_title { width: 100%; margin: 0; }
+    }
+</style>
+
+<div class="ticket-content-frame">
+    <div class="row g-3">
+        <!-- Main form -->
+        <div class="col-md-8">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>افزودن تیکت جدید</h2>
+                </div>
+                <div class="x_body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Department & Subject -->
+                        <div class="row g-3" style="margin-top: 1rem;">
+                            <div class="col-12">
+                                {{ form.department|as_crispy_field }}
+                            </div>
+                            <div class="col-12" style="margin-top: 1rem;">
+                                {{ form.subject|as_crispy_field }}
+                            </div>
+                        </div>
+                        <!-- URL template for AJAX (hidden helper) -->
+                        <span id="ajax-subjects-url" data-template="{% url 'support:ajax_subjects' 0 %}" style="display:none;"></span>
+
+                        <!-- Title -->
+                        <div class="mt-3" style="margin-top: 1rem;">
+                            {{ form.title|as_crispy_field }}
+                        </div>
+
+                        <!-- Message -->
+                        <div class="mt-3" style="margin-top: 1.9rem;">
+                            <label class="control-label">توضیحات (متن پیام ارسالی)</label>
+                            <textarea name="first_message" class="form-control" rows="6" required placeholder="پیام خود را وارد کنید."></textarea>
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="mt-3" style="margin-top: 1.9rem;">
+                            {{ form.priority|as_crispy_field }}
+                        </div>
+
+                        <!-- Attachment (keep original input, provide dropzone wrapper) -->
+                        <div class="mt-3" style="margin-top: 2.9rem;">
+                            <!-- Render original input (will be hidden via CSS utility but remains functional) -->
+                            <div class="visually-hidden">
+                                {{ form.attachment|as_crispy_field }}
+                            </div>
+                            <div id="file-dropzone" class="file-dropzone" role="button" tabindex="0" aria-label="انتخاب یا رهاسازی فایل">
+                                <div class="mb-2" style="font-weight:700;color:var(--cp-text-dark)">فایل‌های خود را بکشید و اینجا رها کنید</div>
+                                <div class="file-hint">محدودیت ارسال حجم: <span class="limit">۵ مگابایت</span></div>
+                                <div id="selected-file-name" class="mt-2" style="color:var(--cp-primary);font-weight:600;display:none"></div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-4 d-flex justify-content-end">
+                            <button class="btn-submit" type="submit" style="margin-top: 1.9rem;">
+                                ارسال تیکت
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Side info (left on RTL layouts visually becomes right/left based on CSS, but grid handles order) -->
+        <div class="col-md-4">
+            <div class="ticket-side-panel">
+                <h4>قبل از ارسال تیکت</h4>
+                <p>
+                    اگر سوال متداولی دارید، ابتدا در بخش راهنما یا سوالات متداول جستجو کنید. در صورت نیاز، از طریق این فرم تیکت خود را به دپارتمان مربوطه ارسال نمایید.
+                </p>
+                <div class="mt-3">
+                    <img src="{% static 'account/images/folder-illustration.svg' %}" alt="help" onerror="this.style.display='none'" style="max-width:120px;opacity:.9">
+                </div>
+            </div>
+        </div>
     </div>
-    <button class="btn btn-success" type="submit">ارسال</button>
-</form>
+</div>
+
 <script>
-// Ajax load subjects after department selection
+// Ajax load subjects after department selection (kept non-breaking, with fallbacks)
 document.addEventListener('DOMContentLoaded', function(){
-    const deptSel = document.getElementById('id_department_select');
-    const subjSel = document.getElementById('id_subject_select');
+    const deptSel = document.getElementById('id_department_select') || document.getElementById('id_department');
+    const subjSel = document.getElementById('id_subject_select') || document.getElementById('id_subject');
+    const urlTemplateEl = document.getElementById('ajax-subjects-url');
+
     function clearSubjects(){
+        if (!subjSel) return;
         subjSel.innerHTML = '<option value="">---------</option>';
         subjSel.setAttribute('disabled','disabled');
     }
-    clearSubjects();
-    deptSel.addEventListener('change', function(){
-        const deptId = this.value;
+
+    function fetchAndFillSubjects(deptId) {
         if(!deptId){ clearSubjects(); return; }
-        fetch(`/support/ajax/subjects/${deptId}/`, {headers:{'X-Requested-With':'XMLHttpRequest'}})
-            .then(r=>r.json())
-            .then(data=>{
+        let url = '/support/ajax/subjects/' + deptId + '/';
+        if (urlTemplateEl && urlTemplateEl.dataset.template) {
+            url = urlTemplateEl.dataset.template.replace(/0\/?$/, deptId + '/');
+        }
+        fetch(url, {headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(r => r.ok ? r.json() : Promise.reject(r))
+            .then(data => {
                 clearSubjects();
-                data.results.forEach(obj=>{
+                (data.results || []).forEach(obj => {
                     const opt=document.createElement('option');
                     opt.value=obj.id; opt.textContent=obj.title; subjSel.appendChild(opt);
                 });
                 subjSel.removeAttribute('disabled');
             })
-            .catch(()=>clearSubjects());
-    });
+            .catch(() => clearSubjects());
+    }
+
+    if (deptSel && subjSel) {
+        clearSubjects();
+        if (subjSel.value) { subjSel.removeAttribute('disabled'); }
+        deptSel.addEventListener('change', function(){ fetchAndFillSubjects(this.value); });
+        // Auto-load if department already selected
+        if (deptSel.value) { fetchAndFillSubjects(deptSel.value); }
+        // Ensure subject is enabled before submit so its value is posted
+        const formEl = document.querySelector('form[method="post"]');
+        if (formEl) {
+            formEl.addEventListener('submit', function(ev){
+                if (subjSel.hasAttribute('disabled')) {
+                    // try to enable and block submission only if still empty
+                    subjSel.removeAttribute('disabled');
+                    if (!subjSel.value) {
+                        // simple client hint
+                        alert('لطفاً ابتدا موضوع را انتخاب کنید.');
+                        ev.preventDefault();
+                    }
+                }
+            });
+        }
+    }
+
+    // File dropzone wiring (non-breaking): proxy to original attachment input
+    const dropzone = document.getElementById('file-dropzone');
+    // try to find attachment input id by convention or crispy rendering
+    const attachInput = document.getElementById('id_attachment') || document.querySelector('input[type="file"][name="attachment"]');
+    const fileNameEl = document.getElementById('selected-file-name');
+
+    function updateFileName(){
+        if (!attachInput || !fileNameEl) return;
+        if (attachInput.files && attachInput.files.length) {
+            fileNameEl.style.display = 'block';
+            fileNameEl.textContent = attachInput.files[0].name;
+        } else {
+            fileNameEl.style.display = 'none';
+            fileNameEl.textContent = '';
+        }
+    }
+
+    if (dropzone && attachInput) {
+        dropzone.addEventListener('click', () => attachInput.click());
+        dropzone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); attachInput.click(); } });
+        ;['dragenter','dragover'].forEach(evt => dropzone.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dropzone.style.borderColor = '#5a3d9b'; }));
+        ;['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dropzone.style.borderColor = '';}));
+        dropzone.addEventListener('drop', (e) => {
+            if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+            // Note: assigning FileList is read-only in many browsers; use DataTransfer workaround
+            const dt = new DataTransfer();
+            dt.items.add(e.dataTransfer.files[0]);
+            attachInput.files = dt.files;
+            updateFileName();
+        });
+        attachInput.addEventListener('change', updateFileName);
+    }
 });
 </script>
 {% endblock %}

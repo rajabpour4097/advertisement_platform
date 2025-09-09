@@ -13,9 +13,35 @@ class TicketCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # limit active departments/subjects
         self.fields['department'].queryset = SupportDepartment.objects.filter(is_active=True)
-        self.fields['subject'].queryset = SupportSubject.objects.none()
+        # Set widget ids (names unchanged)
         self.fields['department'].widget.attrs.update({'id': 'id_department_select'})
-        self.fields['subject'].widget.attrs.update({'id': 'id_subject_select', 'disabled': 'disabled'})
+        self.fields['subject'].widget.attrs.update({'id': 'id_subject_select'})
+
+        # Populate subject queryset based on selected department (POST or initial)
+        subj_field = self.fields['subject']
+        dept_val = None
+        if self.data.get('department'):
+            dept_val = self.data.get('department')
+        elif self.initial.get('department'):
+            dept_val = self.initial.get('department')
+        elif getattr(self.instance, 'department_id', None):
+            dept_val = self.instance.department_id
+
+        if dept_val:
+            try:
+                dept_id = int(dept_val)
+            except (TypeError, ValueError):
+                dept_id = None
+            if dept_id:
+                subj_field.queryset = SupportSubject.objects.filter(department_id=dept_id, is_active=True)
+                # ensure not disabled when we have options
+                attrs = subj_field.widget.attrs
+                if 'disabled' in attrs:
+                    attrs.pop('disabled', None)
+        else:
+            subj_field.queryset = SupportSubject.objects.none()
+            # keep disabled until department is selected
+            subj_field.widget.attrs['disabled'] = 'disabled'
 
     
 class TicketMessageForm(forms.ModelForm):
