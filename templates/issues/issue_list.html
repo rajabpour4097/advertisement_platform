@@ -37,12 +37,13 @@
   <div class="x_title"><h2>گزارش مشکلات</h2><div class="clearfix"></div></div>
   <div class="x_content">
     <table class="table table-striped">
-      <thead><tr><th>#</th><th>صفحه</th><th>کاربر</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th></tr></thead>
+      <thead><tr><th>#</th><th>صفحه</th><th>شرح</th><th>کاربر</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th></tr></thead>
       <tbody>
       {% for issue in issues %}
         <tr class="{% if issue.done %}issue-completed{% endif %}" data-issue-id="{{ issue.id }}">
           <td>{{ issue.id }}</td>
           <td style="max-width:250px;overflow-wrap:anywhere;">{{ issue.page_url }}</td>
+          <td style="max-width:250px;overflow-wrap:anywhere;">{{ issue.description }}</td>
           <td>{% if issue.user %}
                 {% if issue.user.get_full_name %}
                     {{ issue.user.get_full_name }}

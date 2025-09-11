@@ -60,6 +60,7 @@ def toggle_issue_done(request, pk):
     
     issue = get_object_or_404(IssueReport, pk=pk)
     issue.done = not issue.done
+    issue.status = 'resolved' if issue.done else 'new'
     issue.save()
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
