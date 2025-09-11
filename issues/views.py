@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.http import JsonResponse, HttpResponseForbidden
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import ListView, DetailView
+from django.views.decorators.http import require_POST
 
 from .forms import IssueReportForm
 from .models import IssueReport
@@ -48,3 +49,24 @@ class IssueDetailView(LoginRequiredMixin, StaffRequiredMixin, DetailView):
     model = IssueReport
     template_name = 'issues/issue_detail.html'
     context_object_name = 'issue'
+
+
+@login_required
+@require_POST
+def toggle_issue_done(request, pk):
+    """Toggle done status of an issue (staff only)"""
+    if not request.user.is_staff:
+        return HttpResponseForbidden('دسترسی ندارید')
+    
+    issue = get_object_or_404(IssueReport, pk=pk)
+    issue.done = not issue.done
+    issue.save()
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'done': issue.done,
+            'message': 'انجام شد' if issue.done else 'انجام نشده'
+        })
+    
+    return redirect('issues:list')

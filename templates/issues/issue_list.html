@@ -1,13 +1,46 @@
 {% extends 'account/account_base.html' %}
 {% block content %}
+<style>
+/* Completed issue styling */
+.issue-completed {
+    background: linear-gradient(135deg, rgba(34,197,94,.05), rgba(22,163,74,.08)) !important;
+    opacity: 0.8;
+}
+.issue-completed td {
+    text-decoration: line-through;
+    color: #6b7280;
+}
+.issue-completed .btn-toggle-done {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+}
+.btn-toggle-done {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+    margin-left: 0.5rem;
+}
+.btn-toggle-done:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.btn-toggle-done:active {
+    transform: translateY(0);
+}
+</style>
+
 <div class="x_panel">
   <div class="x_title"><h2>گزارش مشکلات</h2><div class="clearfix"></div></div>
   <div class="x_content">
     <table class="table table-striped">
-      <thead><tr><th>#</th><th>صفحه</th><th>کاربر</th><th>وضعیت</th><th>تاریخ</th><th></th></tr></thead>
+      <thead><tr><th>#</th><th>صفحه</th><th>کاربر</th><th>وضعیت</th><th>تاریخ</th><th>عملیات</th></tr></thead>
       <tbody>
       {% for issue in issues %}
-        <tr>
+        <tr class="{% if issue.done %}issue-completed{% endif %}" data-issue-id="{{ issue.id }}">
           <td>{{ issue.id }}</td>
           <td style="max-width:250px;overflow-wrap:anywhere;">{{ issue.page_url }}</td>
           <td>{% if issue.user %}
@@ -22,7 +55,16 @@
           </td>
           <td>{{ issue.get_status_display }}</td>
           <td>{{ issue.created_at|date:'Y-m-d H:i' }}</td>
-          <td><a class="btn btn-sm btn-primary" href="{% url 'issues:detail' issue.id %}">جزئیات</a></td>
+          <td>
+            <a class="btn btn-sm btn-primary" href="{% url 'issues:detail' issue.id %}">جزئیات</a>
+            <button class="btn-toggle-done" onclick="toggleDone({{ issue.id }})" title="{% if issue.done %}علامت‌گذاری به عنوان انجام نشده{% else %}علامت‌گذاری به عنوان انجام شده{% endif %}">
+              {% if issue.done %}
+                <i class="fa fa-check"></i> انجام شد
+              {% else %}
+                <i class="fa fa-clock-o"></i> انجام نشده
+              {% endif %}
+            </button>
+          </td>
         </tr>
       {% empty %}
         <tr><td colspan="6" class="text-center">موردی ثبت نشده است.</td></tr>
@@ -42,4 +84,46 @@
     {% endif %}
   </div>
 </div>
+
+<script>
+function toggleDone(issueId) {
+    const row = document.querySelector(`tr[data-issue-id="${issueId}"]`);
+    const button = row.querySelector('.btn-toggle-done');
+    
+    // Disable button during request
+    button.disabled = true;
+    
+    fetch(`{% url 'issues:toggle_done' 0 %}`.replace('0', issueId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update row styling
+            if (data.done) {
+                row.classList.add('issue-completed');
+                button.innerHTML = '<i class="fa fa-check"></i> انجام شد';
+                button.title = 'علامت‌گذاری به عنوان انجام نشده';
+            } else {
+                row.classList.remove('issue-completed');
+                button.innerHTML = '<i class="fa fa-clock-o"></i> انجام نشده';
+                button.title = 'علامت‌گذاری به عنوان انجام شده';
+            }
+        } else {
+            alert('خطا در تغییر وضعیت');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('خطا در ارتباط با سرور');
+    })
+    .finally(() => {
+        button.disabled = false;
+    });
+}
+</script>
 {% endblock %}

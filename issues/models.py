@@ -20,6 +20,7 @@ class IssueReport(models.Model):
     staff_notes = models.TextField(blank=True, verbose_name='یادداشت پشتیبان')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='آخرین بروزرسانی')
+    done = models.BooleanField(default=False, verbose_name='وضعیت گزارش')
 
     class Meta:
         ordering = ['-created_at']
