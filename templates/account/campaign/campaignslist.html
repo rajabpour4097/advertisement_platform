@@ -440,9 +440,11 @@ a:hover {
                             <th>
                                 <i class="fas fa-chart-line me-2"></i>وضعیت
                             </th>
+                            {% if request.user.is_staff or request.user.is_am %}
                             <th>
-                                <i class="fas fa-toggle-on me-2"></i>وضعیت کمپین
+                                <i class="fas fa-toggle-on me-2"></i>عملیات
                             </th>
+                            {% endif %}
                             <th>
                                 <i class="fas fa-trophy me-2"></i>برنده
                             </th>
@@ -518,7 +520,7 @@ a:hover {
                             <td>
                                 <div class="status-column">
                                     {% if campaign.status == 'editing' %}
-                                        {% if request.user.is_staff or request.user.is_am or request.user.user_type == 'customer' %}
+                                        {% if request.user.user_type == 'customer' %}
                                             <a href="{% url 'account:campaignedit' campaign.pk %}" class="text-decoration-none">
                                                 <span class="badge bg-warning">
                                                     <i class="fas fa-edit me-1"></i>در حال ویرایش
@@ -628,45 +630,20 @@ a:hover {
                             </td>
 
                             <!-- Campaign Active Status -->
+                            {% if user.is_staff or user.is_am  %}
                             <td>
-                                {% if campaign.is_active %}
-                                    <span class="badge bg-success badge-with-icon">
-                                        <i class="fas fa-check-circle status-icon"></i>
-                                        فعال
-                                    </span>
-                                {% else %}
-                                    <span class="badge bg-danger badge-with-icon">
-                                        <i class="fas fa-times-circle status-icon"></i>
-                                        غیرفعال
-                                    </span>
-                                {% endif %}
-
-                                <!-- Staff Actions -->
-                                {% if user.is_staff or user.is_am  %}
                                 <div class="action-buttons">
                                     <a class="btn btn-danger btn-xs" href="{% url 'account:campaignsdelete' campaign.pk %}">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
-                                    {% if campaign.is_active %}
-                                    <form action="{% url 'account:deactivecampaign' campaign.pk %}" method="POST" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button class="btn btn-primary btn-xs" type="submit">
-                                            <i class="fas fa-ban"></i>
-                                            غیرفعالسازی
-                                        </button>
-                                    </form>
-                                    {% else %}
-                                    <form action="{% url 'account:activecampaign' campaign.pk %}" method="POST" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button class="btn btn-success btn-xs" type="submit">
-                                            <i class="fas fa-check"></i>
-                                            فعالسازی
-                                        </button>
-                                    </form>
-                                    {% endif %}
+                                    <a href="{% url 'account:campaignedit' campaign.pk %}" class="text-decoration-none">
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-edit me-1"></i>
+                                        </span>
+                                    </a>
                                 </div>
-                                {% endif %}
                             </td>
+                            {% endif %}
 
                             <!-- Winner Column -->
                             <td>
